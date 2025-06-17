@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Braphia.UserManagement
+namespace Braphia.UserManagement.Model
 {
     public class Patient
     {
-        public Patient() {}
+        public Patient() { }
         public Patient(string firstName, string lastName, string email, string phoneNumber)
         {
             FirstName = firstName;

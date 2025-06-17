@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using System;
 using Microsoft.EntityFrameworkCore;
+using Braphia.UserManagement.Model;
 
 namespace Braphia.UserManagement.Database
 {
