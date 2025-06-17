@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Bravia.ServiceDefaults1\Braphia.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

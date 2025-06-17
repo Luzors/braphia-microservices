@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Braphia.UserManagement.Models
 {
-    public class Patient
+    public class Receptionist
     {
-        public Patient() { }
-        public Patient(string firstName, string lastName, string email, string phoneNumber)
+        public Receptionist() { }
+        public Receptionist(string firstName, string lastName, string email, string phoneNumber)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -24,7 +24,5 @@ namespace Braphia.UserManagement.Models
         public string Email { get; set; }
 
         public string PhoneNumber { get; set; }
-
-        public List<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Braphia.UserManagement.Database;
-using Braphia.UserManagement.Model;
+using Braphia.UserManagement.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

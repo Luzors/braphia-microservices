@@ -1,12 +1,13 @@
 ﻿using Braphia.UserManagement.Models;
 using System.ComponentModel.DataAnnotations;
+using Braphia.UserManagement.Enums;
 
 namespace Braphia.UserManagement.Models
 {
-    public class Patient
+    public class Physician
     {
-        public Patient() { }
-        public Patient(string firstName, string lastName, string email, string phoneNumber)
+        public Physician() { }
+        public Physician(string firstName, string lastName, string email, string phoneNumber)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -25,6 +26,6 @@ namespace Braphia.UserManagement.Models
 
         public string PhoneNumber { get; set; }
 
-        public List<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+        public SpecializationEnum Specialization { get; set; }
     }
 }
