@@ -21,12 +21,14 @@ namespace Braphia.UserManagement.Controllers
         [HttpGet(Name = "Patients")]
         public IEnumerable<Patient> Get()
         {
+            _logger.LogInformation("Fetching all patients");
             return _dbContext.Patient.ToList();
         }
 
         [HttpGet("{id}", Name = "PatientById")]
         public Patient? Get(int id)
         {
+            _logger.LogInformation("Fetching patient with ID {id}", id);
             return _dbContext.Patient.FirstOrDefault(
                 p => p.Id == id
             );
@@ -35,12 +37,14 @@ namespace Braphia.UserManagement.Controllers
         [HttpPost(Name = "Patients")]
         public IActionResult Post([FromBody] Patient patient)
         {
+            _logger.LogInformation("Adding new patient");
             if (patient == null)
             {
                 return BadRequest("Patient cannot be null");
             }
             _dbContext.Patient.Add(patient);
             _dbContext.SaveChanges();
+            _logger.LogInformation("Patient with ID {id} created", patient.Id);
             return CreatedAtRoute("PatientById", new { id = patient.Id }, patient);
         }
     }

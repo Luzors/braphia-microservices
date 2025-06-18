@@ -21,12 +21,14 @@ namespace Braphia.UserManagement.Controllers
         [HttpGet(Name = "Receptionists")]
         public IEnumerable<Receptionist> Get()
         {
+            _logger.LogInformation("Fetching all receptionists from the database.");
             return _dbContext.Receptionist.ToList();
         }
 
         [HttpGet("{id}", Name = "ReceptionistById")]
         public Receptionist? Get(int id)
         {
+            _logger.LogInformation("Fetching receptionist with ID: {id} from the database.", id);
             return _dbContext.Receptionist.FirstOrDefault(
                 p => p.Id == id
             );
@@ -35,12 +37,14 @@ namespace Braphia.UserManagement.Controllers
         [HttpPost(Name = "Receptionists")]
         public IActionResult Post([FromBody] Receptionist receptionist)
         {
+            _logger.LogInformation("Adding a new receptionist to the database.");
             if (receptionist == null)
-            {
                 return BadRequest("Receptionist cannot be null");
-            }
+
             _dbContext.Receptionist.Add(receptionist);
             _dbContext.SaveChanges();
+
+            _logger.LogInformation("Receptionist with ID: {id} added successfully.", receptionist.Id);
             return CreatedAtRoute("ReceptionistById", new { id = receptionist.Id }, receptionist);
         }
     }
