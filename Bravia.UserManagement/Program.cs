@@ -1,7 +1,6 @@
 using Braphia.UserManagement.Database;
-using System;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +12,21 @@ var connectionString = builder.Configuration.GetConnectionString("UserDB") ??
 builder.Services
     .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
 
-// Add services to the container.
+builder.Services.AddMassTransit(x =>
+{
+    //TODO: Actually create consumers :)
+    //x.AddConsumer<MyMessageConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var configuration = context.GetRequiredService<IConfiguration>();
+        var rabbitMqConnection = configuration.GetConnectionString("eventbus");
+        cfg.Host(rabbitMqConnection);
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
