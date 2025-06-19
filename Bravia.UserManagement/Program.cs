@@ -1,4 +1,6 @@
 using Braphia.UserManagement.Database;
+using Braphia.UserManagement.Repositories;
+using Braphia.UserManagement.Repositories.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +28,10 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
+builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
+builder.Services.AddScoped<IReceptionistRepository, SqlReceptionistRepository>();
 
 
 builder.Services.AddControllers();

@@ -1,7 +1,6 @@
-﻿using Braphia.UserManagement.Database;
-using Braphia.UserManagement.Models;
+﻿using Braphia.UserManagement.Models;
+using Braphia.UserManagement.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.UserManagement.Controllers
 {
@@ -10,58 +9,95 @@ namespace Braphia.UserManagement.Controllers
     public class MedicalRecordController : ControllerBase
     {
         private readonly ILogger<MedicalRecordController> _logger;
+        private readonly IPatientRepository _patientRepository;
 
-        private readonly DBContext _dbContext;
-
-        public MedicalRecordController(ILogger<MedicalRecordController> logger, DBContext dbContext)
+        public MedicalRecordController(ILogger<MedicalRecordController> logger, IPatientRepository patientRepository)
         {
-            _logger = logger;
-            _dbContext = dbContext;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
         }
 
         [HttpGet(Name = "MedicalRecordsByPatientId")]
-        public IEnumerable<MedicalRecord> Get(int patientId)
+        [ProducesResponseType(typeof(IEnumerable<MedicalRecord>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAsync(int patientId)
         {
             _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);
-            return _dbContext.Patient.Include(p => p.MedicalRecords)
-                                     .Where(p => p.Id == patientId)
-                                     .SelectMany(p => p.MedicalRecords)
-                                     .ToList();
+            try
+            {
+                var records = await _patientRepository.GetMedicalRecordsByPatientIdAsync(patientId);
+                if (records == null || !records.Any())
+                {
+                    _logger.LogInformation("No medical records found for patient with ID {patientId}", patientId);
+                    return NotFound($"No medical records found for Patient ID {patientId}");
+                }
+                return Ok(records);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while fetching medical records for patient with ID {patientId}", patientId);
+                return BadRequest($"Invalid request: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching medical records for patient with ID {patientId}", patientId);
+                return StatusCode(500, "Internal server error while fetching medical records");
+            }
         }
 
         [HttpPost(Name = "AddMedicalRecord")]
-        public IActionResult Post(int patientId, [FromBody] MedicalRecord medicalRecord)
+        [ProducesResponseType(typeof(MedicalRecord), StatusCodes.Status201Created)]
+        public async Task<IActionResult> Post(int patientId, [FromBody] MedicalRecord medicalRecord)
         {
             _logger.LogInformation("Adding medical record for patient with ID {patientId}", patientId);
-            if (medicalRecord == null)
-                return BadRequest("MedicalRecord cannot be null");
+            try
+            {
+                var success = await _patientRepository.AddMedicalRecordAsync(patientId, medicalRecord);
+                if (!success)
+                {
+                    _logger.LogWarning("Failed to add medical record for patient with ID {patientId}", patientId);
+                    return BadRequest($"Failed to add medical record for Patient ID {patientId}");
+                }
 
-            var patient = _dbContext.Patient.FirstOrDefault(p => p.Id == patientId);
-            if (patient == null)
-                return NotFound($"Patient with ID {patientId} not found");
+                _logger.LogInformation("Medical record added for patient with ID {patientId}", patientId);
+                return CreatedAtRoute("MedicalRecordsByPatientId", new { patientId }, medicalRecord);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while fetching medical records for patient with ID {patientId}", patientId);
+                return BadRequest($"Invalid request: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding medical record for patient with ID {patientId}", patientId);
+                return StatusCode(500, "Internal server error while adding medical record");
+            }
 
-            patient.MedicalRecords.Add(medicalRecord);
-            _dbContext.SaveChanges();
-            _logger.LogInformation("Medical record added for patient with ID {patientId}", patientId);
-
-            return CreatedAtRoute("MedicalRecordsByPatientId", new { patientId = patient.Id }, medicalRecord);
         }
 
         [HttpDelete("{recordId}", Name = "DeleteMedicalRecord")]
-        public IActionResult Delete(int patientId, int recordId)
+        public async Task<IActionResult> Delete(int patientId, int recordId)
         {
             _logger.LogInformation("Deleting medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
-            var patient = _dbContext.Patient.Include(p => p.MedicalRecords)
-                                            .FirstOrDefault(p => p.Id == patientId);
-            if (patient == null)
-                return NotFound($"Patient with ID {patientId} not found");
+            try
+            {
+                var success = await _patientRepository.DeleteMedicalRecordAsync(patientId, recordId);
+                if (!success)
+                {
+                    _logger.LogWarning("Failed to delete medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+                    return NotFound($"Medical record with ID {recordId} not found for Patient ID {patientId}");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while fetching medical records for patient with ID {patientId}", patientId);
+                return BadRequest($"Invalid request: {ex.Message}");
+            } 
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+                return StatusCode(500, "Internal server error while deleting medical record");
+            }
 
-            var medicalRecord = patient.MedicalRecords.FirstOrDefault(mr => mr.Id == recordId);
-            if (medicalRecord == null)
-                return NotFound($"MedicalRecord with ID {recordId} not found for Patient ID {patientId}");
-
-            patient.MedicalRecords.Remove(medicalRecord);
-            _dbContext.SaveChanges();
             _logger.LogInformation("Medical record with ID {recordId} deleted for patient with ID {patientId}", recordId, patientId);
 
             return NoContent();
