@@ -1,4 +1,4 @@
-﻿namespace Braphia.UserManagement.Events
+﻿namespace Braphia.AppointmentManagement.Events
 {
     public class MedicalRecordsEvent
     {

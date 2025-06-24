@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMassTransit(x =>
 {
     //TODO: Actually create consumers :)
-    x.AddConsumer<MedicalRecordsEventConsumer>();
+    x.AddConsumer<MessageConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

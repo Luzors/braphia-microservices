@@ -1,6 +1,7 @@
 ﻿using Braphia.UserManagement.Events;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,7 +64,7 @@ namespace Braphia.UserManagement.Controllers
                 }
 
                 _logger.LogInformation("Medical record added for patient with ID {patientId}", patientId);
-                await _publishEndpoint.Publish(new MedicalRecordsEvent(patientId, "PostMedicalRecord"));
+                await _publishEndpoint.Publish(new Message(messageType: "PostMedicalRecord", data: new MedicalRecordsEvent(patientId)));
                 return CreatedAtRoute("MedicalRecordsByPatientId", new { patientId }, medicalRecord);
             }
             catch (ArgumentException ex)

@@ -1,28 +1,28 @@
-﻿namespace Infrastructure.Messaging
+﻿using System.Text.Json.Serialization;
+
+#nullable disable
+namespace Infrastructure.Messaging
 {
     public class Message
     {
-        public readonly Guid MessageId;
-        public readonly string MessageType;
+        [JsonInclude]
+        public Guid MessageId;
+        [JsonInclude]
+        public string MessageType;
+        [JsonInclude]
+        public object Data;
 
-        public Message():  this(Guid.NewGuid())
+        // Empty constructor required for Json Serializing
+        public Message() { }
+
+        public Message(object data) : this(Guid.NewGuid(), string.Empty, data) { }
+        public Message(Guid messageId, object data) : this(messageId, string.Empty, data) { }
+        public Message(string messageType, object data) : this(Guid.NewGuid(), messageType, data) { }
+        public Message(Guid messageId, string messageType, object data)
         {
-        }
-        public Message(Guid messageId)
-        {
-            Console.WriteLine("1 param alleen messagid");
-            MessageId = messageId;
-            MessageType = GetType().Name;
-        }
-        public Message(string messageType): this(Guid.NewGuid())
-        {
-            MessageType = messageType;
-        }
-        public Message(Guid messageId, string messageType)
-        {
-            Console.WriteLine("2 param");
             MessageId = messageId;
             MessageType = messageType;
+            Data = data;
         }
     }
 }
