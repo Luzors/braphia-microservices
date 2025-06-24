@@ -25,8 +25,7 @@ namespace Braphia.UserManagement.Controllers
         [ProducesResponseType(typeof(IEnumerable<MedicalRecord>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int patientId)
         {
-            _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);
-            await _publishEndpoint.Publish(new MedicalRecordsEvent(patientId, "ListMedicalEvents"));
+            _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);           
             try
             {
                 var records = await _patientRepository.GetMedicalRecordsByPatientIdAsync(patientId);
@@ -64,6 +63,7 @@ namespace Braphia.UserManagement.Controllers
                 }
 
                 _logger.LogInformation("Medical record added for patient with ID {patientId}", patientId);
+                await _publishEndpoint.Publish(new MedicalRecordsEvent(patientId, "PostMedicalRecord"));
                 return CreatedAtRoute("MedicalRecordsByPatientId", new { patientId }, medicalRecord);
             }
             catch (ArgumentException ex)

@@ -20,6 +20,13 @@ var userManagement = builder
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
 
+var appointmentManagement = builder
+    .AddProject<Projects.Braphia_AppointmentManagement>("appointmentManagement")
+/*    .WithReference(apiDatabase)
+    .WaitFor(apiDatabase)*/
+    .WithReference(rabbitMq)
+        .WaitFor(rabbitMq);
+
 //var processor = builder
 //    .AddProject<Projects.InsuranceDetails_Processor>("processor")
 //    .WithReplicas(5)

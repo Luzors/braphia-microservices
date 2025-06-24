@@ -1,0 +1,6 @@
+@Braphia.AppointmentManagement_HostAddress = http://localhost:5250
+
+GET {{Braphia.AppointmentManagement_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
