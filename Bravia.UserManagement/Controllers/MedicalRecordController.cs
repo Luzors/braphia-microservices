@@ -1,5 +1,7 @@
-﻿using Braphia.UserManagement.Models;
+﻿using Braphia.UserManagement.Events;
+using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Braphia.UserManagement.Controllers
@@ -10,11 +12,13 @@ namespace Braphia.UserManagement.Controllers
     {
         private readonly ILogger<MedicalRecordController> _logger;
         private readonly IPatientRepository _patientRepository;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public MedicalRecordController(ILogger<MedicalRecordController> logger, IPatientRepository patientRepository)
+        public MedicalRecordController(ILogger<MedicalRecordController> logger, IPatientRepository patientRepository, IPublishEndpoint publishEndpoint)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         [HttpGet(Name = "MedicalRecordsByPatientId")]
@@ -22,6 +26,7 @@ namespace Braphia.UserManagement.Controllers
         public async Task<IActionResult> GetAsync(int patientId)
         {
             _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);
+            await _publishEndpoint.Publish(new MedicalRecordsEvent(patientId, "ListMedicalEvents"));
             try
             {
                 var records = await _patientRepository.GetMedicalRecordsByPatientIdAsync(patientId);

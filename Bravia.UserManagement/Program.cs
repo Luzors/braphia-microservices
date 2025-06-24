@@ -1,3 +1,4 @@
+using Braphia.UserManagement.Consumers;
 using Braphia.UserManagement.Database;
 using Braphia.UserManagement.Repositories;
 using Braphia.UserManagement.Repositories.Interfaces;
@@ -17,7 +18,7 @@ builder.Services
 builder.Services.AddMassTransit(x =>
 {
     //TODO: Actually create consumers :)
-    //x.AddConsumer<MyMessageConsumer>();
+    x.AddConsumer<MedicalRecordsEventConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
