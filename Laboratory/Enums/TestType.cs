@@ -1,6 +1,12 @@
 ﻿namespace Laboratory.Enums
 {
-    public class TestType
+    public enum TestType
     {
+        BloodTest,
+        UrineTest,
+        Biopsy,
+        CultureSensitivity
+       
     }
+   
 }

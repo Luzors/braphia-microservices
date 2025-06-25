@@ -1,6 +1,10 @@
 ﻿namespace Laboratory.Enums
 {
-    public class TestStatus
+    public enum TestStatus
     {
+        Pending,
+        InProgress,
+        Completed,
+        Cancelled
     }
 }
