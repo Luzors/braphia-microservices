@@ -1,11 +1,8 @@
-﻿using Braphia.UserManagement.Events;
-using Braphia.UserManagement.Models;
-using Braphia.UserManagement.Repositories.Interfaces;
-using Infrastructure.Messaging;
-using MassTransit;
+﻿using Braphia.Accounting.Models;
+using Braphia.Accounting.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Braphia.UserManagement.Controllers
+namespace Braphia.Accounting.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -13,13 +10,11 @@ namespace Braphia.UserManagement.Controllers
     {
         private readonly ILogger<PatientController> _logger;
         private readonly IPatientRepository _patientRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
 
-        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository, IPublishEndpoint publishEndpoint)
+        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         [HttpGet(Name = "Patients")]
@@ -86,19 +81,6 @@ namespace Braphia.UserManagement.Controllers
             {
                 var records = await _patientRepository.AddPatientAsync(patient);
                 _logger.LogInformation("Patient with ID {id} created", patient.Id);
-                
-                // Patient created event
-                await _publishEndpoint.Publish(new Message(
-                    messageType: "PatientCreated", 
-                    data: new PatientCreatedEvent(
-                        patient.Id,
-                        patient.FirstName,
-                        patient.LastName,
-                        patient.Email,
-                        patient.PhoneNumber
-                    )
-                ));
-                
                 return CreatedAtRoute("PatientById", new { id = patient.Id }, patient);
             }
             catch (ArgumentException ex)

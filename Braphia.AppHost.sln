@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Braphia.AppHost", "Bravia.AppHost\Braphia.AppHost.csproj", "{F8F82461-B7D4-49E4-A0BC-DC3BE074D2EA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{51008D7E-10C5-4626-9601-0186C3377DDF} = {51008D7E-10C5-4626-9601-0186C3377DDF}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Braphia.ServiceDefaults", "Bravia.ServiceDefaults1\Braphia.ServiceDefaults.csproj", "{925C70C2-E08E-49FC-9BA3-915FF9F9E231}"
 EndProject
@@ -12,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Messaging", "Infrastructure.Messaging\Infrastructure.Messaging.csproj", "{92D004D4-7BBF-46F5-AE33-730A2549D7DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.AppointmentManagement", "Braphia.AppointmentManagement\Braphia.AppointmentManagement.csproj", "{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Accounting", "Braphia.Accounting\Braphia.Accounting.csproj", "{51008D7E-10C5-4626-9601-0186C3377DDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +44,10 @@ Global
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51008D7E-10C5-4626-9601-0186C3377DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51008D7E-10C5-4626-9601-0186C3377DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51008D7E-10C5-4626-9601-0186C3377DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51008D7E-10C5-4626-9601-0186C3377DDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

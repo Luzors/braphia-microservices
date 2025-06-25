@@ -27,6 +27,22 @@ var appointmentManagement = builder
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
 
+var accountingDbServer = builder
+    .AddSqlServer("sql-server-accounting", port: 2016)
+    .WithDataVolume("braphia-accounting")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var accountingDatabase = accountingDbServer
+    .AddDatabase("AccountingDB");
+
+var accounting = builder
+    .AddProject<Projects.Braphia_Accounting>("accounting")
+    .WithReference(accountingDatabase)
+    .WaitFor(accountingDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
+
+
 //var processor = builder
 //    .AddProject<Projects.InsuranceDetails_Processor>("processor")
 //    .WithReplicas(5)
