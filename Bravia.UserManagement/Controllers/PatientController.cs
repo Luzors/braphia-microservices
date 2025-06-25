@@ -13,13 +13,11 @@ namespace Braphia.UserManagement.Controllers
     {
         private readonly ILogger<PatientController> _logger;
         private readonly IPatientRepository _patientRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
 
-        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository, IPublishEndpoint publishEndpoint)
+        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         [HttpGet(Name = "Patients")]
@@ -85,20 +83,7 @@ namespace Braphia.UserManagement.Controllers
             try
             {
                 var records = await _patientRepository.AddPatientAsync(patient);
-                _logger.LogInformation("Patient with ID {id} created", patient.Id);
-                
-                // Patient created event
-                await _publishEndpoint.Publish(new Message(
-                    messageType: "PatientCreated", 
-                    data: new PatientCreatedEvent(
-                        patient.Id,
-                        patient.FirstName,
-                        patient.LastName,
-                        patient.Email,
-                        patient.PhoneNumber
-                    )
-                ));
-                
+                _logger.LogInformation("Patient with ID {id} created", patient.Id);                
                 return CreatedAtRoute("PatientById", new { id = patient.Id }, patient);
             }
             catch (ArgumentException ex)

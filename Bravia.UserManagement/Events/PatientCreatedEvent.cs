@@ -1,22 +1,15 @@
+using Braphia.UserManagement.Models;
+
 namespace Braphia.UserManagement.Events
 {
     public class PatientCreatedEvent
     {
-        public int PatientId { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-
+        public Patient Patient { get; set; }
         public PatientCreatedEvent() { }
 
-        public PatientCreatedEvent(int patientId, string firstName, string lastName, string email, string phoneNumber)
+        public PatientCreatedEvent(Patient patient)
         {
-            PatientId = patientId;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            PhoneNumber = phoneNumber;
+            Patient = patient ?? throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
         }
     }
 }

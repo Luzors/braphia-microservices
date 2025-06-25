@@ -1,6 +1,9 @@
 ﻿using Braphia.UserManagement.Database;
+using Braphia.UserManagement.Events;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.UserManagement.Repositories
@@ -8,9 +11,11 @@ namespace Braphia.UserManagement.Repositories
     public class SqlPatientRepository : IPatientRepository
     {
         private DBContext _context;
-        public SqlPatientRepository(DBContext context)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public SqlPatientRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         public async Task<bool> AddMedicalRecordAsync(int patientId, MedicalRecord medicalRecord)
@@ -22,6 +27,7 @@ namespace Braphia.UserManagement.Repositories
                 throw new ArgumentException($"Patient with ID {patientId} not found.");
             patient.MedicalRecords.Add(medicalRecord);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(messageType: "PostMedicalRecord", data: new MedicalRecordsEvent(patientId)));
             return true;
         }
 
@@ -31,6 +37,13 @@ namespace Braphia.UserManagement.Repositories
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
             await _context.Patient.AddAsync(patient);
             await _context.SaveChangesAsync();
+
+            // Patient created event
+            await _publishEndpoint.Publish(new Message(
+                messageType: "PatientCreated",
+                data: new PatientCreatedEvent(patient)
+            ));
+
             return true;
         }
 
