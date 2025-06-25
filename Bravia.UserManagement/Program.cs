@@ -1,6 +1,7 @@
 using Braphia.UserManagement.Database;
 using Braphia.UserManagement.Repositories;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Braphia.UserManagement.Services;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,7 @@ builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
 builder.Services.AddScoped<IReceptionistRepository, SqlReceptionistRepository>();
 
+builder.Services.AddHostedService<ExternalUserSyncService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

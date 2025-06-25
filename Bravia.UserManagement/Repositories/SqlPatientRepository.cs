@@ -79,6 +79,11 @@ namespace Braphia.UserManagement.Repositories
             return await _context.Patient.FirstOrDefaultAsync(p => p.Id == patientId);
         }
 
+        public async Task<Patient?> GetPatientByFullNameAsync(string firstName, string lastName)
+        {
+            return await _context.Patient.FirstOrDefaultAsync(p => p.FirstName == firstName && p.LastName == lastName);
+        }
+
         public async Task<bool> UpdateMedicalRecordAsync(int patientId, MedicalRecord medicalRecord)
         {
             if (medicalRecord == null)

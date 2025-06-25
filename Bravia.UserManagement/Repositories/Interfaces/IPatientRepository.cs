@@ -4,10 +4,11 @@ namespace Braphia.UserManagement.Repositories.Interfaces
 {
     public interface IPatientRepository
     {
-        Task<bool> AddPatientAsync(Patient Patient);
-        Task<bool> UpdatePatientAsync(Patient Patient);
-        Task<bool> DeletePatientAsync(int PatientId);
-        Task<Patient?> GetPatientByIdAsync(int PatientId);
+        Task<bool> AddPatientAsync(Patient patient);
+        Task<bool> UpdatePatientAsync(Patient patient);
+        Task<bool> DeletePatientAsync(int patientId);
+        Task<Patient?> GetPatientByIdAsync(int patientId);
+        Task<Patient?> GetPatientByFullNameAsync(string firstName, string lastName);
         Task<IEnumerable<Patient>> GetAllPatientsAsync();
 
         Task<IEnumerable<MedicalRecord>> GetMedicalRecordsByPatientIdAsync(int patientId);
