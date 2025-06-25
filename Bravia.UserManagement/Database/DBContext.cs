@@ -12,5 +12,9 @@ namespace Braphia.UserManagement.Database
         public DbSet<Physician> Physician { get; set; }
 
         public DbSet<Receptionist> Receptionist { get; set; }
+
+        public DbSet<GeneralPracticioner> GeneralPracticioner { get; set; }
+
+        public DbSet<Referral> Referral { get; set; }
     }
 }

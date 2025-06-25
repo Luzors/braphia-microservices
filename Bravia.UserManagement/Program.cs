@@ -30,6 +30,8 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
 builder.Services.AddScoped<IReceptionistRepository, SqlReceptionistRepository>();
+builder.Services.AddScoped<IGeneralPracticionerRepository, SqlGeneralPracticionerRepository>();
+builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
 
 builder.Services.AddHostedService<ExternalUserSyncService>();
 
@@ -51,7 +53,10 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+    });
 }
 
 app.UseHttpsRedirection();

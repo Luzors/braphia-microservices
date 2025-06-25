@@ -2,10 +2,7 @@
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
 using CsvHelper;
-using CsvHelper.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections;
-using System.Formats.Asn1;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -56,7 +53,8 @@ namespace Braphia.UserManagement.Services
         /// <summary>
         /// The actual logic to get the external csv an dparse into patients
         /// TODO: Should this put everything into a queue instead of directly into the database? 
-        ///       Seems a bit overkill since it is running in the same project
+        ///       Seems a bit overkill since it is running in the same project 
+        ///       + The idea of that queue is that the external API pushes onto the queue, not that we pull data from there, push it to the queue and then handle it ourself
         /// </summary>
         private async Task SyncExternalUsersAsync(CancellationToken stoppingToken)
         {

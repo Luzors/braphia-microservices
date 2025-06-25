@@ -1,8 +1,5 @@
-﻿using Braphia.UserManagement.Events;
-using Braphia.UserManagement.Models;
+﻿using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
-using Infrastructure.Messaging;
-using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Braphia.UserManagement.Controllers
@@ -24,7 +21,7 @@ namespace Braphia.UserManagement.Controllers
         [ProducesResponseType(typeof(IEnumerable<MedicalRecord>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAsync(int patientId)
         {
-            _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);           
+            _logger.LogInformation("Fetching medical records for patient with ID {patientId}", patientId);
             try
             {
                 var records = await _patientRepository.GetMedicalRecordsByPatientIdAsync(patientId);
@@ -94,7 +91,7 @@ namespace Braphia.UserManagement.Controllers
             {
                 _logger.LogWarning(ex, "Invalid argument while fetching medical records for patient with ID {patientId}", patientId);
                 return BadRequest($"Invalid request: {ex.Message}");
-            } 
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
@@ -105,5 +102,33 @@ namespace Braphia.UserManagement.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("{recordId}", Name = "MedicalRecordById")]
+        [ProducesResponseType(typeof(MedicalRecord), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Get(int patientId, int recordId)
+        {
+            _logger.LogInformation("Fetching medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+            try
+            {
+                var record = await _patientRepository.GetMedicalRecordByIdAsync(patientId, recordId);
+                if (record == null)
+                {
+                    _logger.LogInformation("No medical record found with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+                    return NotFound($"No medical record found with ID {recordId} for Patient ID {patientId}");
+                }
+                return Ok(record);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while fetching medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+                return BadRequest($"Invalid request: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching medical record with ID {recordId} for patient with ID {patientId}", recordId, patientId);
+                return StatusCode(500, "Internal server error while fetching medical record");
+            }
+        }
+
     }
 }
