@@ -87,5 +87,30 @@ namespace Braphia.Laboratory.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpPut("{id}", Name = "UpdateTestStatus")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Put(Guid id, [FromBody] Test test)
+        {
+            if (test == null || test.Id != id)
+            {
+                return BadRequest("Test data is null or ID mismatch");
+            }
+            try
+            {
+                var updated = await _testRepository.UpdateTestAsync(test);
+                if (!updated)
+                {
+                    return NotFound($"No test found with ID {id} to update");
+                }
+                // Publish an event after updating the test
+                await _publishEndpoint.Publish(new { TestId = id, Message = "Test updated successfully" });
+                return Ok(updated);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }
