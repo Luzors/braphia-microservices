@@ -22,9 +22,7 @@ namespace Braphia.UserManagement.Repositories
         {
             if (medicalRecord == null)
                 throw new ArgumentNullException(nameof(medicalRecord), "MedicalRecord cannot be null.");
-            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId);
-            if (patient == null)
-                throw new ArgumentException($"Patient with ID {patientId} not found.");
+            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
             patient.MedicalRecords.Add(medicalRecord);
             await _context.SaveChangesAsync();
             return true;
@@ -45,12 +43,8 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeleteMedicalRecordAsync(int patientId, int medicalRecordId)
         {
-            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId);
-            if (patient == null)
-                throw new ArgumentException($"Patient with ID {patientId} not found.");
-            var record = patient.MedicalRecords.FirstOrDefault(r => r.Id == medicalRecordId);
-            if (record == null)
-                throw new ArgumentException($"Medical record with ID {medicalRecordId} not found for patient {patientId}.");
+            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
+            var record = patient.MedicalRecords.FirstOrDefault(r => r.Id == medicalRecordId) ?? throw new ArgumentException($"Medical record with ID {medicalRecordId} not found for patient {patientId}.");
             patient.MedicalRecords.Remove(record);
             await _context.SaveChangesAsync();
             return true;
@@ -58,9 +52,7 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeletePatientAsync(int patientId)
         {
-            var patient = await _context.Patient.FindAsync(patientId);
-            if (patient == null)
-                throw new ArgumentException($"Patient with ID {patientId} not found.");
+            var patient = await _context.Patient.FindAsync(patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
             _context.Patient.Remove(patient);
             await _context.SaveChangesAsync();
             return true;
@@ -97,12 +89,8 @@ namespace Braphia.UserManagement.Repositories
         {
             if (medicalRecord == null)
                 throw new ArgumentNullException(nameof(medicalRecord), "MedicalRecord cannot be null.");
-            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId);
-            if (patient == null)
-                throw new ArgumentException($"Patient with ID {patientId} not found.");
-            var record = patient.MedicalRecords.FirstOrDefault(r => r.Id == medicalRecord.Id);
-            if (record == null)
-                throw new ArgumentException($"Medical record with ID {medicalRecord.Id} not found for patient {patientId}.");
+            var patient = await _context.Patient.Include(p => p.MedicalRecords).FirstOrDefaultAsync(p => p.Id == patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
+            var record = patient.MedicalRecords.FirstOrDefault(r => r.Id == medicalRecord.Id) ?? throw new ArgumentException($"Medical record with ID {medicalRecord.Id} not found for patient {patientId}.");
             record.Description = medicalRecord.Description;
             record.Date = medicalRecord.Date;
             await _context.SaveChangesAsync();
@@ -113,15 +101,14 @@ namespace Braphia.UserManagement.Repositories
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
-            var existing = await _context.Patient.FindAsync(patient.Id);
-            if (existing == null)
-                throw new ArgumentException($"Patient with ID {patient.Id} not found.");
+            var existing = await _context.Patient.FindAsync(patient.Id) ?? throw new ArgumentException($"Patient with ID {patient.Id} not found.");
             existing.FirstName = patient.FirstName;
             existing.LastName = patient.LastName;
             existing.Email = patient.Email;
             existing.PhoneNumber = patient.PhoneNumber;
             existing.BirthDate = patient.BirthDate;
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new PatientModifiedEvent(patient.Id, patient)));
             return true;
         }
     }

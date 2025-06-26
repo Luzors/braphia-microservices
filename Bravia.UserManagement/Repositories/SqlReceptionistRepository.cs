@@ -25,8 +25,7 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeleteReceptionistAsync(int receptionistId)
         {
-            var receptionist = await _context.Receptionist.FindAsync(receptionistId);
-            if (receptionist == null) throw new KeyNotFoundException($"Receptionist with ID {receptionistId} not found.");
+            var receptionist = await _context.Receptionist.FindAsync(receptionistId) ?? throw new KeyNotFoundException($"Receptionist with ID {receptionistId} not found.");
             _context.Receptionist.Remove(receptionist);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to delete receptionist.");
@@ -46,9 +45,7 @@ namespace Braphia.UserManagement.Repositories
         public async Task<bool> UpdateReceptionistAsync(Receptionist receptionist)
         {
             if (receptionist == null) throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
-            var existing = await _context.Receptionist.FindAsync(receptionist.Id);
-            if (existing == null) throw new KeyNotFoundException($"Receptionist with ID {receptionist.Id} not found.");
-
+            var existing = await _context.Receptionist.FindAsync(receptionist.Id) ?? throw new KeyNotFoundException($"Receptionist with ID {receptionist.Id} not found.");
             _context.Entry(existing).CurrentValues.SetValues(receptionist);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update receptionist.");

@@ -1,6 +1,8 @@
 ﻿using Braphia.UserManagement.Database;
+using Braphia.UserManagement.Events;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +24,7 @@ namespace Braphia.UserManagement.Repositories
                 throw new ArgumentNullException(nameof(referral), "Referral cannot be null.");
             await _context.Referral.AddAsync(referral);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new ReferralSubmittedEvent(referral)));
             return true;
         }
 
@@ -29,9 +32,7 @@ namespace Braphia.UserManagement.Repositories
         {
             if (referral == null)
                 throw new ArgumentNullException(nameof(referral), "Referral cannot be null.");
-            var existingReferral = await _context.Referral.FirstOrDefaultAsync(r => r.Id == referral.Id);
-            if (existingReferral == null)
-                throw new ArgumentException($"Referral with ID {referral.Id} not found.");
+            var existingReferral = await _context.Referral.FirstOrDefaultAsync(r => r.Id == referral.Id) ?? throw new ArgumentException($"Referral with ID {referral.Id} not found.");
             existingReferral.PatientId = referral.PatientId;
             existingReferral.GeneralPracticionerId = referral.GeneralPracticionerId;
             existingReferral.Reason = referral.Reason;
@@ -42,9 +43,7 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeleteReferralAsync(int referralId)
         {
-            var referral = await _context.Referral.FirstOrDefaultAsync(r => r.Id == referralId);
-            if (referral == null)
-                throw new ArgumentException($"Referral with ID {referralId} not found.");
+            var referral = await _context.Referral.FirstOrDefaultAsync(r => r.Id == referralId) ?? throw new ArgumentException($"Referral with ID {referralId} not found.");
             _context.Referral.Remove(referral);
             await _context.SaveChangesAsync();
             return true;
