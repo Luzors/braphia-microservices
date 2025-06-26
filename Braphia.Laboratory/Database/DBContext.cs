@@ -1,7 +1,7 @@
-﻿using Laboratory.Models;
+﻿using Braphia.Laboratory.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Laboratory.Database
+namespace Braphia.Laboratory.Database
 {
     public class DBContext : DbContext
     {

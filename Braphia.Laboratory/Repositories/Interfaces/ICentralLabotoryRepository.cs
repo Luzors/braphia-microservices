@@ -1,6 +1,6 @@
-﻿using Laboratory.Models;
+﻿using Braphia.Laboratory.Models;
 
-namespace Laboratory.Repositories.Interfaces
+namespace Braphia.Laboratory.Repositories.Interfaces
 {
     public interface ICentralLabotoryRepository
     {

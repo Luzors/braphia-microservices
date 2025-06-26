@@ -35,4 +35,14 @@ var appointmentManagement = builder
 //    .WithReference(messages)
 //    .WaitFor(messages);
 
+builder.AddProject<Projects.Braphia_Laboratory>("braphia-laboratory");
+
+//var processor = builder
+//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
+//    .WithReplicas(5)
+//    .WithReference(apiDatabase)
+//    .WaitFor(apiDatabase)
+//    .WithReference(messages)
+//    .WaitFor(messages);
+
 builder.Build().Run();

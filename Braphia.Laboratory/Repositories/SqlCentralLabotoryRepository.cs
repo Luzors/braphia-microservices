@@ -1,9 +1,9 @@
-﻿using Laboratory.Database;
-using Laboratory.Models;
-using Laboratory.Repositories.Interfaces;
+﻿using Braphia.Laboratory.Database;
+using Braphia.Laboratory.Models;
+using Braphia.Laboratory.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Laboratory.Repositories
+namespace Braphia.Laboratory.Repositories
 {
     public class SqlCentralLabotoryRepository : ICentralLabotoryRepository
     {

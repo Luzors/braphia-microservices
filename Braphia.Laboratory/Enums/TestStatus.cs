@@ -1,4 +1,4 @@
-﻿namespace Laboratory.Enums
+﻿namespace Braphia.Laboratory.Enums
 {
     public enum TestStatus
     {

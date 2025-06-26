@@ -1,4 +1,4 @@
-﻿namespace Laboratory.Models
+﻿namespace Braphia.Laboratory.Models
 {
     public class Test
     {
