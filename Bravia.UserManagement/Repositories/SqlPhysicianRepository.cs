@@ -22,8 +22,7 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeletePhysicianAsync(int physicianId)
         {
-            var physician = await _context.Physician.FindAsync(physicianId);
-            if (physician == null) throw new InvalidOperationException($"Physician with ID {physicianId} not found.");
+            var physician = await _context.Physician.FindAsync(physicianId) ?? throw new InvalidOperationException($"Physician with ID {physicianId} not found.");
             _context.Physician.Remove(physician);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -41,9 +40,7 @@ namespace Braphia.UserManagement.Repositories
         public async Task<bool> UpdatePhysicianAsync(Physician physician)
         {
             if (physician == null) throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
-            var existing = await _context.Physician.FindAsync(physician.Id);
-            if (existing == null) throw new InvalidOperationException($"Physician with ID {physician.Id} not found.");
-
+            var existing = await _context.Physician.FindAsync(physician.Id) ?? throw new InvalidOperationException($"Physician with ID {physician.Id} not found.");
             _context.Entry(existing).CurrentValues.SetValues(physician);
             return await _context.SaveChangesAsync() > 0;
         }

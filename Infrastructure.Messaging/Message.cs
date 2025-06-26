@@ -15,8 +15,8 @@ namespace Infrastructure.Messaging
         // Empty constructor required for Json Serializing
         public Message() { }
 
-        public Message(object data) : this(Guid.NewGuid(), string.Empty, data) { }
-        public Message(Guid messageId, object data) : this(messageId, string.Empty, data) { }
+        public Message(object data) : this(Guid.NewGuid(), nameof(data).Replace("Event", ""), data) { }
+        public Message(Guid messageId, object data) : this(messageId, nameof(data).Replace("Event", ""), data) { }
         public Message(string messageType, object data) : this(Guid.NewGuid(), messageType, data) { }
         public Message(Guid messageId, string messageType, object data)
         {

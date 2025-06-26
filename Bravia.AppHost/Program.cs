@@ -1,8 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sqlServer = builder
-    .AddSqlServer("sql-server", port: 2015)
-    .WithDataVolume("braphia")
+    .AddSqlServer("sql-server-usermanagement", port: 2015)
+    .WithDataVolume("braphia-usermanagement")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
@@ -26,6 +26,22 @@ var appointmentManagement = builder
     .WaitFor(apiDatabase)*/
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
+
+var accountingDbServer = builder
+    .AddSqlServer("sql-server-accounting", port: 2016)
+    .WithDataVolume("braphia-accounting")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var accountingDatabase = accountingDbServer
+    .AddDatabase("AccountingDB");
+
+var accounting = builder
+    .AddProject<Projects.Braphia_Accounting>("accounting")
+    .WithReference(accountingDatabase)
+    .WaitFor(accountingDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
+
 
 //var processor = builder
 //    .AddProject<Projects.InsuranceDetails_Processor>("processor")

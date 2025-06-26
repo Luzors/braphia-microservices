@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Braphia.UserManagement.Models
 {
+    [Index(nameof(FirstName), nameof(LastName), IsUnique = true, Name = "IX_User_FirstName_LastName")]
     public abstract class User
     {
         public User() { }
