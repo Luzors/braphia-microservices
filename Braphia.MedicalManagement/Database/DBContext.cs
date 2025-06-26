@@ -13,8 +13,6 @@ namespace Braphia.MedicalManagement.Database
 
         public DbSet<Physician> Physician { get; set; }
 
-        public DbSet<Receptionist> Receptionist { get; set; }
-
         public DbSet<MedicalAnalysis> MedicalAnalysis { get; set; }
 
         public DbSet<Appointment> Appointment { get; set; }
