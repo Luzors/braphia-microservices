@@ -102,5 +102,32 @@ namespace Braphia.UserManagement.Controllers
                 return StatusCode(500, "Internal server error while adding receptionist");
             }
         }
+
+        [HttpDelete("{id}", Name = "DeleteReceptionist")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            _logger.LogInformation("Deleting receptionist with ID: {id} from the database.", id);
+            try
+            {
+                var result = await _receptionistRepository.DeleteReceptionistAsync(id);
+                if (!result)
+                {
+                    _logger.LogWarning("Failed to delete receptionist with ID {id}.", id);
+                    return NotFound($"Receptionist with ID {id} not found.");
+                }
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error deleting receptionist with ID {id} from the database.", id);
+                return BadRequest("Invalid request while deleting receptionist");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting receptionist with ID {id} from the database.", id);
+                return StatusCode(500, "Internal server error while deleting receptionist");
+            }
+        }
     }
 }

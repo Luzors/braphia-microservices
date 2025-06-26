@@ -4,6 +4,7 @@ using Braphia.UserManagement.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.UserManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250625184728_GeneralPractionerAndReferrals")]
+    partial class GeneralPractionerAndReferrals
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,10 +216,6 @@ namespace Braphia.UserManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GeneralPracticionerId");
-
-                    b.HasIndex("PatientId");
-
                     b.ToTable("Referral");
                 });
 
@@ -227,31 +226,9 @@ namespace Braphia.UserManagement.Migrations
                         .HasForeignKey("PatientId");
                 });
 
-            modelBuilder.Entity("Braphia.UserManagement.Models.Referral", b =>
-                {
-                    b.HasOne("Braphia.UserManagement.Models.GeneralPracticioner", null)
-                        .WithMany("Referrals")
-                        .HasForeignKey("GeneralPracticionerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Braphia.UserManagement.Models.Patient", null)
-                        .WithMany("Referrals")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Braphia.UserManagement.Models.GeneralPracticioner", b =>
-                {
-                    b.Navigation("Referrals");
-                });
-
             modelBuilder.Entity("Braphia.UserManagement.Models.Patient", b =>
                 {
                     b.Navigation("MedicalRecords");
-
-                    b.Navigation("Referrals");
                 });
 #pragma warning restore 612, 618
         }

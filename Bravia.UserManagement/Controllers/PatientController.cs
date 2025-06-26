@@ -1,8 +1,5 @@
-﻿using Braphia.UserManagement.Events;
-using Braphia.UserManagement.Models;
+﻿using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
-using Infrastructure.Messaging;
-using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Braphia.UserManagement.Controllers
@@ -13,13 +10,13 @@ namespace Braphia.UserManagement.Controllers
     {
         private readonly ILogger<PatientController> _logger;
         private readonly IPatientRepository _patientRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IReferralRepository _referralRepository;
 
-        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository, IPublishEndpoint publishEndpoint)
+        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository, IReferralRepository referralRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
+            _referralRepository = referralRepository ?? throw new ArgumentNullException(nameof(referralRepository));
         }
 
         [HttpGet(Name = "Patients")]
@@ -86,19 +83,6 @@ namespace Braphia.UserManagement.Controllers
             {
                 var records = await _patientRepository.AddPatientAsync(patient);
                 _logger.LogInformation("Patient with ID {id} created", patient.Id);
-                
-                // Patient created event
-                await _publishEndpoint.Publish(new Message(
-                    messageType: "PatientCreated", 
-                    data: new PatientCreatedEvent(
-                        patient.Id,
-                        patient.FirstName,
-                        patient.LastName,
-                        patient.Email,
-                        patient.PhoneNumber
-                    )
-                ));
-                
                 return CreatedAtRoute("PatientById", new { id = patient.Id }, patient);
             }
             catch (ArgumentException ex)
@@ -110,6 +94,61 @@ namespace Braphia.UserManagement.Controllers
             {
                 _logger.LogError(ex, "Error adding patient");
                 return StatusCode(500, "Internal server error while adding patient");
+            }
+        }
+
+
+        [HttpGet("{id}/referrals", Name = "PatientReferrals")]
+        [ProducesResponseType(typeof(IEnumerable<Referral>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetReferrals(int id)
+        {
+            _logger.LogInformation("Fetching referrals for patient with ID: {id} from the database.", id);
+            try
+            {
+                var records = await _referralRepository.GetReferralsByPatientIdAsync(id);
+                if (records == null || !records.Any())
+                {
+                    _logger.LogInformation("No referrals found for patient with ID {id}.", id);
+                    return NotFound($"No referrals found for patient with ID {id}.");
+                }
+                return Ok(records);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error fetching referrals for patient with ID {id} from the database.", id);
+                return BadRequest("Invalid request while fetching referrals");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching referrals for patient with ID {id} from the database.", id);
+                return StatusCode(500, "Internal server error while fetching referrals");
+            }
+        }
+
+        [HttpDelete("{id}", Name = "DeletePatient")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            _logger.LogInformation("Deleting patient with ID {id}", id);
+            try
+            {
+                var deleted = await _patientRepository.DeletePatientAsync(id);
+                if (!deleted)
+                {
+                    _logger.LogWarning("Failed to delete patient with ID {id}", id);
+                    return NotFound($"No patient found with ID {id} or deletion failed");
+                }
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while deleting patient with ID {id}", id);
+                return BadRequest($"Invalid request: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting patient with ID {id}", id);
+                return StatusCode(500, "Internal server error while deleting patient");
             }
         }
     }
