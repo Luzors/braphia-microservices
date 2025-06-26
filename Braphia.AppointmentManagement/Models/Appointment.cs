@@ -19,7 +19,7 @@ namespace Braphia.AppointmentManagement.Models
 
         public DateTime ScheduledTime { get; set; }
 
-        private IAppointmentState _state;
+        public IAppointmentState state;
 
         public Appointment(Guid patientId, Guid physicianId, Guid receptionistId, Guid referralId, DateTime scheduledTime)
         {
