@@ -3,7 +3,9 @@
     public class Receptionist
     {
         public Guid Id { get; set; }
-        public string FullName { get; set; }
-        public string EmployeeNumber { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+
     }
 }
