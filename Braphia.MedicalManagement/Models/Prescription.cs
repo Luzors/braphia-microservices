@@ -23,10 +23,12 @@ namespace Braphia.MedicalManagement.Models
 
         public string Dose { get; set; }
 
-        public UnitEnum Unit{ get; set; } 
+        public UnitEnum Unit { get; set; }
 
-        public Patient WrittenFor{ get; set; }
+        public Patient WrittenFor { get; set; }
 
-        public Physician WrittenBy {  get; set; }
+        public Physician WrittenBy { get; set; }
+        
+        public MedicalAnalysis MedicalAnalysis { get; set; }
     }
 }

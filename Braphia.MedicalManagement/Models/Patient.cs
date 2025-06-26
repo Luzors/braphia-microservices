@@ -8,5 +8,6 @@
             : base(firstName, lastName, email, password)
         { }
 
+        public List<MedicalAnalysis> MedicalAnalyses { get; set; } = new List<MedicalAnalysis>();
     }
 }

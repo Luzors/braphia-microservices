@@ -23,7 +23,7 @@ namespace Braphia.MedicalManagement.Controllers
             _logger.LogInformation("Fetching all prescriptions");
             try
             {
-                var prescriptions = await _prescriptionRepository.GetAllPrescriptionsAsync();
+                IEnumerable<Prescription> prescriptions = await _prescriptionRepository.GetAllPrescriptionsAsync();
                 return prescriptions;
             } catch
             {

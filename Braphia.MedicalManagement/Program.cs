@@ -30,7 +30,6 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<IPrescriptionRepository, SqlPrescriptionRepository>();
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
-builder.Services.AddScoped<IReceptionistRepository, SqlReceptionistRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
