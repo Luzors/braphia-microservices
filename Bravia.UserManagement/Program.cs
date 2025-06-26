@@ -1,3 +1,4 @@
+using Braphia.UserManagement.Consumers;
 using Braphia.UserManagement.Database;
 using Braphia.UserManagement.Repositories;
 using Braphia.UserManagement.Repositories.Interfaces;
@@ -17,6 +18,7 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<ExternalUserFetchedConsumer>();
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
