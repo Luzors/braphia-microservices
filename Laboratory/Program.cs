@@ -1,44 +1,63 @@
-using System.Text.Json.Serialization;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Laboratory.Database;
+using Laboratory.Repositories.Interfaces;
+using Laboratory.Repositories;
 
-namespace Laboratory
-{
-    public class Program
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.AddServiceDefaults();
+
+    var connectionString = builder.Configuration.GetConnectionString("LaboratoryDb") ??
+                               throw new InvalidOperationException("No connection string configured");
+
+        builder.Services
+            .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
+
+    builder.Services.AddMassTransit(x =>
     {
-        public static void Main(string[] args)
+        x.UsingRabbitMq((context, cfg) =>
         {
-            var builder = WebApplication.CreateSlimBuilder(args);
+            var configuration = context.GetRequiredService<IConfiguration>();
+        var rabbitMqConnection = configuration.GetConnectionString("eventbus");
+        cfg.Host(rabbitMqConnection);
 
-            builder.Services.ConfigureHttpJsonOptions(options =>
-            {
-                options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-            });
+            cfg.ConfigureEndpoints(context);
+        });
+    });
 
-            var app = builder.Build();
+    builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
+    builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
+    builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
 
-            var sampleTodos = new Todo[] {
-                new(1, "Walk the dog"),
-                new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-                new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-                new(4, "Clean the bathroom"),
-                new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-            };
 
-            var todosApi = app.MapGroup("/todos");
-            todosApi.MapGet("/", () => sampleTodos);
-            todosApi.MapGet("/{id}", (int id) =>
-                sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-                    ? Results.Ok(todo)
-                    : Results.NotFound());
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    var app = builder.Build();
 
-            app.Run();
-        }
-    }
-
-    public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
-
-    [JsonSerializable(typeof(Todo[]))]
-    internal partial class AppJsonSerializerContext : JsonSerializerContext
+    using (var scope = app.Services.CreateScope())
     {
-
+        var db = scope.ServiceProvider.GetRequiredService<DBContext>();
+        await db.Database.MigrateAsync();
     }
-}
+
+    app.MapDefaultEndpoints();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+app.Run();
+
