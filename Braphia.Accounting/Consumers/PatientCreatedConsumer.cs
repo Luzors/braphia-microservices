@@ -22,7 +22,7 @@ namespace Braphia.Accounting.Consumers
         {
             var message = context.Message;
             
-            if (message.MessageType == "PatientCreated")
+            if (message.MessageType == "PatientRegistered")
             {
                 try
                 {

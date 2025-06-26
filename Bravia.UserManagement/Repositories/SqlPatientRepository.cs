@@ -27,7 +27,6 @@ namespace Braphia.UserManagement.Repositories
                 throw new ArgumentException($"Patient with ID {patientId} not found.");
             patient.MedicalRecords.Add(medicalRecord);
             await _context.SaveChangesAsync();
-            await _publishEndpoint.Publish(new Message(messageType: "PostMedicalRecord", data: new MedicalRecordsEvent(patientId)));
             return true;
         }
 
@@ -39,10 +38,7 @@ namespace Braphia.UserManagement.Repositories
             await _context.SaveChangesAsync();
 
             // Patient created event
-            await _publishEndpoint.Publish(new Message(
-                messageType: "PatientCreated",
-                data: new PatientCreatedEvent(patient)
-            ));
+            await _publishEndpoint.Publish(new Message(new PatientRegisteredEvent(patient)));
 
             return true;
         }

@@ -26,6 +26,11 @@ builder.Services.AddMassTransit(x =>
         cfg.Host(rabbitMqConnection);
 
         cfg.ConfigureEndpoints(context);
+
+        cfg.ReceiveEndpoint("external-user-queue", e =>
+        {
+            e.ConfigureConsumer<ExternalUserFetchedConsumer>(context);
+        });
     });
 });
 

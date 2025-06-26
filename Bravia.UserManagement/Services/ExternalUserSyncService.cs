@@ -59,7 +59,7 @@ namespace Braphia.UserManagement.Services
 
                 using IServiceScope scope = _serviceScopeFactory.CreateScope();
                 var patientRepository = scope.ServiceProvider.GetRequiredService<IPatientRepository>();
-                var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+                var sendEndpointProvider = scope.ServiceProvider.GetRequiredService<ISendEndpointProvider>();
 
                 // Gets the csv from the url + parses them inot dynamic to publish
                 var httpClient = new HttpClient();
@@ -69,11 +69,8 @@ namespace Braphia.UserManagement.Services
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
                 var records = csv.GetRecords<dynamic>();
-                foreach (var record in records)
-                {
-                    var userEvent = new ExternalUserFetchedEvent(JsonSerializer.Serialize(record));
-                    await publishEndpoint.Publish(userEvent, stoppingToken);
-                }
+                var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri("queue:external-user-queue"));
+                await sendEndpoint.SendBatch(records.Select(record => new ExternalUserFetchedEvent(JsonSerializer.Serialize(record))), stoppingToken);
             }
             catch (Exception ex)
             {
