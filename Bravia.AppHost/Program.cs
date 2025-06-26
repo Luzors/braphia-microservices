@@ -1,8 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sqlServer = builder
-    .AddSqlServer("sql-server", port: 2015)
-    .WithDataVolume("braphia")
+    .AddSqlServer("sql-server-usermanagement", port: 2015)
+    .WithDataVolume("braphia-usermanagement")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
