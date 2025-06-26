@@ -18,51 +18,102 @@ namespace Braphia.MedicalManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Prescription>> GetAsync()
+        public async Task<ActionResult<IEnumerable<Prescription>>> GetAsync()
         {
             _logger.LogInformation("Fetching all prescriptions");
             try
             {
                 IEnumerable<Prescription> prescriptions = await _prescriptionRepository.GetAllPrescriptionsAsync();
-                return prescriptions;
+                return Ok(prescriptions);
             }
-            catch
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError("Error fetching prescriptions");
-                throw new Exception("Internal server error while fetching prescriptions");
+                _logger.LogWarning(ex, "Unauthorized access attempt when fetching prescriptions");
+                return Unauthorized("You are not authorized to access prescriptions");
             }
-
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument when fetching prescriptions");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error fetching prescriptions");
+                return StatusCode(500, "Internal server error while fetching prescriptions");
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<Prescription> GetAsync(int id)
+        public async Task<ActionResult<Prescription>> GetAsync(int id)
         {
             _logger.LogInformation($"Fetching prescription with ID {id}");
+            
+            if (id <= 0)
+            {
+                _logger.LogWarning($"Invalid prescription ID: {id}");
+                return BadRequest("Prescription ID must be a positive integer");
+            }
+
             try
             {
                 Prescription prescription = await _prescriptionRepository.GetPrescriptionAsync(id);
-                return prescription;
+                if (prescription == null)
+                {
+                    _logger.LogWarning($"Prescription with ID {id} not found");
+                    return NotFound($"Prescription with ID {id} not found");
+                }
+                return Ok(prescription);
             }
-            catch (KeyNotFoundException)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning($"Prescription with ID {id} not found");
-                throw new KeyNotFoundException($"Prescription with ID {id} not found");
+                _logger.LogWarning(ex, $"Unauthorized access attempt for prescription ID {id}");
+                return Unauthorized("You are not authorized to access this prescription");
             }
-            catch
+            catch (KeyNotFoundException ex)
             {
-                _logger.LogError("Error fetching prescription");
-                throw new Exception("Internal server error while fetching prescription");
+                _logger.LogWarning(ex, $"Prescription with ID {id} not found");
+                return NotFound($"Prescription with ID {id} not found");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, $"Invalid argument when fetching prescription ID {id}");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unexpected error fetching prescription ID {id}");
+                return StatusCode(500, "Internal server error while fetching prescription");
             }
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody] Prescription prescription)
         {
             _logger.LogInformation("Adding a new prescription");
+            
             if (prescription == null)
             {
                 _logger.LogWarning("Prescription data is null");
                 return BadRequest("Prescription data cannot be null");
+            }
+
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(prescription.Medicine))
+            {
+                _logger.LogWarning("Prescription medicine is required");
+                return BadRequest("Medicine name is required");
+            }
+
+            if (prescription.PatientId <= 0)
+            {
+                _logger.LogWarning($"Invalid patient ID: {prescription.PatientId}");
+                return BadRequest("Valid patient ID is required");
+            }
+
+            if (prescription.PhysicianId <= 0)
+            {
+                _logger.LogWarning($"Invalid physician ID: {prescription.PhysicianId}");
+                return BadRequest("Valid physician ID is required");
             }
 
             try
@@ -70,30 +121,77 @@ namespace Braphia.MedicalManagement.Controllers
                 bool result = await _prescriptionRepository.AddPrescriptionAsync(prescription);
                 if (result)
                 {
-                    _logger.LogInformation("Prescription added successfully");
+                    _logger.LogInformation($"Prescription added successfully with ID {prescription.Id}");
                     return CreatedAtAction(nameof(GetAsync), new { id = prescription.Id }, prescription);
                 }
                 else
                 {
-                    _logger.LogError("Failed to add prescription");
+                    _logger.LogError("Repository returned false when adding prescription");
                     return StatusCode(500, "Failed to add prescription");
                 }
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized attempt to add prescription");
+                return Unauthorized("You are not authorized to create prescriptions");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid prescription data provided");
+                return BadRequest($"Invalid prescription data: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation when adding prescription");
+                return Conflict($"Unable to create prescription: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error adding prescription");
+                _logger.LogError(ex, "Unexpected error adding prescription");
                 return StatusCode(500, "Internal server error while adding prescription");
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> PutAsync([FromBody] Prescription prescription)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAsync(int id, [FromBody] Prescription prescription)
         {
-            _logger.LogInformation($"Updating prescription with ID {prescription.Id}");
+            _logger.LogInformation($"Updating prescription with ID {id}");
+            
+            if (id <= 0)
+            {
+                _logger.LogWarning($"Invalid prescription ID: {id}");
+                return BadRequest("Prescription ID must be a positive integer");
+            }
+
             if (prescription == null)
             {
                 _logger.LogWarning("Prescription data is null");
                 return BadRequest("Prescription data cannot be null");
+            }
+
+            if (id != prescription.Id)
+            {
+                _logger.LogWarning($"Route ID {id} does not match prescription ID {prescription.Id}");
+                return BadRequest("Route ID must match prescription ID");
+            }
+
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(prescription.Medicine))
+            {
+                _logger.LogWarning("Prescription medicine is required");
+                return BadRequest("Medicine name is required");
+            }
+
+            if (prescription.PatientId <= 0)
+            {
+                _logger.LogWarning($"Invalid patient ID: {prescription.PatientId}");
+                return BadRequest("Valid patient ID is required");
+            }
+
+            if (prescription.PhysicianId <= 0)
+            {
+                _logger.LogWarning($"Invalid physician ID: {prescription.PhysicianId}");
+                return BadRequest("Valid physician ID is required");
             }
 
             try
@@ -101,23 +199,38 @@ namespace Braphia.MedicalManagement.Controllers
                 bool result = await _prescriptionRepository.UpdatePrescriptionAsync(prescription);
                 if (result)
                 {
-                    _logger.LogInformation("Prescription updated successfully");
+                    _logger.LogInformation($"Prescription with ID {id} updated successfully");
                     return NoContent();
                 }
                 else
                 {
-                    _logger.LogError("Failed to update prescription");
-                    return StatusCode(500, "Failed to update prescription");
+                    _logger.LogWarning($"Prescription with ID {id} not found for update");
+                    return NotFound($"Prescription with ID {id} not found");
                 }
             }
-            catch (KeyNotFoundException)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning($"Prescription with ID {prescription.Id} not found");
-                return NotFound($"Prescription with ID {prescription.Id} not found");
+                _logger.LogWarning(ex, $"Unauthorized attempt to update prescription ID {id}");
+                return Unauthorized("You are not authorized to update this prescription");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, $"Prescription with ID {id} not found for update");
+                return NotFound($"Prescription with ID {id} not found");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, $"Invalid prescription data for update ID {id}");
+                return BadRequest($"Invalid prescription data: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, $"Invalid operation when updating prescription ID {id}");
+                return Conflict($"Unable to update prescription: {ex.Message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating prescription");
+                _logger.LogError(ex, $"Unexpected error updating prescription ID {id}");
                 return StatusCode(500, "Internal server error while updating prescription");
             }
         }
@@ -126,10 +239,11 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> DeleteAsync(int id)
         {
             _logger.LogInformation($"Deleting prescription with ID {id}");
+            
             if (id <= 0)
             {
-                _logger.LogWarning("Invalid prescription ID");
-                return BadRequest("Invalid prescription ID");
+                _logger.LogWarning($"Invalid prescription ID: {id}");
+                return BadRequest("Prescription ID must be a positive integer");
             }
 
             try
@@ -137,23 +251,38 @@ namespace Braphia.MedicalManagement.Controllers
                 bool result = await _prescriptionRepository.DeletePrescriptionAsync(id);
                 if (result)
                 {
-                    _logger.LogInformation("Prescription deleted successfully");
+                    _logger.LogInformation($"Prescription with ID {id} deleted successfully");
                     return NoContent();
                 }
                 else
                 {
-                    _logger.LogError("Failed to delete prescription");
-                    return StatusCode(500, "Failed to delete prescription");
+                    _logger.LogWarning($"Prescription with ID {id} not found for deletion");
+                    return NotFound($"Prescription with ID {id} not found");
                 }
             }
-            catch (KeyNotFoundException)
+            catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning($"Prescription with ID {id} not found");
+                _logger.LogWarning(ex, $"Unauthorized attempt to delete prescription ID {id}");
+                return Unauthorized("You are not authorized to delete this prescription");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, $"Prescription with ID {id} not found for deletion");
                 return NotFound($"Prescription with ID {id} not found");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, $"Cannot delete prescription ID {id} due to business rules");
+                return Conflict($"Cannot delete prescription: {ex.Message}");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, $"Invalid argument when deleting prescription ID {id}");
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting prescription");
+                _logger.LogError(ex, $"Unexpected error deleting prescription ID {id}");
                 return StatusCode(500, "Internal server error while deleting prescription");
             }
         }
