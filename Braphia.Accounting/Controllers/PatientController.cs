@@ -74,41 +74,21 @@ namespace Braphia.Accounting.Controllers
             }
         }
 
-        [HttpPost(Name = "Patients")]
-        [ProducesResponseType(typeof(Patient), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Post([FromBody] Patient patient)
+        [HttpPut("{id}/assign-insurer/{insurerId}")]
+        [ProducesResponseType(typeof(Patient), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AssignInsurer(int id, int insurerId)
         {
-            _logger.LogInformation("Adding new patient");
-            try
+            if (id <= 0)
             {
-                var records = await _patientRepository.AddPatientAsync(patient);
-                _logger.LogInformation("Patient with ID {id} created", patient.Id);
-                return CreatedAtRoute("PatientById", new { id = patient.Id }, patient);
+                return BadRequest("Valid patient ID is required");
             }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid argument while adding patient");
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding patient");
-                return StatusCode(500, "Internal server error while adding patient");
-            }
-        }
 
-        [HttpPut("{id}/assign-insurer")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AssignInsurer(int id, [FromBody] int insurerId)
-        {
             if (insurerId <= 0)
             {
-                return BadRequest("Valid InsurerId is required");
+                return BadRequest("Valid insurer ID is required");
             }
 
-            _logger.LogInformation("Assigning patient {PatientId} to insurer {InsurerId}", id, insurerId);
+            _logger.LogInformation("Assigning insurer {InsurerId} to patient {PatientId}", insurerId, id);
 
             try
             {
@@ -131,22 +111,22 @@ namespace Braphia.Accounting.Controllers
                 // Assign insurer to patient
                 patient.InsurerId = insurerId;
                 var success = await _patientRepository.UpdatePatientAsync(patient);
-
+                
                 if (success)
                 {
-                    _logger.LogInformation("Successfully assigned patient {PatientId} to insurer {InsurerId}", id, insurerId);
-                    return NoContent();
+                    _logger.LogInformation("Successfully assigned insurer {InsurerId} to patient {PatientId}", insurerId, id);
+                    return Ok(patient);
                 }
                 else
                 {
-                    _logger.LogError("Failed to assign patient {PatientId} to insurer {InsurerId}", id, insurerId);
-                    return StatusCode(500, "Failed to assign patient to insurer");
+                    _logger.LogError("Failed to assign insurer {InsurerId} to patient {PatientId}", insurerId, id);
+                    return StatusCode(500, "Failed to assign insurer to patient");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error assigning patient {PatientId} to insurer {InsurerId}", id, insurerId);
-                return StatusCode(500, "Internal server error while assigning patient to insurer");
+                _logger.LogError(ex, "Error assigning insurer {InsurerId} to patient {PatientId}", insurerId, id);
+                return StatusCode(500, "Internal server error while assigning insurer to patient");
             }
         }
     }

@@ -18,7 +18,6 @@ namespace Braphia.Accounting.Models
         public string Name { get; set; } = string.Empty;
         public string ContactEmail { get; set; } = string.Empty;
         public string ContactPhone { get; set; } = string.Empty;
-        public List<Patient> Patients { get; set; } = [];
         public List<Invoice> Invoices { get; set; } = [];
     }
 }

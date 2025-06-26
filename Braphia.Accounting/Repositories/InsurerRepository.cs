@@ -57,10 +57,11 @@ namespace Braphia.Accounting.Repositories
             {
                 return false;
             }
-        }        public async Task<Insurer?> GetInsurerByIdAsync(int insurerId)
+        }
+        
+        public async Task<Insurer?> GetInsurerByIdAsync(int insurerId)
         {
             return await _context.Insurer
-                .Include(i => i.Patients)
                 .Include(i => i.Invoices)
                 .FirstOrDefaultAsync(i => i.Id == insurerId);
         }
@@ -68,7 +69,6 @@ namespace Braphia.Accounting.Repositories
         public async Task<IEnumerable<Insurer>> GetAllInsurersAsync()
         {
             return await _context.Insurer
-                .Include(i => i.Patients)
                 .Include(i => i.Invoices)
                 .ToListAsync();
         }
