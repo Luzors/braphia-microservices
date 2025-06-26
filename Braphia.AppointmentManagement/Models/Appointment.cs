@@ -18,7 +18,6 @@ namespace Braphia.AppointmentManagement.Models
         public Referral referral { get; set; }
 
         public DateTime ScheduledTime { get; set; }
-        public string StateName { get; private set; } = "Scheduled"; // Default state
 
         private IAppointmentState _state;
 

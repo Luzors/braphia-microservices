@@ -1,4 +1,5 @@
-﻿using Braphia.AppointmentManagement.Query.Abstractions;
+﻿using Braphia.AppointmentManagement.Models.States;
+using Braphia.AppointmentManagement.Query.Abstractions;
 using Braphia.UserManagement.Enums;
 
 namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
@@ -19,8 +20,14 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
         public string ReceptionistFirstName { get; set; }
         public string ReceptionistLastName { get; set; }
         public string ReceptionistEmail { get; set; }
-
-
+        public Guid ReferralId { get; set; }
+        public DateTime ReferralDate { get; set; } 
+        public string ReferralReason { get; set; } 
+        public IAppointmentState State { get; set; }
 
     }
+
+
+
+}
 }
