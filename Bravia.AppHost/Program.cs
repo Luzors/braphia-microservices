@@ -43,12 +43,19 @@ var accounting = builder
     .WaitFor(rabbitMq);
 
 
-//var processor = builder
-//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
-//    .WithReplicas(5)
-//    .WithReference(apiDatabase)
-//    .WaitFor(apiDatabase)
-//    .WithReference(messages)
-//    .WaitFor(messages);
+var pharmacyDbServer = builder
+    .AddSqlServer("sql-server-pharmacy", port: 2017)
+    .WithDataVolume("braphia-pharmacy")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var pharmacyDatabase = pharmacyDbServer
+    .AddDatabase("PharmacyDB");
+
+var pharmacy = builder
+    .AddProject<Projects.Braphia_Pharmacy>("braphia-pharmacy")
+    .WithReference(pharmacyDatabase)
+    .WaitFor(pharmacyDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
 
 builder.Build().Run();
