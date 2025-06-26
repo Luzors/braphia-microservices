@@ -10,11 +10,13 @@ namespace Braphia.Accounting.Controllers
     {
         private readonly ILogger<PatientController> _logger;
         private readonly IPatientRepository _patientRepository;
+        private readonly IInsurerRepository _insurerRepository;
 
-        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository)
+        public PatientController(ILogger<PatientController> logger, IPatientRepository patientRepository, IInsurerRepository insurerRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _insurerRepository = insurerRepository ?? throw new ArgumentNullException(nameof(insurerRepository));
         }
 
         [HttpGet(Name = "Patients")]
@@ -92,6 +94,59 @@ namespace Braphia.Accounting.Controllers
             {
                 _logger.LogError(ex, "Error adding patient");
                 return StatusCode(500, "Internal server error while adding patient");
+            }
+        }
+
+        [HttpPut("{id}/assign-insurer")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AssignInsurer(int id, [FromBody] int insurerId)
+        {
+            if (insurerId <= 0)
+            {
+                return BadRequest("Valid InsurerId is required");
+            }
+
+            _logger.LogInformation("Assigning patient {PatientId} to insurer {InsurerId}", id, insurerId);
+
+            try
+            {
+                // Check if patient exists
+                var patient = await _patientRepository.GetPatientByIdAsync(id);
+                if (patient == null)
+                {
+                    _logger.LogWarning("Patient with ID {PatientId} not found", id);
+                    return NotFound($"Patient with ID {id} not found");
+                }
+
+                // Check if insurer exists
+                var insurer = await _insurerRepository.GetInsurerByIdAsync(insurerId);
+                if (insurer == null)
+                {
+                    _logger.LogWarning("Insurer with ID {InsurerId} not found", insurerId);
+                    return NotFound($"Insurer with ID {insurerId} not found");
+                }
+
+                // Assign insurer to patient
+                patient.InsurerId = insurerId;
+                var success = await _patientRepository.UpdatePatientAsync(patient);
+
+                if (success)
+                {
+                    _logger.LogInformation("Successfully assigned patient {PatientId} to insurer {InsurerId}", id, insurerId);
+                    return NoContent();
+                }
+                else
+                {
+                    _logger.LogError("Failed to assign patient {PatientId} to insurer {InsurerId}", id, insurerId);
+                    return StatusCode(500, "Failed to assign patient to insurer");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning patient {PatientId} to insurer {InsurerId}", id, insurerId);
+                return StatusCode(500, "Internal server error while assigning patient to insurer");
             }
         }
     }

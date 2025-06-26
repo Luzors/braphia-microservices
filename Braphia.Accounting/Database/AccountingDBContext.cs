@@ -19,6 +19,20 @@ namespace Braphia.Accounting.Database
             modelBuilder.Entity<Invoice>()
                 .Property(i => i.Amount)
                 .HasPrecision(18, 2);
+
+            // Patient - Insurer relationship (many patients to one insurer)
+            modelBuilder.Entity<Patient>()
+                .HasOne(p => p.Insurer)
+                .WithMany(i => i.Patients)
+                .HasForeignKey(p => p.InsurerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Invoice - Insurer relationship (many invoices to one insurer)
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Insurer)
+                .WithMany(ins => ins.Invoices)
+                .HasForeignKey(i => i.InsurerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
