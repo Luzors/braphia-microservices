@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Braphia.Accounting\Braphia.Accounting.csproj" />
     <ProjectReference Include="..\Braphia.AppointmentManagement\Braphia.AppointmentManagement.csproj" />
+    <ProjectReference Include="..\Braphia.Laboratory\Braphia.Laboratory.csproj" />
     <ProjectReference Include="..\Bravia.UserManagement\Braphia.UserManagement.csproj" />
   </ItemGroup>
 

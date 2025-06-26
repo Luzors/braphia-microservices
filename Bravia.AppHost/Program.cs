@@ -13,6 +13,9 @@ var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
 var apiDatabase = sqlServer
     .AddDatabase("UserDB");
 
+var laboratoryDatabase = sqlServer
+    .AddDatabase("LaboratoryDb");
+
 var userManagement = builder
     .AddProject<Projects.Braphia_UserManagement>("userManagement")
     .WithReference(apiDatabase)
@@ -42,6 +45,23 @@ var accounting = builder
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq);
 
+
+var laboratory = builder
+    .AddProject<Projects.Braphia_Laboratory>("laboratory")
+    .WithReference(laboratoryDatabase)
+    .WaitFor(laboratoryDatabase)
+    .WithReference(rabbitMq)
+        .WaitFor(rabbitMq);
+
+//var processor = builder
+//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
+//    .WithReplicas(5)
+//    .WithReference(apiDatabase)
+//    .WaitFor(apiDatabase)
+//    .WithReference(messages)
+//    .WaitFor(messages);
+
+//builder.AddProject<Projects.Braphia_Laboratory>("braphia-laboratory");
 
 //var processor = builder
 //    .AddProject<Projects.InsuranceDetails_Processor>("processor")
