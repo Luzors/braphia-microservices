@@ -41,7 +41,12 @@ var appointmentManagement = builder
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
 
-var medicalDatabase = sqlServer
+var medicalAnalysisDbServer = builder
+    .AddSqlServer("sql-server-medicalAnalysis", port: 2017)
+    .WithDataVolume("braphia-medicalAnalysis")
+    .WithLifetime(ContainerLifetime.Persistent);
+    
+var medicalDatabase = medicalAnalysisDbServer
     .AddDatabase("MedicalDB");
 
 var medicalManagement = builder
@@ -51,13 +56,6 @@ var medicalManagement = builder
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
 
-//var processor = builder
-//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
-//    .WithReplicas(5)
-//    .WithReference(apiDatabase)
-//    .WaitFor(apiDatabase)
-//    .WithReference(messages)
-//    .WaitFor(messages);
 
 var accountingDbServer = builder
     .AddSqlServer("sql-server-accounting", port: 2016)
