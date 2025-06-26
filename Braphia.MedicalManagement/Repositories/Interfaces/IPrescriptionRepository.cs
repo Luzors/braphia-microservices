@@ -10,7 +10,7 @@ namespace Braphia.MedicalManagement.Repositories.Interfaces
 
         Task<bool> AddPrescriptionAsync(Prescription prescription);
 
-        Task<bool> DeletePrescriptionAsync(string id);
+        Task<bool> DeletePrescriptionAsync(int id);
 
         Task<bool> UpdatePrescriptionAsync(Prescription prescription);
     }

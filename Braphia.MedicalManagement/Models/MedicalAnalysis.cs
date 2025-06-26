@@ -6,16 +6,23 @@ namespace Braphia.MedicalManagement.Models
     {
         public MedicalAnalysis() { }
 
-        public MedicalAnalysis(Patient patient, Physician physician)
+        public MedicalAnalysis(int patientId, int physicianId, string description, int? appointmentId)
         {
-            Patient = patient;
-            Physician = physician;
+            PatientId = patientId;
+            PhysicianId = physicianId;
+            Description = description;
+            AppointmentId = appointmentId;
         }
 
         [Key]
         public int Id { get; set; }
 
-        public Patient Patient { get; set; }
-        public Physician Physician { get; set; }
+        public int PatientId { get; set; }
+
+        public int PhysicianId { get; set; }
+
+        public string Description { get; set; }
+
+        public int? AppointmentId { get; set; }
     }
 }

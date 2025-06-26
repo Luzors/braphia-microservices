@@ -38,11 +38,8 @@ namespace Braphia.MedicalManagement.Repositories
             return true;
         }
 
-        public async Task<bool> DeletePrescriptionAsync(string id)
+        public async Task<bool> DeletePrescriptionAsync(int id)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentNullException(nameof(id), "ID cannot be null or whitespace.");
-
             var prescription = await _context.Prescription.FindAsync(id);
             if (prescription == null)
                 throw new KeyNotFoundException($"Prescription with ID {id} not found.");
@@ -58,11 +55,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription), "Prescription cannot be null.");
 
-            var existing = await _context.Prescription.FindAsync(prescription.Id);
-            if (existing == null)
-                throw new KeyNotFoundException($"Prescription with ID {prescription.Id} not found.");
-
-            _context.Entry(existing).CurrentValues.SetValues(prescription);
+            _context.Prescription.Update(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update prescription.");
             return true;

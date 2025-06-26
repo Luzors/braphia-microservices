@@ -7,13 +7,14 @@ namespace Braphia.MedicalManagement.Models
     {
         public Prescription() { }
 
-        public Prescription(string medicine, string dose, UnitEnum unit, Patient writtenFor, Physician writtenBy)
+        public Prescription(string medicine, string dose, UnitEnum unit, int patientId, int physicianId, int? medicalAnalysisId = null)
         {
             Medicine = medicine;
             Dose = dose;
             Unit = unit;
-            WrittenFor = writtenFor;
-            WrittenBy = writtenBy;
+            PatientId = patientId;
+            PhysicianId = physicianId;
+            MedicalAnalysisId = medicalAnalysisId;
         }
 
         [Key]
@@ -25,10 +26,10 @@ namespace Braphia.MedicalManagement.Models
 
         public UnitEnum Unit { get; set; }
 
-        public Patient WrittenFor { get; set; }
+        public int PatientId { get; set; }  // Foreign Key
 
-        public Physician WrittenBy { get; set; }
+        public int PhysicianId { get; set; }  // Foreign Key
         
-        public MedicalAnalysis MedicalAnalysis { get; set; }
+        public int? MedicalAnalysisId { get; set; }  // Foreign Key
     }
 }
