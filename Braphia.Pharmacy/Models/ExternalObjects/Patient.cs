@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Braphia.UserManagement.Models
+namespace Braphia.Pharmacy.Models.ExternalObjects
 {
     public class Patient
     {

@@ -1,4 +1,4 @@
-using Braphia.UserManagement.Database;
+using Braphia.Pharmacy.Database;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 

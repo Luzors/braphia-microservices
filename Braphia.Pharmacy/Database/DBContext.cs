@@ -1,8 +1,8 @@
 ﻿using Braphia.Pharmacy.Models;
-using Braphia.UserManagement.Models;
+using Braphia.Pharmacy.Models.ExternalObjects;
 using Microsoft.EntityFrameworkCore;
 
-namespace Braphia.UserManagement.Database
+namespace Braphia.Pharmacy.Database
 {
     public class DBContext : DbContext
     {
@@ -10,6 +10,9 @@ namespace Braphia.UserManagement.Database
 
         public DbSet<Patient> Patient { get; set; }
         public DbSet<Prescription> Prescription { get; set; }
+        public DbSet<Medication> Medication { get; set; }
+        public DbSet<MedicationOrder> MedicationOrder { get; set; }
+        public DbSet<Models.Pharmacy> Pharmacy { get; set; }
 
     }
 }

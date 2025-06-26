@@ -1,6 +1,6 @@
 ﻿namespace Braphia.Pharmacy.Models
 {
-    public class Prescription
+    public class MedicationOrder
     {
     }
 }
