@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Messaging", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.AppointmentManagement", "Braphia.AppointmentManagement\Braphia.AppointmentManagement.csproj", "{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.MedicalManagement", "Braphia.MedicalManagement\Braphia.MedicalManagement.csproj", "{1E29BE78-61B9-4305-B41A-38EF4BCBC356}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18C53EAB-269B-4FB1-ABA3-B84D7EAAC818}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

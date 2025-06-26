@@ -151,3 +151,5 @@ playground/**/publish/
 
 # Verify
 *.received.*
+
+Bravia.AppHost/appsettings.env.dev.json

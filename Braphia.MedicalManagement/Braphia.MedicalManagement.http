@@ -1,0 +1,6 @@
+@Braphia.MedicalManagement_HostAddress = http://127.0.0.1:5112
+
+GET {{Braphia.MedicalManagement_HostAddress}}
+Accept: application/json
+
+###

@@ -1,3 +1,14 @@
+using Microsoft.Extensions.Configuration;
+using Aspire.Hosting; // If needed for DistributedApplication
+
+// 1. Build configuration first
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory()) // Ensures correct path
+    .AddJsonFile("appsettings.env.dev.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+// 2. Now create the builder
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sqlServer = builder
@@ -5,7 +16,10 @@ var sqlServer = builder
     .WithDataVolume("braphia")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
+// 3. Read RabbitMQ port from config (with a default value)
+int rabbitMqPort = config.GetValue<int>("RabbitMQPort", 5672);
+
+var rabbitMq = builder.AddRabbitMQ("eventbus", port: rabbitMqPort)
     .WithManagementPlugin(port: 15672)
     .WithDataVolume("braphia-rabbitmq")
     .WithLifetime(ContainerLifetime.Persistent);
@@ -26,6 +40,24 @@ var appointmentManagement = builder
     .WaitFor(apiDatabase)*/
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
+
+var medicalDatabase = sqlServer
+    .AddDatabase("MedicalDB");
+
+var medicalManagement = builder
+    .AddProject<Projects.Braphia_MedicalManagement>("medicalManagement")
+    .WithReference(medicalDatabase)
+    .WaitFor(medicalDatabase)
+    .WithReference(rabbitMq)
+        .WaitFor(rabbitMq);
+
+//var processor = builder
+//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
+//    .WithReplicas(5)
+//    .WithReference(apiDatabase)
+//    .WaitFor(apiDatabase)
+//    .WithReference(messages)
+//    .WaitFor(messages);
 
 //var processor = builder
 //    .AddProject<Projects.InsuranceDetails_Processor>("processor")
