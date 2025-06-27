@@ -3,6 +3,7 @@
     public interface IAppointmentState
     {
         string Name { get; }
+        string GetName() => Name;
         void AppointmentCreated(Appointment appointment);
         void AppointnentStarted(Appointment appointment);
         void AppointmentFinished(Appointment appointment);

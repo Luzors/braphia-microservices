@@ -3,6 +3,7 @@
     public class AppointmentCancled :  IAppointmentState
     {
         public string Name => "AppointmentCancled";
+        public string GetName() => Name;
 
         public void AppointmentCreated(Appointment appointment)
         {

@@ -3,6 +3,7 @@
     public class AppointmentCreated : IAppointmentState
     {
         public string Name => "AppointmentCreated";
+        public string GetName() => Name;
         void IAppointmentState.AppointmentCreated(Appointment appointment)
         {
             Console.WriteLine("Appointment created successfully.");

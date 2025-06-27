@@ -3,6 +3,7 @@
     public class AppointmentFinished : IAppointmentState
     {
         public string Name => "AppointmentFinished";
+        public string GetName() => Name;
         public void AppointmentCreated(Appointment appointment)
         {
             throw new InvalidOperationException("Cannot create an appointment that has already finished.");

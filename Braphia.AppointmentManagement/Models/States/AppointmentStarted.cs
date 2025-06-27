@@ -3,6 +3,7 @@
     public class AppointmentStarted : IAppointmentState
     {
         public string Name => "AppointmentStarted";
+        public string GetName() => Name;
         public void AppointmentCreated(Appointment appointment)
         {
             throw new InvalidOperationException("Cannot create an appointment that has already started.");

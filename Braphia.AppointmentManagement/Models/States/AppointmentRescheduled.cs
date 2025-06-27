@@ -3,6 +3,8 @@
     public class AppointmentRescheduled : IAppointmentState
     {
         public string Name => "AppointmentRescheduled";
+
+        public string GetName() => Name;
         public void AppointmentCreated(Appointment appointment)
         {
             Console.WriteLine("Appointment rescheduled, put it back in created state");
