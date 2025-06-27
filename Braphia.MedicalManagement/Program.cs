@@ -3,6 +3,7 @@ using Braphia.MedicalManagement.Database;
 using Braphia.MedicalManagement.Repositories;
 using MassTransit;
 using Braphia.MedicalManagement.Repositories.Interfaces;
+using Braphia.MedicalManagement.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<PatientCreatedConsumer>();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
@@ -30,6 +33,7 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<IPrescriptionRepository, SqlPrescriptionRepository>();
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
+builder.Services.AddScoped<IMedicalAnalysisRepository, SqlMedicalAnalysisRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

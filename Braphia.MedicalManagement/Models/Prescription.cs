@@ -27,9 +27,13 @@ namespace Braphia.MedicalManagement.Models
         public UnitEnum Unit { get; set; }
 
         public int PatientId { get; set; }  // Foreign Key
+        public Patient? Patient { get; set; }  // Navigation Property
 
         public int PhysicianId { get; set; }  // Foreign Key
-        
+        public Physician? Physician { get; set; }  // Navigation Property
+
         public int? MedicalAnalysisId { get; set; }  // Foreign Key
+        public MedicalAnalysis? MedicalAnalysis { get; set; }  // Navigation Property
+        
     }
 }

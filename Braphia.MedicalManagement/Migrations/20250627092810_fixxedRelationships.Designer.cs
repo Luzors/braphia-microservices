@@ -4,6 +4,7 @@ using Braphia.MedicalManagement.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.MedicalManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250627092810_fixxedRelationships")]
+    partial class fixxedRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,6 +55,9 @@ namespace Braphia.MedicalManagement.Migrations
                     b.Property<int?>("AppointmentId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AppointmentId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -59,16 +65,28 @@ namespace Braphia.MedicalManagement.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PatientId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("PhysicianId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PhysicianId1")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
 
+                    b.HasIndex("AppointmentId1");
+
                     b.HasIndex("PatientId");
 
+                    b.HasIndex("PatientId1");
+
                     b.HasIndex("PhysicianId");
+
+                    b.HasIndex("PhysicianId1");
 
                     b.ToTable("MedicalAnalysis");
                 });
@@ -161,6 +179,9 @@ namespace Braphia.MedicalManagement.Migrations
                     b.Property<int?>("MedicalAnalysisId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("MedicalAnalysisId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("Medicine")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -168,7 +189,13 @@ namespace Braphia.MedicalManagement.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PatientId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("PhysicianId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PhysicianId1")
                         .HasColumnType("int");
 
                     b.Property<int>("Unit")
@@ -178,30 +205,52 @@ namespace Braphia.MedicalManagement.Migrations
 
                     b.HasIndex("MedicalAnalysisId");
 
+                    b.HasIndex("MedicalAnalysisId1");
+
                     b.HasIndex("PatientId");
 
+                    b.HasIndex("PatientId1");
+
                     b.HasIndex("PhysicianId");
+
+                    b.HasIndex("PhysicianId1");
 
                     b.ToTable("Prescription");
                 });
 
             modelBuilder.Entity("Braphia.MedicalManagement.Models.MedicalAnalysis", b =>
                 {
-                    b.HasOne("Braphia.MedicalManagement.Models.Appointment", "Appointment")
+                    b.HasOne("Braphia.MedicalManagement.Models.Appointment", null)
                         .WithMany()
                         .HasForeignKey("AppointmentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
+                    b.HasOne("Braphia.MedicalManagement.Models.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId1");
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Patient", null)
                         .WithMany("MedicalAnalyses")
                         .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Physician", null)
+                        .WithMany()
+                        .HasForeignKey("PhysicianId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Braphia.MedicalManagement.Models.Physician", "Physician")
                         .WithMany()
-                        .HasForeignKey("PhysicianId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasForeignKey("PhysicianId1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Appointment");
@@ -213,21 +262,37 @@ namespace Braphia.MedicalManagement.Migrations
 
             modelBuilder.Entity("Braphia.MedicalManagement.Models.Prescription", b =>
                 {
-                    b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", "MedicalAnalysis")
-                        .WithMany("Prescriptions")
+                    b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", null)
+                        .WithMany()
                         .HasForeignKey("MedicalAnalysisId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
+                    b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", "MedicalAnalysis")
+                        .WithMany("Prescriptions")
+                        .HasForeignKey("MedicalAnalysisId1");
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Patient", null)
                         .WithMany()
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Braphia.MedicalManagement.Models.Physician", "Physician")
+                    b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Physician", null)
                         .WithMany()
                         .HasForeignKey("PhysicianId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.MedicalManagement.Models.Physician", "Physician")
+                        .WithMany()
+                        .HasForeignKey("PhysicianId1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("MedicalAnalysis");

@@ -89,7 +89,7 @@ namespace Braphia.MedicalManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody] Prescription prescription)
         {
-            _logger.LogInformation("Adding a new prescription");
+            _logger.LogInformation("Adding a new prescription: " + prescription.ToString());
             
             if (prescription == null)
             {

@@ -23,38 +23,38 @@ namespace Braphia.MedicalManagement.Database
 
             // Configure Prescription relationships
             modelBuilder.Entity<Prescription>()
-                .HasOne<Patient>()
+                .HasOne(p => p.Patient)
                 .WithMany()
                 .HasForeignKey(p => p.PatientId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Prescription>()
-                .HasOne<Physician>()
+                .HasOne(p => p.Physician)
                 .WithMany()
                 .HasForeignKey(p => p.PhysicianId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Prescription>()
-                .HasOne<MedicalAnalysis>()
-                .WithMany()
+                .HasOne(p => p.MedicalAnalysis)
+                .WithMany(ma => ma.Prescriptions)
                 .HasForeignKey(p => p.MedicalAnalysisId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Configure MedicalAnalysis relationships
             modelBuilder.Entity<MedicalAnalysis>()
-                .HasOne<Patient>()
+                .HasOne(ma => ma.Patient)
                 .WithMany(p => p.MedicalAnalyses)
                 .HasForeignKey(ma => ma.PatientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<MedicalAnalysis>()
-                .HasOne<Physician>()
+                .HasOne(ma => ma.Physician)
                 .WithMany()
                 .HasForeignKey(ma => ma.PhysicianId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<MedicalAnalysis>()
-                .HasOne<Appointment>()
+                .HasOne(ma => ma.Appointment)
                 .WithMany()
                 .HasForeignKey(ma => ma.AppointmentId)
                 .OnDelete(DeleteBehavior.SetNull);

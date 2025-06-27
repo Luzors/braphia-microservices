@@ -18,11 +18,16 @@ namespace Braphia.MedicalManagement.Models
         public int Id { get; set; }
 
         public int PatientId { get; set; }
+        public Patient? Patient { get; set; }
 
         public int PhysicianId { get; set; }
+        public Physician? Physician { get; set; }
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         public int? AppointmentId { get; set; }
+        public Appointment? Appointment { get; set; }
+
+        public List<Prescription> Prescriptions { get; set; } = new List<Prescription>();
     }
 }
