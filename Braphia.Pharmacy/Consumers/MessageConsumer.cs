@@ -1,4 +1,4 @@
-using Braphia.Pharmacy.Events;
+using Braphia.Pharmacy.Events.ExternalEvents;
 using Braphia.Pharmacy.Models.ExternalObjects;
 using Braphia.Pharmacy.Repositories.Interfaces;
 using Infrastructure.Messaging;

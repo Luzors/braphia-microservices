@@ -1,6 +1,6 @@
 using Braphia.Pharmacy.Models.ExternalObjects;
 
-namespace Braphia.Pharmacy.Events
+namespace Braphia.Pharmacy.Events.ExternalEvents
 {
     public class PatientRegisteredEvent
     {
