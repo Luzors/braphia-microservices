@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
+namespace Braphia.AppointmentManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250627150751_InitialWriteMigration")]
-    partial class InitialWriteMigration
+    [Migration("20250627202122_NewInit")]
+    partial class NewInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,7 +33,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("FollowUpAppointmentId")
+                    b.Property<int?>("FollowUpAppointmentId")
                         .HasColumnType("int");
 
                     b.Property<int>("PatientId")
@@ -63,7 +63,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     b.HasIndex("ReferralId");
 
-                    b.ToTable("appointments");
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("Braphia.AppointmentManagement.Models.Patient", b =>
@@ -92,7 +92,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("patients");
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Braphia.AppointmentManagement.Models.Physician", b =>
@@ -116,7 +116,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("physicians");
+                    b.ToTable("Physicians");
                 });
 
             modelBuilder.Entity("Braphia.AppointmentManagement.Models.Receptionist", b =>
@@ -141,7 +141,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("receptionists");
+                    b.ToTable("Receptionists");
                 });
 
             modelBuilder.Entity("Braphia.AppointmentManagement.Models.Referral", b =>
@@ -171,9 +171,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
                 {
                     b.HasOne("Braphia.AppointmentManagement.Models.Appointment", "FollowUpAppointment")
                         .WithMany()
-                        .HasForeignKey("FollowUpAppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FollowUpAppointmentId");
 
                     b.HasOne("Braphia.AppointmentManagement.Models.Patient", "patient")
                         .WithMany()

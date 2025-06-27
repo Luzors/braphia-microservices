@@ -20,7 +20,7 @@ namespace Braphia.AppointmentManagement.Models
         public DateTime ScheduledTime { get; set; }
 
         public IAppointmentState state;
-        public int FollowUpAppointmentId { get; set; }
+        public int? FollowUpAppointmentId { get; set; }
         public Appointment FollowUpAppointment { get; set; }
 
         public Appointment(){}

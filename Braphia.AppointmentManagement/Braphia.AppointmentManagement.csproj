@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Database\**" />
+    <Compile Remove="Migrations\**" />
+    <Content Remove="Database\**" />
+    <Content Remove="Migrations\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="Database\**" />
+    <None Remove="Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
     <PackageReference Include="CommunityToolkit.Aspire.MassTransit.RabbitMQ" Version="9.5.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
@@ -26,8 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\" />
-    <Folder Include="Migrations\" />
+    <Folder Include="Databases\WriteDatabase\Migrations\" />
     <Folder Include="Enums\" />
   </ItemGroup>
 

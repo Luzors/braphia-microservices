@@ -40,8 +40,13 @@ builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<AppointmentCreatedEventConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
+        var configuration = context.GetRequiredService<IConfiguration>();
+        var rabbitMqConnection = configuration.GetConnectionString("eventbus");
+        cfg.Host(rabbitMqConnection);
+
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -51,6 +56,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DBContext>();
+    await db.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {

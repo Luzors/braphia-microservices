@@ -3,14 +3,60 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
+namespace Braphia.AppointmentManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialWriteMigration : Migration
+    public partial class NewInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Patients",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Patients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Physicians",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Specialization = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Physicians", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Receptionists",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Receptionists", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Referral",
                 columns: table => new
@@ -27,53 +73,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "patients",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_patients", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "physicians",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Specialization = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_physicians", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "receptionists",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_receptionists", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "appointments",
+                name: "Appointments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -83,66 +83,65 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
                     ReceptionistId = table.Column<int>(type: "int", nullable: false),
                     ReferralId = table.Column<int>(type: "int", nullable: false),
                     ScheduledTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FollowUpAppointmentId = table.Column<int>(type: "int", nullable: false)
+                    FollowUpAppointmentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_appointments", x => x.Id);
+                    table.PrimaryKey("PK_Appointments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_appointments_Referral_ReferralId",
+                        name: "FK_Appointments_Appointments_FollowUpAppointmentId",
+                        column: x => x.FollowUpAppointmentId,
+                        principalTable: "Appointments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Appointments_Physicians_PhysicianId",
+                        column: x => x.PhysicianId,
+                        principalTable: "Physicians",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Appointments_Receptionists_ReceptionistId",
+                        column: x => x.ReceptionistId,
+                        principalTable: "Receptionists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Appointments_Referral_ReferralId",
                         column: x => x.ReferralId,
                         principalTable: "Referral",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_appointments_appointments_FollowUpAppointmentId",
-                        column: x => x.FollowUpAppointmentId,
-                        principalTable: "appointments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_appointments_patients_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "patients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_appointments_physicians_PhysicianId",
-                        column: x => x.PhysicianId,
-                        principalTable: "physicians",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_appointments_receptionists_ReceptionistId",
-                        column: x => x.ReceptionistId,
-                        principalTable: "receptionists",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_FollowUpAppointmentId",
-                table: "appointments",
+                name: "IX_Appointments_FollowUpAppointmentId",
+                table: "Appointments",
                 column: "FollowUpAppointmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_PatientId",
-                table: "appointments",
+                name: "IX_Appointments_PatientId",
+                table: "Appointments",
                 column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_PhysicianId",
-                table: "appointments",
+                name: "IX_Appointments_PhysicianId",
+                table: "Appointments",
                 column: "PhysicianId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_ReceptionistId",
-                table: "appointments",
+                name: "IX_Appointments_ReceptionistId",
+                table: "Appointments",
                 column: "ReceptionistId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_ReferralId",
-                table: "appointments",
+                name: "IX_Appointments_ReferralId",
+                table: "Appointments",
                 column: "ReferralId");
         }
 
@@ -150,19 +149,19 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "appointments");
+                name: "Appointments");
+
+            migrationBuilder.DropTable(
+                name: "Patients");
+
+            migrationBuilder.DropTable(
+                name: "Physicians");
+
+            migrationBuilder.DropTable(
+                name: "Receptionists");
 
             migrationBuilder.DropTable(
                 name: "Referral");
-
-            migrationBuilder.DropTable(
-                name: "patients");
-
-            migrationBuilder.DropTable(
-                name: "physicians");
-
-            migrationBuilder.DropTable(
-                name: "receptionists");
         }
     }
 }

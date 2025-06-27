@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
+namespace Braphia.AppointmentManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
     partial class DBContextModelSnapshot : ModelSnapshot
@@ -30,7 +30,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("FollowUpAppointmentId")
+                    b.Property<int?>("FollowUpAppointmentId")
                         .HasColumnType("int");
 
                     b.Property<int>("PatientId")
@@ -168,9 +168,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
                 {
                     b.HasOne("Braphia.AppointmentManagement.Models.Appointment", "FollowUpAppointment")
                         .WithMany()
-                        .HasForeignKey("FollowUpAppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FollowUpAppointmentId");
 
                     b.HasOne("Braphia.AppointmentManagement.Models.Patient", "patient")
                         .WithMany()
