@@ -12,6 +12,7 @@ namespace Braphia.Pharmacy.Database
         public DbSet<Prescription> Prescription { get; set; }
         public DbSet<Medication> Medication { get; set; }
         public DbSet<MedicationOrder> MedicationOrder { get; set; }
+        public DbSet<MedicationOrderItem> MedicationOrderItem { get; set; }
         public DbSet<Models.Pharmacy> Pharmacy { get; set; }
 
     }

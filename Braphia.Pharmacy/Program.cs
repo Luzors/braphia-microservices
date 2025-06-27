@@ -1,4 +1,7 @@
+using Braphia.Pharmacy.Consumers;
 using Braphia.Pharmacy.Database;
+using Braphia.Pharmacy.Repositories;
+using Braphia.Pharmacy.Repositories.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +17,8 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<MessageConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
@@ -23,6 +28,12 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddScoped<IMedicationOrderRepository, SqlMedicationOrderRepository>();
+builder.Services.AddScoped<IMedicationRepository, SqlMedicationRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
+builder.Services.AddScoped<IPharmacyRepository, SqlPharmacyRepository>();
+builder.Services.AddScoped<IPrescriptionRepository, SqlPrescriptionRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -11,8 +11,7 @@ namespace Braphia.Pharmacy.Models
         public string Dosage { get; set; }
         public string Manufacturer { get; set; }
         public DateTime ExpiryDate { get; set; }
-        
-        // TODO: Is price set in Pharmacy or in Accounting?
+
         public decimal Price { get; set; }
 
         public Medication(string name, string description, string dosage, string manufacturer, DateTime expiryDate, decimal price)

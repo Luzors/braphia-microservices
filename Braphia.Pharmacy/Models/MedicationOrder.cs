@@ -8,7 +8,7 @@ namespace Braphia.Pharmacy.Models
         public int Id { get; set; }
 
         // Medication with amount
-        public IDictionary<Medication, int> Items { get; set; }
+        public IList<MedicationOrderItem> Items { get; set; } = [];
         public int PatientId { get; set; }
         public int PrescriptionId { get; set; }
         public int PharmacyId { get; set; }
@@ -17,34 +17,49 @@ namespace Braphia.Pharmacy.Models
 
         public MedicationOrder()
         {
-            Items = new Dictionary<Medication, int>();
+            Items = [];
         }
 
-        public MedicationOrder(int patientId, int prescriptionId, int pharmacyId) : this(patientId, prescriptionId, pharmacyId, new Dictionary<Medication, int>())
+        public MedicationOrder(int patientId, int prescriptionId, int pharmacyId) : this(patientId, prescriptionId, pharmacyId, [])
         { }
 
-        public MedicationOrder(int patientId, int prescriptionId, int pharmacyId, IDictionary<Medication, int> items)
+        public MedicationOrder(int patientId, int prescriptionId, int pharmacyId, IList<MedicationOrderItem> items)
         {
             PatientId = patientId;
             PrescriptionId = prescriptionId;
-            Items = items ?? new Dictionary<Medication, int>();
+            Items = items ?? [];
         }
 
         public void AddItem(Medication medication, int amount)
         {
-            if (Items.ContainsKey(medication))
-                Items[medication] += amount;
+            if (Items.Any(i => i.Medication.Id == medication.Id))
+            {
+                var existingItem = Items.First(i => i.Medication.Id == medication.Id);
+                existingItem.Amount += amount;
+            }
             else
-                Items[medication] = amount;
+            {
+                Items.Add(new MedicationOrderItem
+                {
+                    Medication = medication,
+                    Amount = amount
+                });
+            }
         }
 
         public void RemoveItem(Medication medication, int amount)
         {
-            if (Items.ContainsKey(medication))
+            var existingItem = Items.FirstOrDefault(i => i.Medication.Id == medication.Id);
+            if (existingItem != null)
             {
-                Items[medication] -= amount;
-                if (Items[medication] <= 0)
-                    Items.Remove(medication);
+                if (existingItem.Amount > amount)
+                {
+                    existingItem.Amount -= amount;
+                }
+                else
+                {
+                    Items.Remove(existingItem);
+                }
             }
         }
 

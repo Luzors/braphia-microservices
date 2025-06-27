@@ -1,6 +1,8 @@
 ﻿using Braphia.Pharmacy.Database;
+using Braphia.Pharmacy.Events;
 using Braphia.Pharmacy.Models;
 using Braphia.Pharmacy.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +57,7 @@ namespace Braphia.Pharmacy.Repositories
                 _context.MedicationOrder.Update(medicationOrder);
                 await _context.SaveChangesAsync();
                 //TODO: event when order completed
+                await _publishEndpoint.Publish(new Message(new MedicationOrderCompletedEvent(medicationOrder)));
                 return true;
             }
             catch (Exception ex)
