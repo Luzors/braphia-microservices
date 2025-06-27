@@ -43,7 +43,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteReferralAsync(Guid referralId)
+        public async Task<bool> DeleteReferralAsync(int referralId)
         {
             var referral = await _context.Referral.FindAsync(referralId) ?? throw new ArgumentException($"Referral with ID {referralId} not found.");
             _context.Referral.Remove(referral);
@@ -51,7 +51,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return true;
         }
 
-        public async Task<Referral> GetReferralByIdAsync(Guid referralId)
+        public async Task<Referral> GetReferralByIdAsync(int referralId)
         {
             return await _context.Referral
                 .FirstOrDefaultAsync(r => r.Id == referralId) 
@@ -65,7 +65,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
                 ?? throw new ArgumentException("No referrals found.");
         }
 
-        public Task<IEnumerable<Referral>> GetReferralsByPatientIdAsync(Guid patientId)
+        public Task<IEnumerable<Referral>> GetReferralsByPatientIdAsync(int patientId)
         {
             var referrals = _context.Referral
                 .Where(r => r.PatientId == patientId)

@@ -6,10 +6,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
     {
         Task<bool> AddAppointmentAsync( Appointment appointment );
         Task<bool> UpdateAppointmentAsync( Appointment appointment );
-        Task<bool> DeleteAppointmentAsync( Guid appointmentId );
-        Task<bool> UpdateAppointmentAsync( Guid appointmentId, Appointment appointment );
-        Task<Appointment> GetAppointmentByIdAsync( Guid appointmentId );
+        Task<bool> DeleteAppointmentAsync( int appointmentId );
+        Task<bool> UpdateAppointmentAsync(int appointmentId, Appointment appointment );
+        Task<Appointment> GetAppointmentByIdAsync(int appointmentId );
+        Task<bool> AddFollowUpAppointmentAsync(int appointmentId, Appointment followUpAppointment );
 
-         
+
     }
 }

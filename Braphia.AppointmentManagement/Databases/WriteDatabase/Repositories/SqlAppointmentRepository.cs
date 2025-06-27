@@ -21,7 +21,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             await _context.appointments.AddAsync(appointment);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<bool> UpdateAppointmentAsync(Guid id, Appointment appointment)
+        public async Task<bool> UpdateAppointmentAsync(int id, Appointment appointment)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
@@ -36,7 +36,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context.appointments.Update(existingAppointment);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<bool> DeleteAppointmentAsync(Guid appointmentId)
+        public async Task<bool> DeleteAppointmentAsync(int appointmentId)
         {
             var appointment = await GetAppointmentByIdAsync(appointmentId);
             if (appointment == null) return false;
@@ -44,7 +44,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<Appointment> GetAppointmentByIdAsync(Guid appointmentId)
+        public async Task<Appointment> GetAppointmentByIdAsync(int appointmentId)
         {
             var appointment = await _context.appointments
                 .Include(a => a.patient)
@@ -62,7 +62,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return await _context.appointments.ToListAsync()
                    ?? throw new ArgumentException("No appointments found in the database.");
         }
-        public async Task<IEnumerable<Appointment>> GetAppointmentsByPatientIdAsync(Guid patientId)
+        public async Task<IEnumerable<Appointment>> GetAppointmentsByPatientIdAsync(int patientId)
         {
             return await _context.appointments
                 .Where(a => a.PatientId == patientId)
@@ -70,9 +70,21 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
                 .Include(a => a.physician)
                 .Include(a => a.referral)
                 .Include(a => a.receptionist)
-                .ToListAsync() 
+                .ToListAsync()
                 ?? throw new ArgumentException($"No appointments found for patient with ID {patientId}.");
         }
-        
+
+        public async Task<bool> AddFollowUpAppointmentAsync(int appointmentId, Appointment followUpAppointment)
+        {
+            if (followUpAppointment == null)
+                throw new ArgumentNullException(nameof(followUpAppointment), "Follow-up appointment cannot be null.");
+            var existingAppointment = await GetAppointmentByIdAsync(appointmentId);
+            if (existingAppointment == null)
+                throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
+            existingAppointment.SetFollowUpAppointment(followUpAppointment);
+            _context.appointments.Update(existingAppointment);
+            return await _context.SaveChangesAsync() > 0;
+
+        }
     }
 }

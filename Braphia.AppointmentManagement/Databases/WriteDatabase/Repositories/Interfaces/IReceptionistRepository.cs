@@ -6,8 +6,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
     {
         Task<bool> AddReceptionistAsync(Receptionist receptionist);
         Task<bool> UpdateReceptionistAsync(Receptionist receptionist);
-        Task<bool> DeleteReceptionistAsync(Guid receptionistId);
-        Task<Receptionist> GetReceptionistByIdAsync(Guid receptionistId);
+        Task<bool> DeleteReceptionistAsync(int receptionistId);
+        Task<Receptionist> GetReceptionistByIdAsync(int receptionistId);
         Task<IEnumerable<Receptionist>> GetAllReceptionistsAsync();
     }
 }

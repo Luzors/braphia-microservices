@@ -34,14 +34,14 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context.patients.Update(existingPatient);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<bool> DeletePatientAsync(Guid patientId)
+        public async Task<bool> DeletePatientAsync(int patientId)
         {
             var patient = await GetPatientByIdAsync(patientId);
             if (patient == null) return false;
             _context.patients.Remove(patient);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<Patient> GetPatientByIdAsync(Guid patientId)
+        public async Task<Patient> GetPatientByIdAsync(int patientId)
         {
             var patient = await _context.patients.FindAsync(patientId);
             return patient ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
