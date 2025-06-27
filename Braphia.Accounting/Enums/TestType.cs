@@ -1,4 +1,4 @@
-﻿namespace Braphia.Laboratory.Enums
+namespace Braphia.Accounting.Enums
 {
     public enum TestType
     {
@@ -11,5 +11,4 @@
         CTScan,
         Ultrasound
     }
-   
 }

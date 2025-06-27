@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.Accounting.Repositories
 {
-    public class PatientRepository : IPatientRepository
+    public class SqlPatientRepository : IPatientRepository
     {
         private readonly AccountingDBContext _context;
 
-        public PatientRepository(AccountingDBContext context)
+        public SqlPatientRepository(AccountingDBContext context)
         {
             _context = context;
         }

@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Bravia.ServiceDefaults1\Braphia.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\Infrastructure.Messaging\Infrastructure.Messaging.csproj" />
 	</ItemGroup>
 
 </Project>
