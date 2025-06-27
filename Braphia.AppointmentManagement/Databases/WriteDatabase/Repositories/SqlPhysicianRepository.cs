@@ -8,9 +8,9 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
 {
     public class SqlPhysicianRepository : IPhysicianRepository
     {
-        private readonly WriteDbContext _context;
+        private readonly DBContext _context;
         private readonly IPublishEndpoint _publishEndpoint;
-        public SqlPhysicianRepository(WriteDbContext context, IPublishEndpoint publishEndpoint)
+        public SqlPhysicianRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context must be of type WriteDbContext.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));

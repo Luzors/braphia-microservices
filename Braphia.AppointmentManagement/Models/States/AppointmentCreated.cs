@@ -23,11 +23,11 @@
         {
             
             Console.WriteLine("Appointment canceled.");
-            appointment.SetState(new AppointmentCanceled());
+            appointment.SetState(new AppointmentCancled());
         }
         public void AppointmentRescheduled(Appointment appointment, DateTime newTime)
         {
-            appointment.SetScheduledTime(newDate);
+            appointment.SetScheduledTime(newTime);
             appointment.SetState(new AppointmentRescheduled());
         }
         public void AppointmentMissed(Appointment appointment)

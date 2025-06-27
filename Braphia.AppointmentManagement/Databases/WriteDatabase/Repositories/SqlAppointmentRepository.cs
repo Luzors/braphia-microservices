@@ -7,9 +7,9 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
 {
     public class SqlAppointmentRepository : IAppointmentRepository
     {
-        private readonly WriteDbContext _context;
+        private readonly DBContext _context;
         private readonly IPublishEndpoint _publishEndpoint;
-        public SqlAppointmentRepository(WriteDbContext context, IPublishEndpoint publishEndpoint)
+        public SqlAppointmentRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context must be of type WriteDbContext.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
@@ -86,5 +86,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return await _context.SaveChangesAsync() > 0;
 
         }
+
+      
     }
 }

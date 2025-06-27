@@ -1,34 +1,34 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Events;
 using MassTransit;
+using MediatR;
 
 namespace Braphia.AppointmentManagement.Commands.AddAppointment
 {
-    public class AppointmentCreatedCommandHandler : IConsumer<AppointmentCreatedCommand>
+    public class AppointmentCreatedCommandHandler : IRequestHandler<AppointmentCreatedCommand, int>
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPublishEndpoint _publishEndpoint;
-        public AppointmentCreatedCommandHandler(IAppointmentRepository appointmentRepository, IPublishEndpoint publishEndpoint)
+
+        public AppointmentCreatedCommandHandler(
+            IAppointmentRepository appointmentRepository,
+            IPublishEndpoint publishEndpoint)
         {
-            _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository), "Appointment repository cannot be null.");
-            _publishEndpoint = publishEndpoint;
+            _appointmentRepository = appointmentRepository ??
+                throw new ArgumentNullException(nameof(appointmentRepository));
+            _publishEndpoint = publishEndpoint ??
+                throw new ArgumentNullException(nameof(publishEndpoint));
         }
-        public async Task Consume(ConsumeContext<AppointmentCreatedCommand> context)
+
+        public async Task<int> Handle(AppointmentCreatedCommand request, CancellationToken cancellationToken)
         {
-            var command = context.Message;
-
-            if (command == null)
-            {
-                throw new ArgumentNullException(nameof(command), "Command cannot be null.");
-            }
-
             var appointment = new Models.Appointment(
-                id: 0, 
-                patientId: command.PatientId,
-                physicianId: command.PhysicianId,
-                receptionistId: command.ReceptionistId,
-                referralId: command.ReferralId,
-                scheduledTime: command.ScheduledTime
+                id: 0,
+                patientId: request.PatientId,
+                physicianId: request.PhysicianId,
+                receptionistId: request.ReceptionistId,
+                referralId: request.ReferralId,
+                scheduledTime: request.ScheduledTime
             );
 
             var success = await _appointmentRepository.AddAppointmentAsync(appointment);
@@ -36,14 +36,32 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             {
                 throw new InvalidOperationException("Failed to add appointment to the repository.");
             }
+
+            // Publiseer event naar MassTransit voor read database update
             await _publishEndpoint.Publish(new AppointmentCreatedEvent
             {
                 AppointmentId = appointment.Id,
                 PatientId = appointment.PatientId,
                 PhysicianId = appointment.PhysicianId,
-                ScheduledTime = appointment.ScheduledTime
-            });
+                ScheduledTime = appointment.ScheduledTime,
+                PatientFirstName = "",
+                PatientLastName = "",
+                PatientEmail = "",
+                PatientPhoneNumber = "",
+                PhysicianFirstName = "",
+                PhysicianLastName = "",
+                PhysicianSpecialization = 0,
+                ReceptionistId = appointment.ReceptionistId,
+                ReceptionistFirstName = "",
+                ReceptionistLastName = "",
+                ReceptionistEmail = "",
+                ReferralId = appointment.ReferralId,
+                ReferralDate = DateTime.UtcNow,
+                ReferralReason = "",
+                StateName = "Scheduled"
+            }, cancellationToken);
 
+            return appointment.Id;
         }
     }
 }

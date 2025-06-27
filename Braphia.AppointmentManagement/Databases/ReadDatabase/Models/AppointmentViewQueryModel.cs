@@ -31,4 +31,4 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
 
 
 }
-}
+

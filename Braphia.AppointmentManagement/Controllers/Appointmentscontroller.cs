@@ -25,8 +25,9 @@ namespace Braphia.AppointmentManagement.Controllers
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreatedCommand command)
         {
             var appointmentId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointmentId }, new { appointmentId });
+            return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
         }
+
 
         // GET: api/appointments
         [HttpGet]

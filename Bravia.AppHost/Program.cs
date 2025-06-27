@@ -1,5 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// -------- Databases -------------------
 var sqlServer = builder
     .AddSqlServer("sql-server-usermanagement", port: 2015)
     .WithDataVolume("braphia-usermanagement")
@@ -16,6 +17,20 @@ var apiDatabase = sqlServer
 var laboratoryDatabase = sqlServer
     .AddDatabase("LaboratoryDb");
 
+//Appointment Management db
+var appointmentWriteDb = builder
+ .AddSqlServer("appointment-mysql", port: 3306)
+ .AddDatabase("AppointmentWriteDB");
+
+var appointmentReadDb = builder
+    .AddMongoDB("appointment-mongodb", port: 27017)
+    .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "myuser")
+    .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "mypassword")
+    .AddDatabase("AppointmentReadDB");
+
+
+// -----------Mangers-------------------
+
 var userManagement = builder
     .AddProject<Projects.Braphia_UserManagement>("userManagement")
     .WithReference(apiDatabase)
@@ -25,10 +40,12 @@ var userManagement = builder
 
 var appointmentManagement = builder
     .AddProject<Projects.Braphia_AppointmentManagement>("appointmentManagement")
-/*    .WithReference(apiDatabase)
-    .WaitFor(apiDatabase)*/
+    .WithReference(appointmentWriteDb)
+    .WaitFor(appointmentWriteDb)
+    .WithReference(appointmentReadDb)
+    .WaitFor(appointmentReadDb)
     .WithReference(rabbitMq)
-        .WaitFor(rabbitMq);
+    .WaitFor(rabbitMq);
 
 var accountingDbServer = builder
     .AddSqlServer("sql-server-accounting", port: 2016)
