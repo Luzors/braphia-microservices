@@ -34,5 +34,13 @@ namespace Braphia.AppointmentManagement.Controllers
                 return StatusCode(500, "Internal server error while adding patient, "+ ex);
             }
         }
+
+        [HttpGet("patient")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<IActionResult> GetPatients()
+        {
+            var records = await _patientRepository.GetAllPatientsAsync();
+            return Ok(records);
+        }
     }
 }
