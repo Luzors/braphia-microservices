@@ -19,15 +19,16 @@ var laboratoryDatabase = sqlServer
 
 //Appointment Management db
 var appointmentWriteDb = builder
- .AddSqlServer("appointment-mysql", port: 3306)
+ .AddSqlServer("appointment-mysql-write", port: 2018)
+ .WithDataVolume("braphia-appointment-write")
+ .WithLifetime(ContainerLifetime.Persistent)
  .AddDatabase("AppointmentWriteDB");
 
 var appointmentReadDb = builder
-    .AddMongoDB("appointment-mongodb", port: 27017)
-    .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "myuser")
-    .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "mypassword")
-    .AddDatabase("AppointmentReadDB");
-
+ .AddSqlServer("appointment-mysql-read", port: 2019)
+  .WithDataVolume("braphia-appointment-read")
+ .WithLifetime(ContainerLifetime.Persistent)
+ .AddDatabase("AppointmentReadDB");
 
 // -----------Mangers-------------------
 

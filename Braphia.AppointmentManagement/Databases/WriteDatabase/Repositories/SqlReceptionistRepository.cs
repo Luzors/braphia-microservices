@@ -19,36 +19,36 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
         {
             if (receptionist == null)
                 throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
-            await _context.receptionists.AddAsync(receptionist);
+            await _context.Receptionists.AddAsync(receptionist);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> UpdateReceptionistAsync(Receptionist receptionist)
         {
             if (receptionist == null)
                 throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
-            var existingReceptionist = await _context.receptionists.FindAsync(receptionist.Id)
+            var existingReceptionist = await _context.Receptionists.FindAsync(receptionist.Id)
                 ?? throw new ArgumentException($"Receptionist with ID {receptionist.Id} not found.");
             existingReceptionist.FirstName = receptionist.FirstName;
             existingReceptionist.LastName = receptionist.LastName;
             existingReceptionist.Email = receptionist.Email;
 
-            _context.receptionists.Update(existingReceptionist);
+            _context.Receptionists.Update(existingReceptionist);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> DeleteReceptionistAsync(int receptionistId)
         {
             var receptionist = await GetReceptionistByIdAsync(receptionistId);
             if (receptionist == null) return false;
-            _context.receptionists.Remove(receptionist);
+            _context.Receptionists.Remove(receptionist);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<Receptionist> GetReceptionistByIdAsync(int receptionistId)
         {
-            return await _context.receptionists.FindAsync(receptionistId);
+            return await _context.Receptionists.FindAsync(receptionistId);
         }
         public async Task<IEnumerable<Receptionist>> GetAllReceptionistsAsync()
         {
-            return await _context.receptionists.ToListAsync() 
+            return await _context.Receptionists.ToListAsync() 
                    ?? throw new ArgumentException("No receptionists found in the database.");
         }
     }

@@ -1,11 +1,12 @@
-﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
-using MediatR;
+﻿using MediatR;
+using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
 
-namespace Braphia.AppointmentManagement.Query.GetAppointmentByPhysician
+public class GetAppointmentsByPhysicianIdQuery : IRequest<IEnumerable<AppointmentViewQueryModel>>
 {
-    public class GetAppointmentsByPhysicianIdQuery : IRequest<IEnumerable<AppointmentViewQueryModel>>
+    public int PhysicianId { get; }
+
+    public GetAppointmentsByPhysicianIdQuery(int physicianId)
     {
-        public int PhysicianId { get; set; }
-        public GetAppointmentsByPhysicianIdQuery(int physicianId) => PhysicianId = physicianId;
+        PhysicianId = physicianId;
     }
 }

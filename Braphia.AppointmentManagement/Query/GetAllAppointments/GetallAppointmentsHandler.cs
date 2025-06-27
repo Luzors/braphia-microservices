@@ -1,17 +1,19 @@
 ﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
-using Braphia.AppointmentManagement.Databases.WriteDatabase;
+using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
+using Braphia.AppointmentManagement.Query.GetAllAppointments;
 using MediatR;
-using MongoDB.Driver;
 
-namespace Braphia.AppointmentManagement.Query.GetAllAppointments
+public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery, IEnumerable<AppointmentViewQueryModel>>
 {
-    public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery, IEnumerable<AppointmentViewQueryModel>>
-    {
-        private readonly ReadDbContext _context;
-        public GetAllAppointmentsHandler(ReadDbContext context) => _context = context;
+    private readonly IAppointmentReadRepository _repository;
 
-        public async Task<IEnumerable<AppointmentViewQueryModel>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
-            => await _context.AppointmentViews.Find(_ => true).ToListAsync(cancellationToken);
+    public GetAllAppointmentsHandler(IAppointmentReadRepository repository)
+    {
+        _repository = repository;
     }
 
+    public async Task<IEnumerable<AppointmentViewQueryModel>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
+    {
+        return await _repository.GetAllAppointmentsAsync();
+    }
 }

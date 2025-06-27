@@ -9,9 +9,9 @@ namespace Braphia.AppointmentManagement.Consumers
 {
     public class AppointmentCreatedEventConsumer : IConsumer<AppointmentCreatedEvent>
     {
-        private readonly AppointmentReadRepository _readRepo;
+        private readonly SQLAppointmentReadRepository _readRepo;
 
-        public AppointmentCreatedEventConsumer(AppointmentReadRepository readRepo)
+        public AppointmentCreatedEventConsumer(SQLAppointmentReadRepository readRepo)
         {
             _readRepo = readRepo;
         }

@@ -6,6 +6,7 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
 {
     public class AppointmentViewQueryModel : IQueryModel
     {
+        public int Id { get; set; }
         public int AppointmentId { get; set; }
         public int PatientId { get; set; }
         public string PatientFirstName { get; set; }

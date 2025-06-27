@@ -1,7 +1,4 @@
-﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
-using MediatR;
+﻿using MediatR;
+using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
 
-namespace Braphia.AppointmentManagement.Query.GetAppointmentsOfToday
-{
-    public class GetAppointmentsOfTodayQuery : IRequest<IEnumerable<AppointmentViewQueryModel>> { }
-}
+public class GetAppointmentsOfTodayQuery : IRequest<IEnumerable<AppointmentViewQueryModel>> { }

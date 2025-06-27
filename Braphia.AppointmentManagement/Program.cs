@@ -14,22 +14,27 @@ var builder = WebApplication.CreateBuilder(args);
 // Add MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentCreatedCommandHandler).Assembly));
 
-var mongoConnectionString = builder.Configuration.GetConnectionString("AppointmentReadDB")
+var connectionStringRead = builder.Configuration.GetConnectionString("AppointmentReadDB")
     ?? throw new InvalidOperationException("No connection string configured for AppointmentReadDB");
 
-var connectionString = builder.Configuration.GetConnectionString("AppointmentWriteDB") ??
+var connectionStringWrite = builder.Configuration.GetConnectionString("AppointmentWriteDB") ??
                        throw new InvalidOperationException("No connection string configured");
 
 builder.Services
-    .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
+    .AddDbContext<DBContext>(options => options.UseSqlServer(connectionStringWrite));
 
-builder.Services.AddSingleton<ReadDbContext>(provider =>
-    new ReadDbContext(mongoConnectionString, "AppointmentManagement"));
+builder.Services
+    .AddDbContext<ReadDbContext>(options => options.UseSqlServer(connectionStringRead));
+
 
 // Repositories
+builder.Services.AddScoped<SQLAppointmentReadRepository>();
+builder.Services.AddScoped<IAppointmentReadRepository, SQLAppointmentReadRepository>();
 builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
-builder.Services.AddScoped<AppointmentReadRepository>();
-builder.Services.AddScoped<IMongoAppointmentReadRepository, AppointmentReadRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
+builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
+builder.Services.AddScoped<IReceptionistRepository, SQLReceptionistRepository>();
+builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
 
 // MassTransit
 builder.Services.AddMassTransit(x =>

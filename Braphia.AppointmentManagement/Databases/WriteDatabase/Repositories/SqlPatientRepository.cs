@@ -18,37 +18,37 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
-            await _context.patients.AddAsync(patient);
+            await _context.Patients.AddAsync(patient);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> UpdatePatientAsync(Patient patient)
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
-            var existingPatient = await _context.patients.FindAsync(patient.Id)
+            var existingPatient = await _context.Patients.FindAsync(patient.Id)
                 ?? throw new ArgumentException($"Patient with ID {patient.Id} not found.");
             existingPatient.FirstName = patient.FirstName;
             existingPatient.LastName = patient.LastName;
             existingPatient.Email = patient.Email;
             existingPatient.PhoneNumber = patient.PhoneNumber;
-            _context.patients.Update(existingPatient);
+            _context.Patients.Update(existingPatient);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> DeletePatientAsync(int patientId)
         {
             var patient = await GetPatientByIdAsync(patientId);
             if (patient == null) return false;
-            _context.patients.Remove(patient);
+            _context.Patients.Remove(patient);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<Patient> GetPatientByIdAsync(int patientId)
         {
-            var patient = await _context.patients.FindAsync(patientId);
+            var patient = await _context.Patients.FindAsync(patientId);
             return patient ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
         }
         public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
         {
-            return await _context.patients.ToListAsync()
+            return await _context.Patients.ToListAsync()
                    ?? throw new ArgumentException("No patients found in the database.");
         }
     }

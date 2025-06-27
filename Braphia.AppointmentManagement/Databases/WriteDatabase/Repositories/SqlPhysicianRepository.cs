@@ -19,40 +19,40 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
         {
             if (physician == null)
                 throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
-            await _context.physicians.AddAsync(physician);
+            await _context.Physicians.AddAsync(physician);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> UpdatePhysicianAsync(Physician physician)
         {
             if (physician == null)
                 throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
-            var existingPhysician = await _context.physicians.FindAsync(physician.Id)
+            var existingPhysician = await _context.Physicians.FindAsync(physician.Id)
                 ?? throw new ArgumentException($"Physician with ID {physician.Id} not found.");
             existingPhysician.FirstName = physician.FirstName;
             existingPhysician.LastName = physician.LastName;
             existingPhysician.Specialization = physician.Specialization;
-            _context.physicians.Update(existingPhysician);
+            _context.Physicians.Update(existingPhysician);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> DeletePhysicianAsync(int physicianId)
         {
             var physician = await GetPhysicianByIdAsync(physicianId);
             if (physician == null) return false;
-            _context.physicians.Remove(physician);
+            _context.Physicians.Remove(physician);
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<Physician> GetPhysicianByIdAsync(int physicianId)
         {
-            return await _context.physicians.FindAsync(physicianId);
+            return await _context.Physicians.FindAsync(physicianId);
         }
         public async Task<IEnumerable<Physician>> GetAllPhysiciansAsync()
         {
-            return await _context.physicians.ToListAsync()
+            return await _context.Physicians.ToListAsync()
                    ?? throw new ArgumentException("No physicians found in the database.");
         }
         public async Task<IEnumerable<Physician>> GetPhysiciansBySpecializationAsync(SpecializationEnum specialization)
         {
-            return await _context.physicians
+            return await _context.Physicians
                 .Where(p => p.Specialization == specialization)
                 .ToListAsync() 
                 ?? throw new ArgumentException($"No physicians found with specialization {specialization}.");

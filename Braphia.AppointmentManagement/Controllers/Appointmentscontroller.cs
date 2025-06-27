@@ -1,5 +1,7 @@
 ﻿using Braphia.AppointmentManagement.Commands.AddAppointment;
 using Braphia.AppointmentManagement.Databases.WriteDatabase;
+using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
+using Braphia.AppointmentManagement.Models;
 using Braphia.AppointmentManagement.Query.GetAllAppointments;
 using Braphia.AppointmentManagement.Query.GetAppointmentById;
 using MediatR;
@@ -13,6 +15,9 @@ namespace Braphia.AppointmentManagement.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ReadDbContext _readDb;
+        
+
+
 
         public AppointmentsController(IMediator mediator, ReadDbContext readDb)
         {
@@ -44,5 +49,31 @@ namespace Braphia.AppointmentManagement.Controllers
             var result = await _mediator.Send(new GetAppointmentByIdQuery(id));
             return result != null ? Ok(result) : NotFound();
         }
+
+        // GET: api/appointments/physician/123
+        [HttpGet("physician/{physicianId}")]
+        public async Task<IActionResult> GetByPhysician(int physicianId)
+        {
+            var result = await _mediator.Send(new GetAppointmentsByPhysicianIdQuery(physicianId));
+            return result != null ? Ok(result) : NotFound();
+        }
+
+        // GET: api/appointments/today
+        [HttpGet("today")]
+        public async Task<IActionResult> GetAppointmentsOfToday()
+        {
+            var result = await _mediator.Send(new GetAppointmentsOfTodayQuery());
+            return result != null ? Ok(result) : NotFound();
+        }
+
+
+        
+
+        
+
+        
+
+        
+
     }
 }

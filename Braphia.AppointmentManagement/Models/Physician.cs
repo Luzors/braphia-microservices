@@ -9,6 +9,7 @@ namespace Braphia.AppointmentManagement.Models
         public string LastName { get; set; }
         public SpecializationEnum Specialization { get; set; }
 
+        public Physician() { }
         public Physician(int id, string firstName, string lastName, SpecializationEnum specialization)
         {
             Id = id;

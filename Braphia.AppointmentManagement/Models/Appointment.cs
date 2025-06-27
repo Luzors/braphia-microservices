@@ -23,6 +23,8 @@ namespace Braphia.AppointmentManagement.Models
         public int FollowUpAppointmentId { get; set; }
         public Appointment FollowUpAppointment { get; set; }
 
+        public Appointment(){}
+
         public Appointment(int id, int patientId, int physicianId, int receptionistId, int referralId, DateTime scheduledTime)
         {
             Id = id;

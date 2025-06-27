@@ -9,6 +9,7 @@
 
         public string PhoneNumber { get; set; }
 
+        public Patient() { }
         public Patient(int id, string firstName, string lastName, string email, string phoneNumber)
         {
             Id = id;

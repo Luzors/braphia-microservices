@@ -6,6 +6,9 @@ namespace Braphia.AppointmentManagement.Query.GetAppointmentById
     public class GetAppointmentByIdQuery : IRequest<AppointmentViewQueryModel>
     {
         public int AppointmentId { get; set; }
-        public GetAppointmentByIdQuery(int appointmentId) => AppointmentId = appointmentId;
+        public GetAppointmentByIdQuery(int appointmentId)
+        {
+            AppointmentId = appointmentId;
+        }
     }
 }
