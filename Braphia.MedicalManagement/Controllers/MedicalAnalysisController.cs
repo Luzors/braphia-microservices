@@ -47,7 +47,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<ActionResult<MedicalAnalysis>> GetAsync(int id)
         {
             _logger.LogInformation($"Fetching medicalAnalysis with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid medicalAnalysis ID: {id}");
@@ -90,7 +90,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> PostAsync([FromBody] MedicalAnalysis medicalAnalysis)
         {
             _logger.LogInformation($"Adding a new medicalAnalysis for PatientId: {medicalAnalysis.PatientId}, PhysicianId: {medicalAnalysis.PhysicianId}");
-            
+
             if (medicalAnalysis == null)
             {
                 _logger.LogWarning("MedicalAnalysis data is null");
@@ -110,19 +110,13 @@ namespace Braphia.MedicalManagement.Controllers
                 return BadRequest("Valid physician ID is required");
             }
 
-            if (string.IsNullOrWhiteSpace(medicalAnalysis.Description))
-            {
-                _logger.LogWarning("Description is required");
-                return BadRequest("Description is required");
-            }
-
             try
             {
                 bool result = await _medicalAnalysisRepository.AddMedicalAnalysisAsync(medicalAnalysis);
                 if (result)
                 {
                     _logger.LogInformation($"MedicalAnalysis added successfully with ID {medicalAnalysis.Id}");
-                    return CreatedAtAction(nameof(GetAsync), new { id = medicalAnalysis.Id }, medicalAnalysis);
+                    return StatusCode(201, medicalAnalysis);
                 }
                 else
                 {
@@ -156,7 +150,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> PutAsync(int id, [FromBody] MedicalAnalysis medicalAnalysis)
         {
             _logger.LogInformation($"Updating medicalAnalysis with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid medicalAnalysis ID: {id}");
@@ -233,7 +227,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> DeleteAsync(int id)
         {
             _logger.LogInformation($"Deleting medicalAnalysis with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid medicalAnalysis ID: {id}");
