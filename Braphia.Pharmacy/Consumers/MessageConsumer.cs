@@ -82,5 +82,81 @@ namespace Braphia.Pharmacy.Consumers
                 _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
             }
         }
+
+        private async Task PatientModified(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PatientModified event with ID: {MessageId}", message.MessageId);
+                var patientEvent = JsonSerializer.Deserialize<PatientModifiedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (patientEvent != null)
+                {
+                    _logger.LogInformation("Deserialized patient data: ID={PatientId}, Name={FirstName} {LastName}, Email={Email}",
+                        patientEvent.NewPatient.Id, patientEvent.NewPatient.FirstName, patientEvent.NewPatient.LastName, patientEvent.NewPatient.Email);
+                    var patient = new Patient
+                    {
+                        RootId = patientEvent.NewPatient.Id,
+                        FirstName = patientEvent.NewPatient.FirstName,
+                        LastName = patientEvent.NewPatient.LastName,
+                        Email = patientEvent.NewPatient.Email,
+                        PhoneNumber = patientEvent.NewPatient.PhoneNumber
+                    };
+                    var success = await _patientRepository.UpdatePatientAsync(patient.Id, patient);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully updated patient with ID {PatientId}", patient.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to update patient with ID {PatientId}", patient.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task PatientRemoved(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PatientRemoved event with ID: {MessageId}", message.MessageId);
+                var patientEvent = JsonSerializer.Deserialize<PatientRemovedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (patientEvent != null)
+                {
+                    _logger.LogInformation("Deserialized patient data: ID={PatientId}, Name={FirstName} {LastName}, Email={Email}",
+                        patientEvent.Patient.Id, patientEvent.Patient.FirstName, patientEvent.Patient.LastName, patientEvent.Patient.Email);
+                    var success = await _patientRepository.DeletePatientAsync(patientEvent.Patient.Id);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully removed patient with ID {PatientId}", patientEvent.Patient.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to remove patient with ID {PatientId}", patientEvent.Patient.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+            }
+        }
     }
 }

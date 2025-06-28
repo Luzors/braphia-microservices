@@ -11,5 +11,15 @@ namespace Braphia.Pharmacy.Models
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
+
+        public Pharmacy() { }
+
+        public Pharmacy(string name, string address, string phoneNumber, string email)
+        {
+            Name = name;
+            Address = address;
+            PhoneNumber = phoneNumber;
+            Email = email;
+        }
     }
 }
