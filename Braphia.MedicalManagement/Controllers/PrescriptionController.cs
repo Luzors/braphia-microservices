@@ -122,7 +122,7 @@ namespace Braphia.MedicalManagement.Controllers
                 if (result)
                 {
                     _logger.LogInformation($"Prescription added successfully with ID {prescription.Id}");
-                    return CreatedAtAction(nameof(GetAsync), new { id = prescription.Id }, prescription);
+                    return StatusCode(201, prescription);
                 }
                 else
                 {
