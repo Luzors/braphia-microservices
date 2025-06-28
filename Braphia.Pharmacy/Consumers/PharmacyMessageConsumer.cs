@@ -7,12 +7,12 @@ using System.Text.Json;
 
 namespace Braphia.Pharmacy.Consumers
 {
-    public class MessageConsumer : IConsumer<Message>
+    public class PharmacyMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<MessageConsumer> _logger;
+        private readonly ILogger<PharmacyMessageConsumer> _logger;
 
-        public MessageConsumer(IPatientRepository patientRepository, ILogger<MessageConsumer> logger)
+        public PharmacyMessageConsumer(IPatientRepository patientRepository, ILogger<PharmacyMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
             _logger = logger;

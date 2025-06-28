@@ -18,7 +18,7 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<MessageConsumer>();
+    x.AddConsumer<NotificationMessageConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

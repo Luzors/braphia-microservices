@@ -11,16 +11,16 @@ using System.Text.Json;
 
 namespace Braphia.NotificationDispatcher.Consumers
 {
-    public class MessageConsumer : IConsumer<Message>
+    public class NotificationMessageConsumer : IConsumer<Message>
     {
-        private readonly ILogger<MessageConsumer> _logger;
+        private readonly ILogger<NotificationMessageConsumer> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IPharmacyRepository _pharmacyRepository;
         private readonly ILaboratoryRepository _laboratoryRepository;
         private readonly INotificationRepository _notificationRepository;
 
-        public MessageConsumer(
-            ILogger<MessageConsumer> logger,
+        public NotificationMessageConsumer(
+            ILogger<NotificationMessageConsumer> logger,
             IUserRepository userRepository,
             IPharmacyRepository pharmacyRepository,
             ILaboratoryRepository laboratoryRepository,
@@ -80,7 +80,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                     if (success)
                     {
                         _logger.LogInformation("Successfully added user from UserManagement ID {OriginalPatientId} to notification database with new ID {NewPatientId}",
-                            patientEvent.Patient.RootId, user.Id);
+                            patientEvent.Patient.Id, user.Id);
                     }
                     else
                     {
