@@ -24,15 +24,18 @@ var rabbitMq = builder.AddRabbitMQ("eventbus", port: rabbitMqPort)
     .WithDataVolume("braphia-rabbitmq")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var apiDatabase = sqlServer
+var userDatabase = sqlServer
     .AddDatabase("UserDB");
+
+var laboratoryDatabase = sqlServer
+    .AddDatabase("LaboratoryDb");
 
 var userManagement = builder
     .AddProject<Projects.Braphia_UserManagement>("userManagement")
-    .WithReference(apiDatabase)
-    .WaitFor(apiDatabase)
+    .WithReference(userDatabase)
+    .WaitFor(userDatabase)
     .WithReference(rabbitMq)
-        .WaitFor(rabbitMq);
+    .WaitFor(rabbitMq);
 
 var appointmentManagement = builder
     .AddProject<Projects.Braphia_AppointmentManagement>("appointmentManagement")
@@ -73,12 +76,41 @@ var accounting = builder
     .WaitFor(rabbitMq);
 
 
-//var processor = builder
-//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
-//    .WithReplicas(5)
-//    .WithReference(apiDatabase)
-//    .WaitFor(apiDatabase)
-//    .WithReference(messages)
-//    .WaitFor(messages);
+var pharmacyDbServer = builder
+    .AddSqlServer("sql-server-pharmacy", port: 2017)
+    .WithDataVolume("braphia-pharmacy")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var pharmacyDatabase = pharmacyDbServer
+    .AddDatabase("PharmacyDB");
+
+var pharmacy = builder
+    .AddProject<Projects.Braphia_Pharmacy>("pharmacy")
+    .WithReference(pharmacyDatabase)
+    .WaitFor(pharmacyDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
+
+var laboratory = builder
+    .AddProject<Projects.Braphia_Laboratory>("laboratory")
+    .WithReference(laboratoryDatabase)
+    .WaitFor(laboratoryDatabase)
+    .WithReference(rabbitMq)
+        .WaitFor(rabbitMq);
+
+var notificationDbServer = builder
+    .AddSqlServer("sql-server-notification", port: 2018)
+    .WithDataVolume("braphia-notification")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var notificationDatabase = notificationDbServer
+    .AddDatabase("NotificationDb");
+
+var notification = builder
+    .AddProject<Projects.Braphia_NotificationDispatcher>("notification")
+    .WithReference(notificationDatabase)
+    .WaitFor(notificationDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
 
 builder.Build().Run();
