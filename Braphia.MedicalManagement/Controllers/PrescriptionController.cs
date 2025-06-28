@@ -43,11 +43,11 @@ namespace Braphia.MedicalManagement.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetPrescription")]
         public async Task<ActionResult<Prescription>> GetAsync(int id)
         {
             _logger.LogInformation($"Fetching prescription with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid prescription ID: {id}");
@@ -90,7 +90,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> PostAsync([FromBody] Prescription prescription)
         {
             _logger.LogInformation("Adding a new prescription: " + prescription.ToString());
-            
+
             if (prescription == null)
             {
                 _logger.LogWarning("Prescription data is null");
@@ -122,7 +122,7 @@ namespace Braphia.MedicalManagement.Controllers
                 if (result)
                 {
                     _logger.LogInformation($"Prescription added successfully with ID {prescription.Id}");
-                    return StatusCode(201, prescription);
+                    return CreatedAtRoute("GetPrescription", new { id = prescription.Id }, prescription);
                 }
                 else
                 {
@@ -156,7 +156,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> PutAsync(int id, [FromBody] Prescription prescription)
         {
             _logger.LogInformation($"Updating prescription with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid prescription ID: {id}");
@@ -239,7 +239,7 @@ namespace Braphia.MedicalManagement.Controllers
         public async Task<IActionResult> DeleteAsync(int id)
         {
             _logger.LogInformation($"Deleting prescription with ID {id}");
-            
+
             if (id <= 0)
             {
                 _logger.LogWarning($"Invalid prescription ID: {id}");

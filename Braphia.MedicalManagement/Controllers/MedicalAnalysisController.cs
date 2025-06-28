@@ -43,7 +43,7 @@ namespace Braphia.MedicalManagement.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetMedicalAnalysis")]
         public async Task<ActionResult<MedicalAnalysis>> GetAsync(int id)
         {
             _logger.LogInformation($"Fetching medicalAnalysis with ID {id}");
@@ -116,7 +116,7 @@ namespace Braphia.MedicalManagement.Controllers
                 if (result)
                 {
                     _logger.LogInformation($"MedicalAnalysis added successfully with ID {medicalAnalysis.Id}");
-                    return StatusCode(201, medicalAnalysis);
+                    return CreatedAtRoute("GetMedicalAnalysis", new { id = medicalAnalysis.Id }, medicalAnalysis);
                 }
                 else
                 {
