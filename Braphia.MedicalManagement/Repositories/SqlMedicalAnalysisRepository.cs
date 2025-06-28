@@ -42,8 +42,8 @@ namespace Braphia.MedicalManagement.Repositories
                 throw new InvalidOperationException("Failed to add medicalAnalysis.");
 
             await _publishEndpoint.Publish(new Message(
-                messageType: "MedicalAnalysisCreated",
-                data: new MedicalAnalysisCreatedEvent(medicalAnalysis)
+                messageType: "ExaminedPatient",
+                data: new ExaminedPatientEvent(medicalAnalysis)
             ));
             return true;
         }
@@ -68,6 +68,11 @@ namespace Braphia.MedicalManagement.Repositories
             _context.MedicalAnalysis.Update(medicalAnalysis);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update medicalAnalysis.");
+
+            await _publishEndpoint.Publish(new Message(
+                messageType: "ChangedExamination",
+                data: new ChangedExaminationEvent(medicalAnalysis)
+            ));
 
             return true;
         }

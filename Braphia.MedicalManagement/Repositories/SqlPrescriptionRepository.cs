@@ -1,6 +1,9 @@
 ﻿using Braphia.MedicalManagement.Database;
+using Braphia.MedicalManagement.Events;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.MedicalManagement.Repositories
@@ -8,10 +11,12 @@ namespace Braphia.MedicalManagement.Repositories
     public class SqlPrescriptionRepository : IPrescriptionRepository
     {
         private readonly DBContext _context;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public SqlPrescriptionRepository(DBContext context)
+        public SqlPrescriptionRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         public async Task<Prescription> GetPrescriptionAsync(int id)
@@ -35,6 +40,11 @@ namespace Braphia.MedicalManagement.Repositories
             await _context.Prescription.AddAsync(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to add prescription.");
+
+            await _publishEndpoint.Publish(new Message(
+                messageType: "PrescriptionWritten",
+                data: new PrescriptionWrittenEvent(prescription)
+            ));
             return true;
         }
 
@@ -58,6 +68,12 @@ namespace Braphia.MedicalManagement.Repositories
             _context.Prescription.Update(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update prescription.");
+            
+            await _publishEndpoint.Publish(new Message(
+                messageType: "PrescriptionChanged",
+                data: new PrescriptionChangedEvent(prescription)
+            ));
+            
             return true;
         }
     }
