@@ -1,6 +1,9 @@
 ﻿using Braphia.MedicalManagement.Database;
+using Braphia.MedicalManagement.Events;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.MedicalManagement.Repositories
@@ -8,10 +11,12 @@ namespace Braphia.MedicalManagement.Repositories
     public class SqlMedicalAnalysisRepository : IMedicalAnalysisRepository
     {
         private readonly DBContext _context;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public SqlMedicalAnalysisRepository(DBContext context)
+        public SqlMedicalAnalysisRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         public async Task<MedicalAnalysis> GetMedicalAnalysisAsync(int id)
@@ -35,6 +40,11 @@ namespace Braphia.MedicalManagement.Repositories
             await _context.MedicalAnalysis.AddAsync(medicalAnalysis);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to add medicalAnalysis.");
+
+            await _publishEndpoint.Publish(new Message(
+                messageType: "MedicalAnalysisCreated",
+                data: new MedicalAnalysisCreatedEvent(medicalAnalysis)
+            ));
             return true;
         }
 
@@ -58,6 +68,7 @@ namespace Braphia.MedicalManagement.Repositories
             _context.MedicalAnalysis.Update(medicalAnalysis);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update medicalAnalysis.");
+
             return true;
         }
     }
