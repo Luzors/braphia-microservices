@@ -10,7 +10,7 @@ var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
     .WithDataVolume("braphia-rabbitmq")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var apiDatabase = sqlServer
+var userDatabase = sqlServer
     .AddDatabase("UserDB");
 
 var laboratoryDatabase = sqlServer
@@ -18,10 +18,10 @@ var laboratoryDatabase = sqlServer
 
 var userManagement = builder
     .AddProject<Projects.Braphia_UserManagement>("userManagement")
-    .WithReference(apiDatabase)
-    .WaitFor(apiDatabase)
+    .WithReference(userDatabase)
+    .WaitFor(userDatabase)
     .WithReference(rabbitMq)
-        .WaitFor(rabbitMq);
+    .WaitFor(rabbitMq);
 
 var appointmentManagement = builder
     .AddProject<Projects.Braphia_AppointmentManagement>("appointmentManagement")
@@ -55,7 +55,7 @@ var pharmacyDatabase = pharmacyDbServer
     .AddDatabase("PharmacyDB");
 
 var pharmacy = builder
-    .AddProject<Projects.Braphia_Pharmacy>("braphia-pharmacy")
+    .AddProject<Projects.Braphia_Pharmacy>("pharmacy")
     .WithReference(pharmacyDatabase)
     .WaitFor(pharmacyDatabase)
     .WithReference(rabbitMq)
@@ -67,5 +67,20 @@ var laboratory = builder
     .WaitFor(laboratoryDatabase)
     .WithReference(rabbitMq)
         .WaitFor(rabbitMq);
+
+var notificationDbServer = builder
+    .AddSqlServer("sql-server-notification", port: 2018)
+    .WithDataVolume("braphia-notification")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var notificationDatabase = notificationDbServer
+    .AddDatabase("NotificationDb");
+
+var notification = builder
+    .AddProject<Projects.Braphia_NotificationDispatcher>("notification")
+    .WithReference(notificationDatabase)
+    .WaitFor(notificationDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
 
 builder.Build().Run();
