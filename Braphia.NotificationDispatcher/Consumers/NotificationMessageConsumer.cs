@@ -576,9 +576,10 @@ namespace Braphia.NotificationDispatcher.Consumers
                     _logger.LogInformation("Deserialized medication order data: ID={OrderId}, PatientId={PatientId}, PharmacyId={PharmacyId}",
                         medicationEvent.MedicationOrder.Id, medicationEvent.MedicationOrder.PatientId, medicationEvent.MedicationOrder.PharmacyId);
 
-                    var user = _userRepository.GetUserByIdAsync(medicationEvent.MedicationOrder.PatientId, UserTypeEnum.Patient) ??
+                    var user = await _userRepository.GetUserByIdAsync(medicationEvent.MedicationOrder.PatientId, UserTypeEnum.Patient) ??
                         throw new Exception($"User with ID {medicationEvent.MedicationOrder.PatientId} not found in notification database.");
 
+                    Console.WriteLine(JsonSerializer.Serialize(user));
                     var notification = new Notification(title: "Medication Order Completed",
                         message: $"Medication order {medicationEvent.MedicationOrder.Id} for patient {medicationEvent.MedicationOrder.PatientId} has been completed.",
                         userId: user.Id);
