@@ -1,5 +1,5 @@
 ﻿using Braphia.UserManagement.Database;
-using Braphia.UserManagement.Events;
+using Braphia.UserManagement.Events.Referrals;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
@@ -38,6 +38,7 @@ namespace Braphia.UserManagement.Repositories
             existingReferral.Reason = referral.Reason;
             existingReferral.ReferralDate = referral.ReferralDate;
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new ReferralSubmittedEvent(existingReferral)));
             return true;
         }
 
@@ -46,6 +47,7 @@ namespace Braphia.UserManagement.Repositories
             var referral = await _context.Referral.FirstOrDefaultAsync(r => r.Id == referralId) ?? throw new ArgumentException($"Referral with ID {referralId} not found.");
             _context.Referral.Remove(referral);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new ReferralSubmittedEvent(referral)));
             return true;
         }
 
