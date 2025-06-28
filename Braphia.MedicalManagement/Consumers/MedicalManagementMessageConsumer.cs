@@ -41,7 +41,7 @@ namespace Braphia.MedicalManagement.Consumers
             {
                 _logger.LogInformation("Received PatientCreated event with ID: {MessageId}", message.MessageId);
 
-                var patientEvent = JsonSerializer.Deserialize<PatientCreatedEvent>(
+                var patientEvent = JsonSerializer.Deserialize<PatientRegisteredEvent>(
                     message.Data.ToString() ?? string.Empty,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                 );
