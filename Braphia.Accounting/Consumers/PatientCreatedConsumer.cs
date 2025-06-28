@@ -35,15 +35,16 @@ namespace Braphia.Accounting.Consumers
                     
                     if (patientEvent != null)
                     {
-                        _logger.LogInformation("Deserialized patient data: ID={PatientId}, Name={FirstName} {LastName}, Email={Email}", 
-                            patientEvent.PatientId, patientEvent.FirstName, patientEvent.LastName, patientEvent.Email);
+                        _logger.LogInformation("Deserialized patient data: ID={RootId}, Name={FirstName} {LastName}, Email={Email}", 
+                            patientEvent.Patient.Id, patientEvent.Patient.FirstName, patientEvent.Patient.LastName, patientEvent.Patient.Email);
                           
                         var patient = new Patient
                         {
-                            FirstName = patientEvent.FirstName,
-                            LastName = patientEvent.LastName,
-                            Email = patientEvent.Email,
-                            PhoneNumber = patientEvent.PhoneNumber
+                            RootId = patientEvent.Patient.Id,
+                            FirstName = patientEvent.Patient.FirstName,
+                            LastName = patientEvent.Patient.LastName,
+                            Email = patientEvent.Patient.Email,
+                            PhoneNumber = patientEvent.Patient.PhoneNumber
                         };
 
                         var success = await _patientRepository.AddPatientAsync(patient);
@@ -51,10 +52,10 @@ namespace Braphia.Accounting.Consumers
                         if (success)
                         {
                             _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId} to accounting database with new ID {NewPatientId}", 
-                                patientEvent.PatientId, patient.Id);
+                                patientEvent.Patient.Id, patient.Id);
                         }                        else
                         {
-                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.PatientId);
+                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
                         }
                     }
                     else

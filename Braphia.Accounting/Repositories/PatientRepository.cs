@@ -61,12 +61,19 @@ namespace Braphia.Accounting.Repositories
 
         public async Task<Patient?> GetPatientByIdAsync(int patientId)
         {
-            return await _context.Patient.FindAsync(patientId);
-        }
-
-        public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
+            return await _context.Patient
+                .Include(p => p.Insurer)
+                .FirstOrDefaultAsync(p => p.Id == patientId);
+        }public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
         {
             return await _context.Patient.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Patient>> GetPatientsByInsurerIdAsync(int insurerId)
+        {
+            return await _context.Patient
+                .Where(p => p.InsurerId == insurerId)
+                .ToListAsync();
         }
     }
 }
