@@ -6,6 +6,9 @@ This Microservice is responsible for managing users in the system. It provides f
 ## Fired-Events
 | Event Name | Description |
 |------------|-------------|
+| PatientRegistered | new Patient in the db |
+| ReferralSubmitted | new Referral in the db |
+| PatientModified | updated Patient in the db |
 
 ## Consumed-Events
 | Event Name | Description |

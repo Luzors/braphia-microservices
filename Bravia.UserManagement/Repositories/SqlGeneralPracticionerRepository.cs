@@ -28,9 +28,7 @@ namespace Braphia.UserManagement.Repositories
 
         public async Task<bool> DeleteGeneralPracticionerAsync(int generalPracticionerId)
         {
-            var generalPracticioner = await _context.GeneralPracticioner.FirstOrDefaultAsync(gp => gp.Id == generalPracticionerId);
-            if (generalPracticioner == null)
-                throw new ArgumentException($"GeneralPracticioner with ID {generalPracticionerId} not found.");
+            var generalPracticioner = await _context.GeneralPracticioner.FirstOrDefaultAsync(gp => gp.Id == generalPracticionerId) ?? throw new ArgumentException($"GeneralPracticioner with ID {generalPracticionerId} not found.");
             _context.GeneralPracticioner.Remove(generalPracticioner);
             await _context.SaveChangesAsync();
             return true;
@@ -50,9 +48,7 @@ namespace Braphia.UserManagement.Repositories
         {
             if (generalPracticioner == null)
                 throw new ArgumentNullException(nameof(generalPracticioner), "GeneralPracticioner cannot be null.");
-            var existingGeneralPracticioner = await _context.GeneralPracticioner.FirstOrDefaultAsync(gp => gp.Id == generalPracticioner.Id);
-            if (existingGeneralPracticioner == null)
-                throw new ArgumentException($"GeneralPracticioner with ID {generalPracticioner.Id} not found.");
+            var existingGeneralPracticioner = await _context.GeneralPracticioner.FirstOrDefaultAsync(gp => gp.Id == generalPracticioner.Id) ?? throw new ArgumentException($"GeneralPracticioner with ID {generalPracticioner.Id} not found.");
             existingGeneralPracticioner.FirstName = generalPracticioner.FirstName;
             existingGeneralPracticioner.LastName = generalPracticioner.LastName;
             existingGeneralPracticioner.Email = generalPracticioner.Email;

@@ -1,8 +1,7 @@
-using Braphia.UserManagement.Consumers;
-using Braphia.UserManagement.Database;
-using Braphia.UserManagement.Repositories;
-using Braphia.UserManagement.Repositories.Interfaces;
-using Braphia.UserManagement.Services;
+using Braphia.Pharmacy.Consumers;
+using Braphia.Pharmacy.Database;
+using Braphia.Pharmacy.Repositories;
+using Braphia.Pharmacy.Repositories.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-var connectionString = builder.Configuration.GetConnectionString("UserDB") ??
+var connectionString = builder.Configuration.GetConnectionString("PharmacyDB") ??
                        throw new InvalidOperationException("No connection string configured");
 
 builder.Services
@@ -18,7 +17,8 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<ExternalUserFetchedConsumer>();
+    x.AddConsumer<MessageConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
@@ -26,21 +26,14 @@ builder.Services.AddMassTransit(x =>
         cfg.Host(rabbitMqConnection);
 
         cfg.ConfigureEndpoints(context);
-
-        cfg.ReceiveEndpoint("external-user-queue", e =>
-        {
-            e.ConfigureConsumer<ExternalUserFetchedConsumer>(context);
-        });
     });
 });
 
+builder.Services.AddScoped<IMedicationOrderRepository, SqlMedicationOrderRepository>();
+builder.Services.AddScoped<IMedicationRepository, SqlMedicationRepository>();
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
-builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
-builder.Services.AddScoped<IReceptionistRepository, SqlReceptionistRepository>();
-builder.Services.AddScoped<IGeneralPracticionerRepository, SqlGeneralPracticionerRepository>();
-builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
-
-builder.Services.AddHostedService<ExternalUserSyncService>();
+builder.Services.AddScoped<IPharmacyRepository, SqlPharmacyRepository>();
+builder.Services.AddScoped<IPrescriptionRepository, SqlPrescriptionRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

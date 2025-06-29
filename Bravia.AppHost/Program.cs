@@ -1,8 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sqlServer = builder
-    .AddSqlServer("sql-server", port: 2015)
-    .WithDataVolume("braphia")
+    .AddSqlServer("sql-server-usermanagement", port: 2015)
+    .WithDataVolume("braphia-usermanagement")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var rabbitMq = builder.AddRabbitMQ("eventbus", port: 5672)
@@ -42,6 +42,21 @@ var accounting = builder
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq);
 
+var pharmacyDbServer = builder
+    .AddSqlServer("sql-server-pharmacy", port: 2017)
+    .WithDataVolume("braphia-pharmacy")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var pharmacyDatabase = pharmacyDbServer
+    .AddDatabase("PharmacyDB");
+
+var pharmacy = builder
+    .AddProject<Projects.Braphia_Pharmacy>("braphia-pharmacy")
+    .WithReference(pharmacyDatabase)
+    .WaitFor(pharmacyDatabase)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq);
+
 var laboratoryDbServer = builder
     .AddSqlServer("sql-server-laboratory", port: 2017)
     .WithDataVolume("braphia-laboratory")
@@ -56,23 +71,5 @@ var laboratory = builder
     .WaitFor(laboratoryDatabase)
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq);
-
-//var processor = builder
-//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
-//    .WithReplicas(5)
-//    .WithReference(apiDatabase)
-//    .WaitFor(apiDatabase)
-//    .WithReference(messages)
-//    .WaitFor(messages);
-
-//builder.AddProject<Projects.Braphia_Laboratory>("braphia-laboratory");
-
-//var processor = builder
-//    .AddProject<Projects.InsuranceDetails_Processor>("processor")
-//    .WithReplicas(5)
-//    .WithReference(apiDatabase)
-//    .WaitFor(apiDatabase)
-//    .WithReference(messages)
-//    .WaitFor(messages);
 
 builder.Build().Run();

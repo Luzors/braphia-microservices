@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Laboratory", "Braph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Accounting", "Braphia.Accounting\Braphia.Accounting.csproj", "{51008D7E-10C5-4626-9601-0186C3377DDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Pharmacy", "Braphia.Pharmacy\Braphia.Pharmacy.csproj", "{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,14 @@ Global
 		{51008D7E-10C5-4626-9601-0186C3377DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51008D7E-10C5-4626-9601-0186C3377DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51008D7E-10C5-4626-9601-0186C3377DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A41B07F-E551-6635-A270-577E5499BDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A41B07F-E551-6635-A270-577E5499BDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A41B07F-E551-6635-A270-577E5499BDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A41B07F-E551-6635-A270-577E5499BDFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
