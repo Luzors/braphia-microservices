@@ -17,7 +17,7 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<PatientCreatedConsumer>();
+    x.AddConsumer<PatientRegisteredConsumer>();
     x.AddConsumer<TestCompletedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>

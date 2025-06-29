@@ -1,15 +1,15 @@
-﻿using Braphia.Accounting.Database;
-using Braphia.Accounting.Models;
-using Braphia.Accounting.Repositories.Interfaces;
+using Braphia.Laboratory.Database;
+using Braphia.Laboratory.Models;
+using Braphia.Laboratory.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Braphia.Accounting.Repositories
+namespace Braphia.Laboratory.Repositories
 {
     public class SqlPatientRepository : IPatientRepository
     {
-        private readonly AccountingDBContext _context;
+        private readonly DBContext _context;
 
-        public SqlPatientRepository(AccountingDBContext context)
+        public SqlPatientRepository(DBContext context)
         {
             _context = context;
         }
@@ -18,7 +18,7 @@ namespace Braphia.Accounting.Repositories
         {
             try
             {
-                _context.Patient.Add(patient);
+                _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -32,7 +32,7 @@ namespace Braphia.Accounting.Repositories
         {
             try
             {
-                _context.Patient.Update(patient);
+                _context.Patients.Update(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -46,10 +46,10 @@ namespace Braphia.Accounting.Repositories
         {
             try
             {
-                var patient = await _context.Patient.FindAsync(patientId);
+                var patient = await _context.Patients.FindAsync(patientId);
                 if (patient == null) return false;
 
-                _context.Patient.Remove(patient);
+                _context.Patients.Remove(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -61,21 +61,14 @@ namespace Braphia.Accounting.Repositories
 
         public async Task<Patient?> GetPatientByIdAsync(int patientId)
         {
-            return await _context.Patient
-                .Include(p => p.Insurer)
+            return await _context.Patients
                 .FirstOrDefaultAsync(p => p.Id == patientId);
         }
 
         public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
         {
-            return await _context.Patient.ToListAsync();
+            return await _context.Patients.ToListAsync();
         }
 
-        public async Task<IEnumerable<Patient>> GetPatientsByInsurerIdAsync(int insurerId)
-        {
-            return await _context.Patient
-                .Where(p => p.InsurerId == insurerId)
-                .ToListAsync();
-        }
     }
 }
