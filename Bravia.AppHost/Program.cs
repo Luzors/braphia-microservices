@@ -58,7 +58,7 @@ var pharmacy = builder
     .WaitFor(rabbitMq);
 
 var laboratoryDbServer = builder
-    .AddSqlServer("sql-server-laboratory", port: 2017)
+    .AddSqlServer("sql-server-laboratory", port: 2018)
     .WithDataVolume("braphia-laboratory")
     .WithLifetime(ContainerLifetime.Persistent);
 
