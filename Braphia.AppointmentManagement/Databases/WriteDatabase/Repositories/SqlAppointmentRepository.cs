@@ -21,11 +21,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             await _context.Appointments.AddAsync(appointment);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<bool> UpdateAppointmentAsync(int id, Appointment appointment)
+        public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
-            var existingAppointment = await _context.Appointments.FindAsync(id)
+            var existingAppointment = await _context.Appointments.FindAsync(appointment.Id)
                 ?? throw new ArgumentException($"Appointment with ID {appointment.Id} not found.");
             existingAppointment.PatientId = appointment.PatientId;
             existingAppointment.PhysicianId = appointment.PhysicianId;

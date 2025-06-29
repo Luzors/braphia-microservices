@@ -73,10 +73,24 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
             var existingAppointment = await GetAppointmentByIdAsync(appointment.AppointmentId);
             existingAppointment.PatientId = appointment.PatientId;
+            existingAppointment.PatientFirstName = appointment.PatientFirstName;
+            existingAppointment.PatientLastName = appointment.PatientLastName;
+            existingAppointment.PatientEmail = appointment.PatientEmail;
+            existingAppointment.PatientPhoneNumber = appointment.PatientPhoneNumber;
             existingAppointment.PhysicianId = appointment.PhysicianId;
+            existingAppointment.PhysicianFirstName = appointment.PhysicianFirstName;
+            existingAppointment.PhysicianLastName = appointment.PhysicianLastName;
+            existingAppointment.PhysicianSpecialization = appointment.PhysicianSpecialization;
+            existingAppointment.ReceptionistId = appointment.ReceptionistId;
+            existingAppointment.ReceptionistFirstName = appointment.ReceptionistFirstName;
+            existingAppointment.ReceptionistLastName = appointment.ReceptionistLastName;
+            existingAppointment.ReceptionistEmail = appointment.ReceptionistEmail;
             existingAppointment.ScheduledTime = appointment.ScheduledTime;
             existingAppointment.StateName = appointment.StateName;
             existingAppointment.ReferralId = appointment.ReferralId;
+            existingAppointment.ReferralDate = appointment.ReferralDate;
+            existingAppointment.ReferralReason = appointment.ReferralReason;
+
             _context.AppointmentViewQueryModels.Update(existingAppointment);
             return await _context.SaveChangesAsync() > 0;
         }

@@ -5,9 +5,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
     public interface IAppointmentRepository
     {
         Task<bool> AddAppointmentAsync( Appointment appointment );
-        Task<bool> UpdateAppointmentAsync( int id,Appointment appointment );
+        Task<bool> UpdateAppointmentAsync(Appointment appointment );
         Task<bool> DeleteAppointmentAsync( int appointmentId );
         Task<Appointment> GetAppointmentByIdAsync(int appointmentId );
+        Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
         Task<bool> AddFollowUpAppointmentAsync(int appointmentId, Appointment followUpAppointment );
 
 
