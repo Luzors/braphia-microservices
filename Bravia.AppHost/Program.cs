@@ -45,7 +45,7 @@ var appointmentManagement = builder
         .WaitFor(rabbitMq);
 
 var medicalAnalysisDbServer = builder
-    .AddSqlServer("sql-server-medicalAnalysis", port: 2017)
+    .AddSqlServer("sql-server-medicalAnalysis", port: 2019)
     .WithDataVolume("braphia-medicalAnalysis")
     .WithLifetime(ContainerLifetime.Persistent);
     
