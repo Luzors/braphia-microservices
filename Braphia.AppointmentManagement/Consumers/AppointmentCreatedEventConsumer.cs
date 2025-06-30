@@ -55,6 +55,11 @@ namespace Braphia.AppointmentManagement.Consumers
                     var newState = JsonSerializer.Deserialize<AppointmentStateChangedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleStateChange(newState);
                     break;
+
+                case "ScheduledFollowUpAppointment":
+                    var followUpEvent = JsonSerializer.Deserialize<ScheduledFollowUpAppointmentEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    await HandleFollowUpAppointment(followUpEvent);
+                    break;
                 default:
                     _logger.LogWarning("Unhandled message type: {MessageType}", type);
                     break;
@@ -146,6 +151,41 @@ namespace Braphia.AppointmentManagement.Consumers
             appointment.State = evt.NewState;
             await _readRepo.UpdateAppointmentAsync(appointment);
             _logger.LogInformation("Updated state for Appointment ID {AppointmentId} to {NewState}", evt.AppointmentId, evt.NewState);
+        }
+
+        private async Task HandleFollowUpAppointment(ScheduledFollowUpAppointmentEvent? evt)
+        {
+            if (evt == null)
+            {
+                _logger.LogWarning("Received null ScheduledFollowUpAppointmentEvent.");
+                return;
+            }
+
+            var viewModel = new AppointmentViewQueryModel
+            {
+                AppointmentId = evt.AppointmentId,
+                PatientId = evt.PatientId,
+                PatientFirstName = evt.PatientFirstName,
+                PatientLastName = evt.PatientLastName,
+                PatientEmail = evt.PatientEmail,
+                PatientPhoneNumber = evt.PatientPhoneNumber,
+                IsIdChecked = evt.IsIdChecked,
+                PhysicianId = evt.PhysicianId,
+                PhysicianFirstName = evt.PhysicianFirstName,
+                PhysicianLastName = evt.PhysicianLastName,
+                PhysicianSpecialization = evt.PhysicianSpecialization,
+                ReceptionistId = evt.ReceptionistId,
+                ReceptionistFirstName = evt.ReceptionistFirstName,
+                ReceptionistLastName = evt.ReceptionistLastName,
+                ReceptionistEmail = evt.ReceptionistEmail,
+                ReferralId = evt.ReferralId,
+                ReferralDate = evt.ReferralDate,
+                ReferralReason = evt.ReferralReason,
+                State = evt.State,
+                ScheduledTime = evt.ScheduledTime
+            };
+
+            await _readRepo.AddFollowUpAppointment( viewModel, evt.AppointmentId);
         }
     }
 

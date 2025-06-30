@@ -99,5 +99,19 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context.Appointments.Update(appointment);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<bool> AddFollowUpAppointment(int appointmentId, Appointment followUpAppointment)
+        {
+            if (followUpAppointment == null)
+                throw new ArgumentNullException(nameof(followUpAppointment), "Follow-up appointment cannot be null.");
+            var originalAppointment = await GetAppointmentByIdAsync(appointmentId);
+            if (originalAppointment == null)
+                throw new ArgumentException($"Original appointment with ID {appointmentId} not found.");
+            var result = await AddAppointmentAsync(followUpAppointment);
+            if (!result)
+                throw new InvalidOperationException("Failed to add follow-up appointment.");
+            originalAppointment.SetFollowUpAppointment(followUpAppointment);
+            return await UpdateAppointmentAsync(originalAppointment);
+        }
     }
 }

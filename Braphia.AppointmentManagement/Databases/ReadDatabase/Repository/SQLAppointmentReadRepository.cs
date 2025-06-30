@@ -29,6 +29,23 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<bool> AddFollowUpAppointment(AppointmentViewQueryModel appointment, int originalAppointmentId)
+        {
+            var originalAppointment = await GetAppointmentByIdAsync(originalAppointmentId);
+            if (originalAppointment == null)
+                throw new ArgumentException($"Original appointment with ID {originalAppointmentId} not found.");
+            var followUpAppointment = await AddAppointmentAsync(appointment);
+            if (!followUpAppointment)
+                throw new InvalidOperationException("Failed to add follow-up appointment.");
+
+            originalAppointment.FollowUpAppointmentId = appointment.AppointmentId;
+
+            var result = await UpdateAppointmentAsync(originalAppointment);
+            if (!result)
+                throw new InvalidOperationException("Failed to update original appointment with follow-up appointment ID.");
+            return result;
+        }
+
         public async Task<IEnumerable<AppointmentViewQueryModel>> GetAllAppointmentsAsync()
         {
             return await _context.AppointmentViewQueryModels.ToListAsync();

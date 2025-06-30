@@ -12,6 +12,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
         Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
         Task<bool> AddFollowUpAppointmentAsync(int appointmentId, Appointment followUpAppointment );
         Task<bool> UpdateAppointmentStateAsync(int patientId, AppointmentStateEnum appointmentState);
+        Task<bool> AddFollowUpAppointment(int appointmentId, Appointment followUpAppointment );
 
     }
 }

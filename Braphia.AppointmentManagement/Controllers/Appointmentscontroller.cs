@@ -1,4 +1,5 @@
 ﻿using Braphia.AppointmentManagement.Commands.AddAppointment;
+using Braphia.AppointmentManagement.Commands.AppointmentFollowUpScheduled;
 using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
 using Braphia.AppointmentManagement.Commands.AppointmentStateChanged;
 using Braphia.AppointmentManagement.Commands.UserCheckId;
@@ -125,7 +126,7 @@ namespace Braphia.AppointmentManagement.Controllers
             return Ok(appointment.Id);
         }
 
- 
+        // POST: api/appointments/checkId
         [HttpPost("checkId")]
         public async Task<IActionResult> CheckId(UserCheckIdCommand userCheckIdCommand)
         {
@@ -135,6 +136,15 @@ namespace Braphia.AppointmentManagement.Controllers
 
             // Ensure 'result' is treated as a boolean by checking its value explicitly
             return result > 0 ? Ok("ID checked successfully.") : BadRequest("Failed to check ID.");
+        }
+
+        // POST: api/appointments/followup
+        [HttpPost("followup")]
+        public async Task<IActionResult> CreateFollowUpAppointment([FromBody] AppointmentFollowUpScheduledCommand command)
+        {
+            
+            var appointmentId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
         }
 
         // GET: api/appointments

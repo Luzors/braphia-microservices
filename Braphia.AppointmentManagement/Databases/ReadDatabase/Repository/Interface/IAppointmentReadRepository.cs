@@ -7,6 +7,7 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interf
         Task<bool> AddAppointmentAsync(AppointmentViewQueryModel appointment);
         Task<bool> UpdateAppointmentAsync(AppointmentViewQueryModel appointment);
         Task<bool> DeleteAppointmentAsync(int appointmentId);
+        Task<bool> AddFollowUpAppointment(AppointmentViewQueryModel appointment, int originalAppointmentId);
         Task<AppointmentViewQueryModel> GetAppointmentByIdAsync(int appointmentId);
         Task<IEnumerable<AppointmentViewQueryModel>> GetAllAppointmentsAsync();
         Task<IEnumerable<AppointmentViewQueryModel>> GetAppointmentsByPatientIdAsync(int patientId);
