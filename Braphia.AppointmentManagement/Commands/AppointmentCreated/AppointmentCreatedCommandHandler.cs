@@ -80,7 +80,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 ReferralId = referral.Id,
                 ReferralDate = referral.ReferralDate,
                 ReferralReason = referral.Reason,
-                StateName = "Created"
+                State = appointment.state
             };
             var mes = new Message(@event);
             await _publishEndpoint.Publish(mes, cancellationToken);
