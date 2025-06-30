@@ -27,9 +27,6 @@ var rabbitMq = builder.AddRabbitMQ("eventbus", port: rabbitMqPort)
 var userDatabase = sqlServer
     .AddDatabase("UserDB");
 
-var laboratoryDatabase = sqlServer
-    .AddDatabase("LaboratoryDb");
-
 var userManagement = builder
     .AddProject<Projects.Braphia_UserManagement>("userManagement")
     .WithReference(userDatabase)
@@ -75,7 +72,6 @@ var accounting = builder
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq);
 
-
 var pharmacyDbServer = builder
     .AddSqlServer("sql-server-pharmacy", port: 2017)
     .WithDataVolume("braphia-pharmacy")
@@ -91,12 +87,20 @@ var pharmacy = builder
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq);
 
+var laboratoryDbServer = builder
+    .AddSqlServer("sql-server-laboratory", port: 2018)
+    .WithDataVolume("braphia-laboratory")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var laboratoryDatabase = laboratoryDbServer
+    .AddDatabase("LaboratoryDb");
+
 var laboratory = builder
     .AddProject<Projects.Braphia_Laboratory>("laboratory")
     .WithReference(laboratoryDatabase)
     .WaitFor(laboratoryDatabase)
     .WithReference(rabbitMq)
-        .WaitFor(rabbitMq);
+    .WaitFor(rabbitMq);
 
 var notificationDbServer = builder
     .AddSqlServer("sql-server-notification", port: 2018)

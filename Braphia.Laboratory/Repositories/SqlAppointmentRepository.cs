@@ -13,6 +13,7 @@ namespace Braphia.Laboratory.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
        
+        // TODO: verwijderen want appointment wordt overgenomen vanuit event
         public async Task<bool> AddAppointmentAsync(Appointment appointment)
         {
             if (appointment == null)
@@ -22,25 +23,12 @@ namespace Braphia.Laboratory.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteAppointmentAsync(Guid appointmentId)
-        {
-            var appointment = await _context.Appointments.FindAsync(appointmentId);
-
-            if (appointment == null)
-                throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
-
-            _context.Appointments.Remove(appointment);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-
         public async Task<IEnumerable<Appointment>> GetAllAppointmentsAsync()
         {
             return await _context.Appointments.ToListAsync();
         }
 
-        public async Task<Appointment?> GetAppointmentByIdAsync(Guid appointmentId)
+        public async Task<Appointment?> GetAppointmentByIdAsync(int appointmentId)
         {
             return await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId);
 
@@ -54,6 +42,7 @@ namespace Braphia.Laboratory.Repositories
             if (existing == null)
                 throw new ArgumentException($"Appointment with ID {appointment.Id} not found.");
             existing.AppointmentDate = appointment.AppointmentDate;
+            existing.PatientId = appointment.PatientId;
             await _context.SaveChangesAsync();
             return true;
         }

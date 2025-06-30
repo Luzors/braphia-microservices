@@ -7,12 +7,12 @@ using System.Text.Json;
 
 namespace Braphia.Accounting.Consumers
 {
-    public class PatientCreatedConsumer : IConsumer<Message>
+    public class PatientRegisteredConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<PatientCreatedConsumer> _logger;
+        private readonly ILogger<PatientRegisteredConsumer> _logger;
 
-        public PatientCreatedConsumer(IPatientRepository patientRepository, ILogger<PatientCreatedConsumer> logger)
+        public PatientRegisteredConsumer(IPatientRepository patientRepository, ILogger<PatientRegisteredConsumer> logger)
         {
             _patientRepository = patientRepository;
             _logger = logger;
@@ -28,7 +28,7 @@ namespace Braphia.Accounting.Consumers
                 {
                     _logger.LogInformation("Received PatientCreated event with ID: {MessageId}", message.MessageId);
                     
-                    var patientEvent = JsonSerializer.Deserialize<PatientCreatedEvent>(
+                    var patientEvent = JsonSerializer.Deserialize<PatientRegisteredEvent>(
                         message.Data.ToString() ?? string.Empty,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                     );
@@ -60,7 +60,7 @@ namespace Braphia.Accounting.Consumers
                     }
                     else
                     {
-                        _logger.LogError("Failed to deserialize PatientCreatedEvent from message data: {Data}", message.Data.ToString());
+                        _logger.LogError("Failed to deserialize PatientRegisteredEvent from message data: {Data}", message.Data.ToString());
                     }
                 }
                 catch (Exception ex)

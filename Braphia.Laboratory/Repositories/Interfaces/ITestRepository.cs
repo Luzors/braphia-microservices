@@ -1,15 +1,13 @@
-﻿using Braphia.Laboratory.Models;
+﻿using Braphia.Laboratory.Enums;
+using Braphia.Laboratory.Models;
 
 namespace Braphia.Laboratory.Repositories.Interfaces
 {
     public interface ITestRepository
     {
-        Task<bool> AddTestAsync(Test test);
-        Task<bool> UpdateTestAsync(Test test);
-        Task<bool> DeleteTestAsync(Guid testId);
-        Task<Test?> GetTestByIdAsync(Guid testId);
-        Task<IEnumerable<Test>> GetAllTestsAsync();
-  
-        
+        Task<bool> AddAsync(Test test);
+        Task<Test?> GetByIdAsync(int id);
+        Task<IEnumerable<Test>> GetAllAsync();
+        Task UpdateAsync(Test test);
     }
 }

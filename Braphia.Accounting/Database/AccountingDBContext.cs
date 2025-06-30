@@ -10,6 +10,7 @@ namespace Braphia.Accounting.Database
         public DbSet<Patient> Patient { get; set; }
         public DbSet<Invoice> Invoice { get; set; }
         public DbSet<Insurer> Insurer { get; set; }
+        public DbSet<Test> Test { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,12 @@ namespace Braphia.Accounting.Database
                 .WithMany(ins => ins.Invoices)
                 .HasForeignKey(i => i.InsurerId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // Test - Patient relationship (many tests to one patient)
+            modelBuilder.Entity<Test>()
+                .HasOne(t => t.Patient)
+                .WithMany()
+                .HasForeignKey(t => t.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

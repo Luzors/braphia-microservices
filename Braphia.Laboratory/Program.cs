@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Braphia.Laboratory.Database;
 using Braphia.Laboratory.Repositories;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Braphia.Laboratory.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<PatientRegisteredConsumer>();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
@@ -28,7 +31,8 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
-builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
+builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 
 
 builder.Services.AddControllers();

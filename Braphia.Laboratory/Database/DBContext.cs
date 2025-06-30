@@ -10,5 +10,15 @@ namespace Braphia.Laboratory.Database
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<CentralLaboratory> CentralLaboratories { get; set; }
         public DbSet<Test> Tests { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Test>()
+                .Property(t => t.Cost)
+                .HasPrecision(18, 2);
+        }
     }
 }

@@ -20,11 +20,11 @@ namespace Braphia.Laboratory.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteCentralLaboratoryAsync(Guid laboratoryId)
+        public async Task<bool> DeleteCentralLaboratoryAsync(int id)
         {
-            var laboratory = await _context.CentralLaboratories.FindAsync(laboratoryId);
+            var laboratory = await _context.CentralLaboratories.FindAsync(id);
             if (laboratory == null)
-                throw new ArgumentException($"Central Laboratory with ID {laboratoryId} not found.");
+                throw new ArgumentException($"Central Laboratory with ID {id} not found.");
             _context.CentralLaboratories.Remove(laboratory);
             await _context.SaveChangesAsync();
             return true;
@@ -33,9 +33,9 @@ namespace Braphia.Laboratory.Repositories
         {
             return await _context.CentralLaboratories.ToListAsync();
         }
-        public async Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(Guid laboratoryId)
+        public async Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(int id)
         {
-            return await _context.CentralLaboratories.FirstOrDefaultAsync(l => l.Id == laboratoryId);
+            return await _context.CentralLaboratories.FirstOrDefaultAsync(l => l.Id == id);
         }
         public async Task<bool> UpdateCentralLaboratoryAsync(CentralLaboratory centralLaboratory)
         {
