@@ -1,5 +1,6 @@
 ﻿using Braphia.Laboratory.Database;
 using Braphia.Laboratory.Events;
+using Braphia.Laboratory.Enums;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,17 @@ namespace Braphia.Laboratory.Repositories
         {
             _context.Tests.Update(test);
             await _context.SaveChangesAsync();
+        }
+        public async Task<bool> UpdateTestStatus(Guid testId, TestStatus status)
+        {
+            var test = await _context.Tests.FindAsync(testId);
+            if (test == null)
+
+                throw new ArgumentException($"Test with ID {testId} not found.");
+            test.TestStatus = status;
+            await _context.SaveChangesAsync();
+            return true;
+
         }
     }
 }

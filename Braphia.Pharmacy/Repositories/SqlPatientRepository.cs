@@ -1,6 +1,7 @@
 ﻿using Braphia.Pharmacy.Database;
 using Braphia.Pharmacy.Models.ExternalObjects;
 using Braphia.Pharmacy.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,7 @@ namespace Braphia.Pharmacy.Repositories
             try
             {
                 _context.Patient.Add(patient);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 return true;
             }
             catch
@@ -43,7 +44,7 @@ namespace Braphia.Pharmacy.Repositories
                     _logger.LogWarning("Patient with ID {PatientId} not found for update", patientId);
                     return false;
                 }
-                existingPatient.RootId = patient.RootId;
+                existingPatient.Id = patient.Id;
                 existingPatient.FirstName = patient.FirstName;
                 existingPatient.LastName = patient.LastName;
                 existingPatient.Email = patient.Email;

@@ -3,6 +3,7 @@ using Braphia.Pharmacy.Models.ExternalObjects;
 using Braphia.Pharmacy.Repositories.Interfaces;
 using Infrastructure.Messaging;
 using MassTransit;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Braphia.Pharmacy.Consumers
@@ -10,12 +11,14 @@ namespace Braphia.Pharmacy.Consumers
     public class PharmacyMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
+        private readonly IPrescriptionRepository _prescriptionRepository;
         private readonly ILogger<PharmacyMessageConsumer> _logger;
 
-        public PharmacyMessageConsumer(IPatientRepository patientRepository, ILogger<PharmacyMessageConsumer> logger)
+        public PharmacyMessageConsumer(IPatientRepository patientRepository, ILogger<PharmacyMessageConsumer> logger, IPrescriptionRepository prescriptionRepository)
         {
             _patientRepository = patientRepository;
             _logger = logger;
+            _prescriptionRepository = prescriptionRepository;
         }
 
         public async Task Consume(ConsumeContext<Message> context)
@@ -53,7 +56,7 @@ namespace Braphia.Pharmacy.Consumers
 
                     var patient = new Patient
                     {
-                        RootId = patientEvent.Patient.Id,
+                        Id = patientEvent.Patient.Id,
                         FirstName = patientEvent.Patient.FirstName,
                         LastName = patientEvent.Patient.LastName,
                         Email = patientEvent.Patient.Email,
@@ -64,12 +67,12 @@ namespace Braphia.Pharmacy.Consumers
 
                     if (success)
                     {
-                        _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId} to accounting database with new ID {NewPatientId}",
-                            patientEvent.Patient.RootId, patient.Id);
+                        _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId}",
+                            patient.Id);
                     }
                     else
                     {
-                        _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                        _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
                     }
                 }
                 else
@@ -98,7 +101,7 @@ namespace Braphia.Pharmacy.Consumers
                         patientEvent.NewPatient.Id, patientEvent.NewPatient.FirstName, patientEvent.NewPatient.LastName, patientEvent.NewPatient.Email);
                     var patient = new Patient
                     {
-                        RootId = patientEvent.NewPatient.Id,
+                        Id = patientEvent.NewPatient.Id,
                         FirstName = patientEvent.NewPatient.FirstName,
                         LastName = patientEvent.NewPatient.LastName,
                         Email = patientEvent.NewPatient.Email,
@@ -156,6 +159,90 @@ namespace Braphia.Pharmacy.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task PrescriptionWritten(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PrescriptionCreated event with ID: {MessageId}", message.MessageId);
+                var prescriptionEvent = JsonSerializer.Deserialize<PrescriptionWrittenEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (prescriptionEvent != null)
+                {
+                    _logger.LogInformation("Deserialized prescription data: ID={PrescriptionId}, PatientId={PatientId}, Medication={Medication}, Dosage={Dosage}",
+                        prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId, prescriptionEvent.Prescription.Medicine, prescriptionEvent.Prescription.Dose);
+                    var prescription = new Prescription
+                    {
+                        Id = prescriptionEvent.Prescription.Id,
+                        PatientId = prescriptionEvent.Prescription.PatientId,
+                        Medicine = prescriptionEvent.Prescription.Medicine,
+                        Dose = prescriptionEvent.Prescription.Dose,
+                        Unit = prescriptionEvent.Prescription.Unit
+                    };
+                    var success = await _prescriptionRepository.AddPrescriptionAsync(prescription);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully added prescription with ID {PrescriptionId}", prescription.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add prescription with ID {PrescriptionId}", prescription.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PrescriptionWrittenEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PrescriptionWritten event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task PrescriptionChanged(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PrescriptionModified event with ID: {MessageId}", message.MessageId);
+                var prescriptionEvent = JsonSerializer.Deserialize<PrescriptionChangedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (prescriptionEvent != null)
+                {
+                    _logger.LogInformation("Deserialized prescription data: ID={PrescriptionId}, PatientId={PatientId}, Medication={Medication}, Dosage={Dosage}",
+                        prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId, prescriptionEvent.Prescription.Medicine, prescriptionEvent.Prescription.Dose);
+                    var prescription = new Prescription
+                    {
+                        Id = prescriptionEvent.Prescription.Id,
+                        PatientId = prescriptionEvent.Prescription.PatientId,
+                        Medicine = prescriptionEvent.Prescription.Medicine,
+                        Dose = prescriptionEvent.Prescription.Dose,
+                        Unit = prescriptionEvent.Prescription.Unit
+                    };
+                    var success = await _prescriptionRepository.UpdatePrescriptionAsync(prescription.Id, prescription);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully updated prescription with ID {PrescriptionId}", prescription.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to update prescription with ID {PrescriptionId}", prescription.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PrescriptionChangedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PrescriptionModified event: {MessageId}", message.MessageId);
             }
         }
     }
