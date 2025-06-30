@@ -80,9 +80,13 @@ namespace Braphia.Laboratory.Controllers
                     _logger.LogWarning("Test data is null");
                     return BadRequest("Test data is required.");
                 }
+                
+                _logger.LogInformation("Received test data: {TestData}", test);
 
                 test.CompletedDate = null;
                 test.Result = null;
+
+                _logger.LogInformation("Received test data no date res: {TestData}", test);
 
                 await _testRepository.AddAsync(test);
                 _logger.LogInformation("Test created successfully with ID {Id}", test.Id);

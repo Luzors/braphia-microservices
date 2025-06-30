@@ -38,7 +38,7 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointment");
                 });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.CentralLaboratory", b =>
@@ -67,7 +67,7 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CentralLaboratories");
+                    b.ToTable("CentralLaboratory");
                 });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.Patient", b =>
@@ -99,7 +99,7 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patient");
                 });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.Test", b =>
@@ -132,7 +132,7 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tests");
+                    b.ToTable("Test");
                 });
 #pragma warning restore 612, 618
         }

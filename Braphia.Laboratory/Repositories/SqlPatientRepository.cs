@@ -18,7 +18,7 @@ namespace Braphia.Laboratory.Repositories
         {
             try
             {
-                _context.Patients.Add(patient);
+                _context.Patient.Add(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -32,7 +32,7 @@ namespace Braphia.Laboratory.Repositories
         {
             try
             {
-                _context.Patients.Update(patient);
+                _context.Patient.Update(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -46,10 +46,10 @@ namespace Braphia.Laboratory.Repositories
         {
             try
             {
-                var patient = await _context.Patients.FindAsync(patientId);
+                var patient = await _context.Patient.FindAsync(patientId);
                 if (patient == null) return false;
 
-                _context.Patients.Remove(patient);
+                _context.Patient.Remove(patient);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -61,13 +61,13 @@ namespace Braphia.Laboratory.Repositories
 
         public async Task<Patient?> GetPatientByIdAsync(int patientId)
         {
-            return await _context.Patients
+            return await _context.Patient
                 .FirstOrDefaultAsync(p => p.Id == patientId);
         }
 
         public async Task<IEnumerable<Patient>> GetAllPatientsAsync()
         {
-            return await _context.Patients.ToListAsync();
+            return await _context.Patient.ToListAsync();
         }
 
     }

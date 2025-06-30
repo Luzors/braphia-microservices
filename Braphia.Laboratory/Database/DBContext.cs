@@ -7,10 +7,10 @@ namespace Braphia.Laboratory.Database
     {
         public DBContext(DbContextOptions<DBContext> options) : base(options) { }
 
-        public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<CentralLaboratory> CentralLaboratories { get; set; }
-        public DbSet<Test> Tests { get; set; }
-        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Appointment> Appointment { get; set; }
+        public DbSet<CentralLaboratory> CentralLaboratory { get; set; }
+        public DbSet<Test> Test { get; set; }
+        public DbSet<Patient> Patient { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
