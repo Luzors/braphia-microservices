@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Models;
+using Braphia.AppointmentManagement.Models.States;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,6 +88,16 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
 
         }
 
-      
+        public async Task<bool> UpdateAppointmentStateAsync(int patientId, IAppointmentState state)
+        {
+            if (state == null)
+                throw new ArgumentNullException(nameof(state), "State cannot be null.");
+            var appointment = await GetAppointmentByIdAsync(patientId);
+            if (appointment == null)
+                throw new ArgumentException($"Appointment with ID {patientId} not found.");
+            appointment.state = state;
+            _context.Appointments.Update(appointment);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

@@ -8,7 +8,6 @@
         void AppointnentStarted(Appointment appointment);
         void AppointmentFinished(Appointment appointment);
         void AppointmentCanceled(Appointment appointment);
-        void AppointmentRescheduled(Appointment appointment, DateTime newDate);
         void AppointmentMissed(Appointment appointment);
     }
 }

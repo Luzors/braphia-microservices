@@ -43,10 +43,10 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
         }
 
         public async Task<IEnumerable<AppointmentViewQueryModel>> GetAppointmentsByPatientIdAsync(int patientId)
-        {   
+        {
             return await _context.AppointmentViewQueryModels
                 .Where(a => a.PatientId == patientId)
-                .ToListAsync() 
+                .ToListAsync()
                 ?? throw new ArgumentException($"No appointments found for Patient ID {patientId}.");
         }
 
@@ -54,7 +54,7 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
         {
             return await _context.AppointmentViewQueryModels
                 .Where(a => a.PhysicianId == physicianId)
-                .ToListAsync() 
+                .ToListAsync()
                 ?? throw new ArgumentException($"No appointments found for Physician ID {physicianId}.");
         }
 
@@ -63,10 +63,9 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
             var today = DateTime.Today;
             return await _context.AppointmentViewQueryModels
                 .Where(a => a.ScheduledTime.Date == today)
-                .ToListAsync() 
+                .ToListAsync()
                 ?? throw new ArgumentException("No appointments found for today.");
         }
-        //TODO : Add all of the items from the AppointmentViewQueryModel to the UpdateAppointmentAsync method
         public async Task<bool> UpdateAppointmentAsync(AppointmentViewQueryModel appointment)
         {
             if (appointment == null)
@@ -93,6 +92,25 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
 
             _context.AppointmentViewQueryModels.Update(existingAppointment);
             return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> UserIdChecked (int userId)
+        {
+            //update all appointments where the userId is equal to the given userId
+            var appointments = await _context.AppointmentViewQueryModels
+                .Where(a => a.PatientId == userId)
+                .ToListAsync();
+            if (appointments == null || !appointments.Any())
+                {
+                throw new ArgumentException($"No appointments found for User ID {userId}.");
+            }
+            // update appointment IsIdChecked to true
+            foreach (var appointment in appointments)
+            {
+                appointment.IsIdChecked = true;
+                _context.AppointmentViewQueryModels.Update(appointment);
+            }
+            return await _context.SaveChangesAsync() > 0;
+
         }
     }
 }

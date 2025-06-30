@@ -25,11 +25,6 @@
             Console.WriteLine("Appointment canceled.");
             appointment.SetState(new AppointmentCancled());
         }
-        public void AppointmentRescheduled(Appointment appointment, DateTime newTime)
-        {
-            appointment.SetScheduledTime(newTime);
-            appointment.SetState(new AppointmentRescheduled());
-        }
         public void AppointmentMissed(Appointment appointment)
         {
             // Transition to Missed state

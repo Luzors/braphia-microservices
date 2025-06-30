@@ -9,6 +9,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
         Task<bool> DeletePatientAsync(int patientId);
         Task<Patient> GetPatientByIdAsync(int patientId);
         Task<IEnumerable<Patient>> GetAllPatientsAsync();
-     
+        Task<bool> isIdChecked(int patientId);
+        Task<bool> setIdChecked(int patientId);
+
     }
 }

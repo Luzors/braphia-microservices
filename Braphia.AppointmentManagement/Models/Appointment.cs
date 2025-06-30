@@ -18,10 +18,11 @@ namespace Braphia.AppointmentManagement.Models
         public Referral referral { get; set; }
 
         public DateTime ScheduledTime { get; set; }
-
+        //Change statepattern to enum
         public IAppointmentState state;
         public int? FollowUpAppointmentId { get; set; }
         public Appointment FollowUpAppointment { get; set; }
+
 
         public Appointment(){}
 
@@ -46,7 +47,6 @@ namespace Braphia.AppointmentManagement.Models
         public void AppointmentStarted() => state.AppointnentStarted(this);
         public void AppointmentFinished() => state.AppointmentFinished(this);
         public void AppointmentCancled() => state.AppointmentCanceled(this);
-        public void AppointmentReschedules(DateTime newTime) => state.AppointmentRescheduled(this, newTime);
         public void AppointmentMissed() => state.AppointmentMissed(this);
 
         public void SetScheduledTime(DateTime newTime)

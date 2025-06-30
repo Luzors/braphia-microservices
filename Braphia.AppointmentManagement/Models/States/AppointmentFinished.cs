@@ -21,10 +21,6 @@
         {
             throw new InvalidOperationException("Cannot cancel an appointment that has already finished.");
         }
-        public void AppointmentRescheduled(Appointment appointment, DateTime newTime)
-        {
-            throw new InvalidOperationException("Cannot reschedule an appointment that has already finished.");
-        }
         public void AppointmentMissed(Appointment appointment)
         {
             throw new InvalidOperationException("Cannot mark a finished appointment as missed.");

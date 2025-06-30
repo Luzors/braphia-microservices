@@ -9,6 +9,9 @@
 
         public string PhoneNumber { get; set; }
 
+        public bool IsIdChecked { get; set; } = false;
+
+
         public Patient() { }
         public Patient(int id, string firstName, string lastName, string email, string phoneNumber)
         {

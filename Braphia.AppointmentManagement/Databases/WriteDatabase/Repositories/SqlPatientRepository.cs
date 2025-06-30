@@ -51,5 +51,27 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             return await _context.Patients.ToListAsync()
                    ?? throw new ArgumentException("No patients found in the database.");
         }
+
+        public async Task<bool> isIdChecked(int patientId)
+        {
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null)
+            {
+                throw new ArgumentException($"Patient with ID {patientId} not found.");
+            }
+            return patient.IsIdChecked;
+        }
+
+        public async Task<bool> setIdChecked(int patientId)
+        {
+            var patient = _context.Patients.Find(patientId);
+            if (patient == null)
+            {
+                throw new ArgumentException($"Patient with ID {patientId} not found.");
+            }
+            patient.IsIdChecked = true;
+             _context.Patients.Update(patient);
+            return true;
+        }
     }
 }

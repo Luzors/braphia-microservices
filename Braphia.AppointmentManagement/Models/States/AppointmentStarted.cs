@@ -23,10 +23,6 @@
             Console.WriteLine("Appointment canceled while in progress.");
             appointment.SetState(new AppointmentCancled());
         }
-        public void AppointmentRescheduled(Appointment appointment, DateTime newTime)
-        {
-            throw new InvalidOperationException("Cannot reschedule an appointment that has already started.");
-        }
         public void AppointmentMissed(Appointment appointment)
         {
             throw new InvalidOperationException("Cannot mark an ongoing appointment as missed.");

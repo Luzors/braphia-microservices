@@ -44,6 +44,13 @@ namespace Braphia.AppointmentManagement.Consumers
                     await HandleAppointmentRescheduledAsync(rescheduledEvent);
                     break;
 
+                case "UserCheckId"
+                :
+                    _logger.LogInformation("UserCheckId");
+                    _logger.LogInformation(type);
+                    var userCheck = JsonSerializer.Deserialize<UserCheckIdEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    await HandleUserCheckId(userCheck);
+                    break;
                 default:
                     _logger.LogWarning("Unhandled message type: {MessageType}", type);
                     break;
@@ -104,6 +111,25 @@ namespace Braphia.AppointmentManagement.Consumers
             _logger.LogInformation(appointment.ToString());
             await _readRepo.UpdateAppointmentAsync(appointment);
             _logger.LogInformation("Processed AppointmentRescheduledEvent for ID {AppointmentId}", evt.AppointmentId);
+        }
+
+        private async Task HandleUserCheckId(UserCheckIdEvent? evt)
+        {
+            if (evt == null)
+            {
+                _logger.LogWarning("Received null UserCheckIdEvent.");
+                return;
+            }
+            _logger.LogInformation("Received UserCheckIdEvent for ID {UserId}", evt.UserId);
+            var results = await _readRepo.UserIdChecked(evt.UserId);
+            if (results != null)
+            {
+                _logger.LogInformation("User with ID {UserId} exists in the database.", evt.UserId);
+            }
+            else
+            {
+                _logger.LogWarning("User with ID {UserId} does not exist in the database.", evt.UserId);
+            }
         }
     }
 

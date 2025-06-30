@@ -27,6 +27,8 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
         public DateTime ScheduledTime { get; set; }
         public string StateName { get; set; }
 
+        public bool IsIdChecked { get; set; } = false;
+
     }
 
 

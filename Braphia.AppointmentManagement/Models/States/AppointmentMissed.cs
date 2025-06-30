@@ -20,12 +20,6 @@
         {
             throw new InvalidOperationException("Cannot cancel an appointment that has already been missed.");
         }
-        public void AppointmentRescheduled(Appointment appointment, DateTime newTime)
-        {
-            Console.WriteLine("Appointment missed, rescheduling to a new time.");
-            appointment.SetScheduledTime(newTime);
-            appointment.SetState(new AppointmentRescheduled());
-        }
     
         void IAppointmentState.AppointmentMissed(Appointment appointment)
         {
