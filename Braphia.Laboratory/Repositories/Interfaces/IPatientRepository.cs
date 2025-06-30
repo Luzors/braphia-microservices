@@ -8,6 +8,7 @@ namespace Braphia.Laboratory.Repositories.Interfaces
         Task<bool> UpdatePatientAsync(Patient Patient);
         Task<bool> DeletePatientAsync(int PatientId);
         Task<Patient?> GetPatientByIdAsync(int PatientId);
+        Task<Patient?> GetPatientByRootIdAsync(int rootId);
         Task<IEnumerable<Patient>> GetAllPatientsAsync();
     }
 }

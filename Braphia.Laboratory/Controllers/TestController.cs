@@ -1,6 +1,7 @@
 ﻿using Braphia.Laboratory.Events;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -80,9 +81,13 @@ namespace Braphia.Laboratory.Controllers
                     _logger.LogWarning("Test data is null");
                     return BadRequest("Test data is required.");
                 }
+                
+                _logger.LogInformation("Received test data: {TestData}", test);
 
                 test.CompletedDate = null;
                 test.Result = null;
+
+                _logger.LogInformation("Received test data no date res: {TestData}", test);
 
                 await _testRepository.AddAsync(test);
                 _logger.LogInformation("Test created successfully with ID {Id}", test.Id);
@@ -121,10 +126,10 @@ namespace Braphia.Laboratory.Controllers
                 _logger.LogInformation("Test with ID {Id} completed successfully", id);
 
                 // Stuur TestCompletedEvent
-                await _publishEndpoint.Publish(new TestCompletedEvent
-                {
-                    Test = test
-                });
+                await _publishEndpoint.Publish(new Message(
+                    messageType: "TestCompleted",
+                    data: new TestCompletedEvent(test)
+                ));
 
                 return Ok(test);
             }

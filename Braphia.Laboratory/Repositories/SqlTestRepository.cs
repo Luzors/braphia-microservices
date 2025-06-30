@@ -24,31 +24,25 @@ namespace Braphia.Laboratory.Repositories
         {
             if (test == null)
                 throw new ArgumentNullException(nameof(test), "Test cannot be null.");
-            await _context.Tests.AddAsync(test);
+            await _context.Test.AddAsync(test);
             await _context.SaveChangesAsync();
 
-            // Patient created event
-            await _publishEndpoint.Publish(new Message(
-                messageType: "TestCompleted",
-                data: new TestCompletedEvent(test)
-            ));
-
-            return true;
+           return true;
         }
 
         public async Task<Test?> GetByIdAsync(int id)
         {
-            return await _context.Tests.FirstOrDefaultAsync(t => t.Id == id);
+            return await _context.Test.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<IEnumerable<Test>> GetAllAsync()
         {
-            return await _context.Tests.ToListAsync();
+            return await _context.Test.ToListAsync();
         }
 
         public async Task UpdateAsync(Test test)
         {
-            _context.Tests.Update(test);
+            _context.Test.Update(test);
             await _context.SaveChangesAsync();
         }
         public async Task<bool> UpdateTestStatus(Guid testId, TestStatus status)
