@@ -20,6 +20,7 @@ namespace Infrastructure.Messaging
         public Message(string messageType, object data) : this(Guid.NewGuid(), messageType, data) { }
         public Message(Guid messageId, string messageType, object data)
         {
+            Console.WriteLine(messageType);
             MessageId = messageId;
             MessageType = messageType;
             Data = data;

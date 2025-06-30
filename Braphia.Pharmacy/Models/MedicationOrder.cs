@@ -32,6 +32,8 @@ namespace Braphia.Pharmacy.Models
 
         public void AddItem(Medication medication, int amount)
         {
+            if (CompletedAt != null)
+                throw new InvalidOperationException("Cannot add items to a completed order.");
             if (Items.Any(i => i.Medication.Id == medication.Id))
             {
                 var existingItem = Items.First(i => i.Medication.Id == medication.Id);
@@ -49,6 +51,8 @@ namespace Braphia.Pharmacy.Models
 
         public void RemoveItem(Medication medication, int amount)
         {
+            if (CompletedAt != null)
+                throw new InvalidOperationException("Cannot remove items from a completed order.");
             var existingItem = Items.FirstOrDefault(i => i.Medication.Id == medication.Id);
             if (existingItem != null)
             {
@@ -66,6 +70,7 @@ namespace Braphia.Pharmacy.Models
         public void CompleteOrder()
         {
             CompletedAt = DateTime.UtcNow;
+            //TODO: check if order is fulfilled (all items from prescription have been added)
         }
     }
 }
