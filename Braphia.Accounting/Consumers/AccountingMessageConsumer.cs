@@ -28,7 +28,7 @@ namespace Braphia.Accounting.Consumers
         {
             var message = context.Message;
 
-            _logger.LogInformation("Received message of type: {MessageType} with ID: {MessageId}", message.MessageType, message.MessageId);
+            _logger.LogInformation("Received message in accounting of type: {MessageType} with ID: {MessageId}", message.MessageType, message.MessageId);
 
             if (message.MessageType == "PatientRegistered")
             {
