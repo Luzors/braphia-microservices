@@ -23,16 +23,19 @@ namespace Braphia.AppointmentManagement.Commands.UserCheckId
         }
         public async Task<int> Handle(UserCheckIdCommand request, CancellationToken cancellationToken)
         {
+            Console.WriteLine($"Checking ID for user with ID: {request.UserId}");
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request), "Request cannot be null.");
             }
-            var patient = _patientRepository.GetPatientByIdAsync(request.UserId);
+            var patient = await  _patientRepository.GetPatientByIdAsync(request.UserId);
+            Console.WriteLine($"Patient found: {patient != null}");
             if (patient == null)
             {
                 throw new ArgumentException($"Patient with ID {request.UserId} not found.");
             }
-            var succes = _patientRepository.setIdChecked(request.UserId);
+            var succes = await _patientRepository.setIdChecked(request.UserId);
+            Console.WriteLine($"ID checked successfully: {succes}");
             if (succes == null)
             {
                 throw new InvalidOperationException($"Failed to set ID checked for user with ID {request.UserId}.");

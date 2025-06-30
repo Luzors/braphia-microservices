@@ -42,6 +42,9 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 scheduledTime: request.ScheduledTime
             );
 
+            Console.WriteLine($"Creating appointment for Patient ID: {request.PatientId}, Physician ID: {request.PhysicianId}, Scheduled Time: {request.ScheduledTime}");
+            Console.WriteLine($"Appointment State: {appointment.state}");
+
             var success = await _appointmentRepository.AddAppointmentAsync(appointment);
             if (!success)
                 throw new InvalidOperationException("Failed to add appointment to the repository.");
@@ -70,6 +73,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 PatientLastName = patient.LastName,
                 PatientEmail = patient.Email,
                 PatientPhoneNumber = patient.PhoneNumber,
+                IsIdChecked = patient.IsIdChecked,
                 PhysicianFirstName = physician.FirstName,
                 PhysicianLastName = physician.LastName,
                 PhysicianSpecialization = physician.Specialization,
@@ -82,6 +86,8 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 ReferralReason = referral.Reason,
                 State = appointment.state
             };
+            Console.WriteLine($"Publishing AppointmentCreatedEvent for Appointment ID: {appointment.Id}");
+            Console.WriteLine( @event.State );
             var mes = new Message(@event);
             await _publishEndpoint.Publish(mes, cancellationToken);
 

@@ -11,6 +11,8 @@ namespace Braphia.AppointmentManagement.Events
         public string PatientLastName { get; set; }
         public string PatientEmail { get; set; }
         public string PatientPhoneNumber { get; set; }
+        public bool IsIdChecked { get; set; } 
+
 
         public int PhysicianId { get; set; }
         public string PhysicianFirstName { get; set; }

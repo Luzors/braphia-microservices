@@ -88,12 +88,29 @@ namespace Braphia.AppointmentManagement.Controllers
                     appointment.StartAppointment();
                     break;
                 case "finished":
+                   
+                    // Check if state is started in read database
+                    if(appointment.state != AppointmentStateEnum.STARTED)
+                    {
+                        return BadRequest($"Appointment with ID {id} is not in the correct state to finish the appointment.");
+                    }
+
                     appointment.FinishAppointment();
                     break;
                 case "canceled":
+                    // Check if state is not started or finished in read database
+                    if (appointment.state == AppointmentStateEnum.STARTED || appointment.state == AppointmentStateEnum.FINISHED)
+                    {
+                        return BadRequest($"Appointment with ID {id} cannot be canceled as it is already started or finished.");
+                    }
                     appointment.CancelAppointment();
                     break;
                 case "missed":
+                    // Check if state is created
+                    if (appointment.state != AppointmentStateEnum.CREATED)
+                    {
+                        return BadRequest($"Appointment with ID {id} is not in the correct state to mark as missed.");
+                    }
                     appointment.AppointmentMissed();
                     break;
                 default:
@@ -106,10 +123,11 @@ namespace Braphia.AppointmentManagement.Controllers
         }
 
  
-        [HttpPost("checkId/{id}")]
+        [HttpPost("checkId")]
         public async Task<IActionResult> CheckId(UserCheckIdCommand userCheckIdCommand)
         {
             // This method will turn the isidchecked property of the appointment to true
+            Console.WriteLine($"Checking ID for appointment with ID: {userCheckIdCommand.UserId}");
             var result = await _mediator.Send(userCheckIdCommand);
 
             // Ensure 'result' is treated as a boolean by checking its value explicitly

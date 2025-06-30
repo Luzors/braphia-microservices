@@ -64,13 +64,17 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
 
         public async Task<bool> setIdChecked(int patientId)
         {
-            var patient = _context.Patients.Find(patientId);
+            Console.WriteLine("SetIdChecked called");
+            var patient = await GetPatientByIdAsync(patientId);
+            Console.WriteLine($"Patient ID: {patientId}, IsIdChecked: {patient?.IsIdChecked}");
             if (patient == null)
             {
                 throw new ArgumentException($"Patient with ID {patientId} not found.");
             }
             patient.IsIdChecked = true;
-             _context.Patients.Update(patient);
+            var updated = await UpdatePatientAsync(patient);
+            ;
+            Console.WriteLine($"Patient ID: {patientId}, IsIdChecked after update]");
             return true;
         }
     }

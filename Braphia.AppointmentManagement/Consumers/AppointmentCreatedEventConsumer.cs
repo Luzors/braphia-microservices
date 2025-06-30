@@ -50,6 +50,11 @@ namespace Braphia.AppointmentManagement.Consumers
                     var userCheck = JsonSerializer.Deserialize<UserCheckIdEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleUserCheckId(userCheck);
                     break;
+
+                case "AppointmentStateChanged":
+                    var newState = JsonSerializer.Deserialize<AppointmentStateChangedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    await HandleStateChange(newState);
+                    break;
                 default:
                     _logger.LogWarning("Unhandled message type: {MessageType}", type);
                     break;
@@ -73,6 +78,7 @@ namespace Braphia.AppointmentManagement.Consumers
                 PatientLastName = evt.PatientLastName,
                 PatientEmail = evt.PatientEmail,
                 PatientPhoneNumber = evt.PatientPhoneNumber,
+                IsIdChecked = evt.IsIdChecked,
                 PhysicianId = evt.PhysicianId,
                 PhysicianFirstName = evt.PhysicianFirstName,
                 PhysicianLastName = evt.PhysicianLastName,
@@ -87,9 +93,6 @@ namespace Braphia.AppointmentManagement.Consumers
                 State = evt.State,
                 ScheduledTime = evt.ScheduledTime
             };
-            _logger.LogInformation("aaaaaaaaaaa");
-            _logger.LogInformation(evt.PatientEmail);
-            _logger.LogInformation(evt.PatientEmail);
 
             await _readRepo.AddAppointmentAsync(viewModel);
             _logger.LogInformation("Processed AppointmentCreatedEvent for ID {AppointmentId}", evt.AppointmentId);
@@ -129,6 +132,20 @@ namespace Braphia.AppointmentManagement.Consumers
             {
                 _logger.LogWarning("User with ID {UserId} does not exist in the database.", evt.UserId);
             }
+        }
+
+        private async Task HandleStateChange(AppointmentStateChangedEvent? evt)
+        {
+            if (evt == null)
+            {
+                _logger.LogWarning("Received null AppointmentStateChangedEvent.");
+                return;
+            }
+            _logger.LogInformation("Received AppointmentStateChangedEvent for Appointment ID {AppointmentId} with new state {NewState}", evt.AppointmentId, evt.NewState);
+            var appointment = await _readRepo.GetAppointmentByIdAsync(evt.AppointmentId);
+            appointment.State = evt.NewState;
+            await _readRepo.UpdateAppointmentAsync(appointment);
+            _logger.LogInformation("Updated state for Appointment ID {AppointmentId} to {NewState}", evt.AppointmentId, evt.NewState);
         }
     }
 

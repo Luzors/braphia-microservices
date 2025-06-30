@@ -4,16 +4,19 @@ using Braphia.AppointmentManagement.Databases.WriteDatabase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Braphia.AppointmentManagement.Migrations
+namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250630131409_ChangedStateToEnum")]
+    partial class ChangedStateToEnum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,9 +50,6 @@ namespace Braphia.AppointmentManagement.Migrations
 
                     b.Property<DateTime>("ScheduledTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("state")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
