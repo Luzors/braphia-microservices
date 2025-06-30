@@ -37,8 +37,27 @@ namespace Braphia.MedicalManagement.Repositories
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription), "Prescription cannot be null.");
 
+            // Validate that the MedicalAnalysis exists
+            var medicalAnalysis = await _context.MedicalAnalysis
+                .Include(ma => ma.Prescriptions)
+                .FirstOrDefaultAsync(ma => ma.Id == prescription.MedicalAnalysisId);
+
+            if (medicalAnalysis == null)
+                throw new KeyNotFoundException($"Medical Analysis with ID {prescription.MedicalAnalysisId} not found.");
+
+            // Add the prescription to context first
             await _context.Prescription.AddAsync(prescription);
-            if (await _context.SaveChangesAsync() <= 0)
+
+            // Add the prescription to the medical analysis collection
+            medicalAnalysis.Prescriptions.Add(prescription);
+
+            // Verify the relationship was established
+            if (!medicalAnalysis.Prescriptions.Contains(prescription))
+                throw new InvalidOperationException("Failed to establish relationship between prescription and medical analysis.");
+
+            // Save all changes at once - EF will handle the relationships
+            var changesSaved = await _context.SaveChangesAsync();
+            if (changesSaved <= 0)
                 throw new InvalidOperationException("Failed to add prescription.");
 
             await _publishEndpoint.Publish(new Message(new PrescriptionWrittenEvent(prescription)));
@@ -54,7 +73,7 @@ namespace Braphia.MedicalManagement.Repositories
             _context.Prescription.Remove(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to delete prescription.");
-            
+
             await _publishEndpoint.Publish(new Message(new PrescriptionInvokedEvent(prescription)));
 
             return true;
@@ -68,9 +87,9 @@ namespace Braphia.MedicalManagement.Repositories
             _context.Prescription.Update(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update prescription.");
-            
+
             await _publishEndpoint.Publish(new Message(new PrescriptionChangedEvent(prescription)));
-            
+
             return true;
         }
     }

@@ -32,8 +32,6 @@ namespace Braphia.MedicalManagement.Models
         public int PhysicianId { get; set; }  // Foreign Key
         public Physician? Physician { get; set; }  // Navigation Property
 
-        public int MedicalAnalysisId { get; set; }  // Foreign Key
-        public MedicalAnalysis? MedicalAnalysis { get; set; }  // Navigation Property
-        
+        public int MedicalAnalysisId { get; set; }  // Foreign Key        
     }
 }

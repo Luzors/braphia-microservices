@@ -21,7 +21,11 @@ namespace Braphia.MedicalManagement.Repositories
 
         public async Task<MedicalAnalysis> GetMedicalAnalysisAsync(int id)
         {
-            var medicalAnalysis = await _context.MedicalAnalysis.FindAsync(id);
+            var medicalAnalysis = await _context.MedicalAnalysis
+                .Include(ma => ma.Prescriptions)
+                .Include(ma => ma.Tests)
+                .FirstOrDefaultAsync(ma => ma.Id == id);
+
             if (medicalAnalysis == null)
                 throw new KeyNotFoundException($"MedicalAnalysis with ID {id} not found.");
             return medicalAnalysis;

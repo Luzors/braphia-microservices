@@ -36,12 +36,6 @@ namespace Braphia.MedicalManagement.Database
                 .HasForeignKey(p => p.PhysicianId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Prescription>()
-                .HasOne(p => p.MedicalAnalysis)
-                .WithMany(ma => ma.Prescriptions)
-                .HasForeignKey(p => p.MedicalAnalysisId)
-                .OnDelete(DeleteBehavior.NoAction);
-
             // Configure MedicalAnalysis relationships
             modelBuilder.Entity<MedicalAnalysis>()
                 .HasOne(ma => ma.Patient)

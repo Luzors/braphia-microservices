@@ -4,6 +4,7 @@ using Braphia.MedicalManagement.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.MedicalManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250630095843_TestAndEnum")]
+    partial class TestAndEnum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,7 +206,7 @@ namespace Braphia.MedicalManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MedicalAnalysisId")
+                    b.Property<int?>("MedicalAnalysisId")
                         .HasColumnType("int");
 
                     b.Property<int>("PatientId")
@@ -256,10 +259,10 @@ namespace Braphia.MedicalManagement.Migrations
 
             modelBuilder.Entity("Braphia.MedicalManagement.Models.Prescription", b =>
                 {
-                    b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", null)
+                    b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", "MedicalAnalysis")
                         .WithMany("Prescriptions")
                         .HasForeignKey("MedicalAnalysisId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
@@ -274,6 +277,8 @@ namespace Braphia.MedicalManagement.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("MedicalAnalysis");
+
                     b.Navigation("Patient");
 
                     b.Navigation("Physician");
@@ -283,9 +288,7 @@ namespace Braphia.MedicalManagement.Migrations
                 {
                     b.HasOne("Braphia.MedicalManagement.Models.MedicalAnalysis", null)
                         .WithMany("Tests")
-                        .HasForeignKey("MedicalAnalysisId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MedicalAnalysisId");
 
                     b.HasOne("Braphia.MedicalManagement.Models.Patient", "Patient")
                         .WithMany()
