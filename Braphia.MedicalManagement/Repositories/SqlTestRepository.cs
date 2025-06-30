@@ -44,6 +44,9 @@ namespace Braphia.MedicalManagement.Repositories
             if (medicalAnalysis == null)
                 throw new KeyNotFoundException($"Medical Analysis with ID {test.MedicalAnalysisId} not found.");
 
+            // Add the prescription to context first
+            await _context.Test.AddAsync(test);
+
             // Add the prescription to the medical analysis collection
             medicalAnalysis.Tests.Add(test);
 

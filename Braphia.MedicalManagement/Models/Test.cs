@@ -30,11 +30,11 @@ public class Test
 
     public string Description { get; set; } = string.Empty;
 
-    public string Result { get; set; } = string.Empty;
+    public string? Result { get; set; }
 
     public decimal Cost { get; set; }
 
-    public DateTime CompletedDate { get; set; }
+    public DateTime? CompletedDate { get; set; }
     
     public int MedicalAnalysisId { get; set; } 
 }
