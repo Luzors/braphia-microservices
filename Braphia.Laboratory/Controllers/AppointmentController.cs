@@ -80,7 +80,7 @@ namespace Braphia.Laboratory.Controllers
                     return BadRequest("Failed to create appointment");
                 }
 
-                return CreatedAtAction("AppointmentById", new { id = appointment.Id }, appointment);
+                return (IActionResult)appointment;
             }
             catch (Exception ex)
             {

@@ -41,7 +41,7 @@ namespace Braphia.Laboratory.Controllers
             }
         }
 
-        [HttpGet(Name = "centralLaboratoryById")]
+        [HttpGet("{id}", Name = "GetCentralLaboratoryById")]
         [ProducesResponseType(typeof(IEnumerable<CentralLaboratory>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid id)
         {
