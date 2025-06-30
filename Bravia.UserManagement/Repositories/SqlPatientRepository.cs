@@ -1,5 +1,5 @@
 ﻿using Braphia.UserManagement.Database;
-using Braphia.UserManagement.Events;
+using Braphia.UserManagement.Events.Patients;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
@@ -55,6 +55,7 @@ namespace Braphia.UserManagement.Repositories
             var patient = await _context.Patient.FindAsync(patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
             _context.Patient.Remove(patient);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new PatientRemovedEvent(patient)));
             return true;
         }
 

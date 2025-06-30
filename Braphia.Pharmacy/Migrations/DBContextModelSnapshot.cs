@@ -62,10 +62,21 @@ namespace Braphia.Pharmacy.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Dose")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Medicine")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
                     b.Property<int>("RootId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Unit")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

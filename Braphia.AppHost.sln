@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Accounting", "Braph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.Pharmacy", "Braphia.Pharmacy\Braphia.Pharmacy.csproj", "{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.NotificationDispatcher", "Braphia.NotificationDispatcher\Braphia.NotificationDispatcher.csproj", "{7DBCBC7D-5148-4440-BE3A-3C28D366F514}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Braphia.MedicalManagement", "Braphia.MedicalManagement\Braphia.MedicalManagement.csproj", "{1E29BE78-61B9-4305-B41A-38EF4BCBC356}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,10 +64,14 @@ Global
 		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF41385F-1087-71CC-2EE3-CB6FBF9B36F4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A41B07F-E551-6635-A270-577E5499BDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A41B07F-E551-6635-A270-577E5499BDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A41B07F-E551-6635-A270-577E5499BDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A41B07F-E551-6635-A270-577E5499BDFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DBCBC7D-5148-4440-BE3A-3C28D366F514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DBCBC7D-5148-4440-BE3A-3C28D366F514}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DBCBC7D-5148-4440-BE3A-3C28D366F514}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DBCBC7D-5148-4440-BE3A-3C28D366F514}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E29BE78-61B9-4305-B41A-38EF4BCBC356}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

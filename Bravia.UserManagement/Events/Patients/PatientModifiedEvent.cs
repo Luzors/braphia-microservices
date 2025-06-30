@@ -1,6 +1,6 @@
 ﻿using Braphia.UserManagement.Models;
 
-namespace Braphia.UserManagement.Events
+namespace Braphia.UserManagement.Events.Patients
 {
     public class PatientModifiedEvent
     {

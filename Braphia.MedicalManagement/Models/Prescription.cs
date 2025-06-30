@@ -1,0 +1,39 @@
+﻿using Braphia.MedicalManagement.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace Braphia.MedicalManagement.Models
+{
+    public class Prescription
+    {
+        public Prescription() { }
+
+        public Prescription(string medicine, string dose, UnitEnum unit, int patientId, int physicianId, int medicalAnalysisId)
+        {
+            Medicine = medicine;
+            Dose = dose;
+            Unit = unit;
+            PatientId = patientId;
+            PhysicianId = physicianId;
+            MedicalAnalysisId = medicalAnalysisId;
+        }
+
+        [Key]
+        public int Id { get; set; }
+
+        public string Medicine { get; set; }
+
+        public string Dose { get; set; }
+
+        public UnitEnum Unit { get; set; }
+
+        public int PatientId { get; set; }  // Foreign Key
+        public Patient? Patient { get; set; }  // Navigation Property
+
+        public int PhysicianId { get; set; }  // Foreign Key
+        public Physician? Physician { get; set; }  // Navigation Property
+
+        public int MedicalAnalysisId { get; set; }  // Foreign Key
+        public MedicalAnalysis? MedicalAnalysis { get; set; }  // Navigation Property
+        
+    }
+}

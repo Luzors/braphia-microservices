@@ -1,18 +1,18 @@
-using Braphia.Pharmacy.Events.ExternalEvents;
-using Braphia.Pharmacy.Models.ExternalObjects;
-using Braphia.Pharmacy.Repositories.Interfaces;
+using Braphia.MedicalManagement.Events;
+using Braphia.MedicalManagement.Models;
+using Braphia.MedicalManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
 
-namespace Braphia.Pharmacy.Consumers
+namespace Braphia.MedicalManagement.Consumers
 {
-    public class MessageConsumer : IConsumer<Message>
+    public class MedicalManagementMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<MessageConsumer> _logger;
+        private readonly ILogger<MedicalManagementMessageConsumer> _logger;
 
-        public MessageConsumer(IPatientRepository patientRepository, ILogger<MessageConsumer> logger)
+        public MedicalManagementMessageConsumer(IPatientRepository patientRepository, ILogger<MedicalManagementMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
             _logger = logger;
@@ -35,11 +35,11 @@ namespace Braphia.Pharmacy.Consumers
                 _logger.LogDebug("No handler found for message type: {MessageType}", message.MessageType);
         }
 
-        private async Task PatientRegistered(Message message)
+        public async Task PatientCreated(Message message)
         {
             try
             {
-                _logger.LogInformation("Received PatientRegistered event with ID: {MessageId}", message.MessageId);
+                _logger.LogInformation("Received PatientCreated event with ID: {MessageId}", message.MessageId);
 
                 var patientEvent = JsonSerializer.Deserialize<PatientRegisteredEvent>(
                     message.Data.ToString() ?? string.Empty,
@@ -48,7 +48,7 @@ namespace Braphia.Pharmacy.Consumers
 
                 if (patientEvent != null)
                 {
-                    _logger.LogInformation("Deserialized patient data: ID={PatientId}, Name={FirstName} {LastName}, Email={Email}",
+                    _logger.LogInformation("Deserialized patient data: ID={RootId}, Name={FirstName} {LastName}, Email={Email}",
                         patientEvent.Patient.Id, patientEvent.Patient.FirstName, patientEvent.Patient.LastName, patientEvent.Patient.Email);
 
                     var patient = new Patient
@@ -65,7 +65,7 @@ namespace Braphia.Pharmacy.Consumers
                     if (success)
                     {
                         _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId} to accounting database with new ID {NewPatientId}",
-                            patientEvent.Patient.RootId, patient.Id);
+                            patientEvent.Patient.Id, patient.Id);
                     }
                     else
                     {
@@ -82,5 +82,6 @@ namespace Braphia.Pharmacy.Consumers
                 _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
             }
         }
+
     }
 }
