@@ -128,6 +128,7 @@ namespace Braphia.Accounting.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
@@ -144,9 +145,8 @@ namespace Braphia.Accounting.Migrations
                     b.Property<int>("RootId")
                         .HasColumnType("int");
 
-                    b.Property<string>("TestType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TestType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

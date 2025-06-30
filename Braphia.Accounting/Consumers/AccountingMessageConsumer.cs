@@ -1,28 +1,26 @@
+using Braphia.Accounting.Converters;
 using Braphia.Accounting.Events;
 using Braphia.Accounting.Models;
 using Braphia.Accounting.Repositories.Interfaces;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Braphia.Accounting.Consumers
 {
-    public class TestCompletedConsumer : IConsumer<Message>
+    public class AccountingMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly IInvoiceRepository _invoiceRepository;
         private readonly ITestRepository _testRepository;
-        private readonly ILogger<TestCompletedConsumer> _logger;
+        private readonly IInvoiceRepository _invoiceRepository;
+        private readonly ILogger<AccountingMessageConsumer> _logger;
 
-        public TestCompletedConsumer(
-            IPatientRepository patientRepository, 
-            IInvoiceRepository invoiceRepository,
-            ITestRepository testRepository,
-            ILogger<TestCompletedConsumer> logger)
+        public AccountingMessageConsumer(IPatientRepository patientRepository, ITestRepository testRepository, IInvoiceRepository invoiceRepository, ILogger<AccountingMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
-            _invoiceRepository = invoiceRepository;
             _testRepository = testRepository;
+            _invoiceRepository = invoiceRepository;
             _logger = logger;
         }
 
@@ -30,15 +28,70 @@ namespace Braphia.Accounting.Consumers
         {
             var message = context.Message;
 
-            if (message.MessageType == "TestCompletedEvent")
+            _logger.LogInformation("Received message of type: {MessageType} with ID: {MessageId}", message.MessageType, message.MessageId);
+
+            if (message.MessageType == "PatientRegistered")
             {
                 try
                 {
-                    _logger.LogInformation("Received TestCompletedEvent event with ID: {MessageId}", message.MessageId);
+                    _logger.LogInformation("Received PatientRegistered event with ID: {MessageId}", message.MessageId);
+
+                    var patientEvent = JsonSerializer.Deserialize<PatientRegisteredEvent>(
+                        message.Data.ToString() ?? string.Empty,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+
+                    if (patientEvent != null)
+                    {
+                        _logger.LogInformation("Deserialized patient data: ID={RootId}, Name={FirstName} {LastName}, Email={Email}",
+                            patientEvent.Patient.Id, patientEvent.Patient.FirstName, patientEvent.Patient.LastName, patientEvent.Patient.Email);
+
+                        var patient = new Patient
+                        {
+                            RootId = patientEvent.Patient.Id,
+                            FirstName = patientEvent.Patient.FirstName,
+                            LastName = patientEvent.Patient.LastName,
+                            Email = patientEvent.Patient.Email,
+                            PhoneNumber = patientEvent.Patient.PhoneNumber
+                        };
+
+                        var success = await _patientRepository.AddPatientAsync(patient);
+
+                        if (success)
+                        {
+                            _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId} to accounting database with new ID {NewPatientId}",
+                                patientEvent.Patient.Id, patient.Id);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to deserialize PatientRegisteredEvent from message data: {Data}", message.Data.ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
+                }
+            }
+            else if (message.MessageType == "TestCompleted")
+            {
+                try
+                {
+                    _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+                    // log the cost
+                    _logger.LogInformation("Message data: {Data}", message.Data.ToString());
 
                     var labTestEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
                         message.Data.ToString() ?? string.Empty,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            Converters = { new DecimalJsonConverter() }
+                        }
                     );
 
                     if (labTestEvent != null)
@@ -89,7 +142,7 @@ namespace Braphia.Accounting.Consumers
                         {
                             RootId = labTestEvent.Test.Id,
                             PatientId = labTestEvent.Test.PatientId,
-                            TestType = labTestEvent.Test.TestType.ToString(),
+                            TestType = labTestEvent.Test.TestType,
                             Description = labTestEvent.Test.Description,
                             Result = labTestEvent.Test.Result,
                             Cost = labTestEvent.Test.Cost,
@@ -109,12 +162,12 @@ namespace Braphia.Accounting.Consumers
                     }
                     else
                     {
-                        _logger.LogError("Failed to deserialize LabTestFinishedEvent from message data: {Data}", message.Data.ToString());
+                        _logger.LogError("Failed to deserialize TestCompleted event from message data: {Data}", message.Data.ToString());
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing LabTestFinished event: {MessageId}", message.MessageId);
+                    _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
                 }
             }
         }

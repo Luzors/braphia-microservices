@@ -26,13 +26,7 @@ namespace Braphia.Laboratory.Repositories
             await _context.Test.AddAsync(test);
             await _context.SaveChangesAsync();
 
-            // Patient created event
-            await _publishEndpoint.Publish(new Message(
-                messageType: "TestCompleted",
-                data: new TestCompletedEvent(test)
-            ));
-
-            return true;
+           return true;
         }
 
         public async Task<Test?> GetByIdAsync(int id)

@@ -62,7 +62,15 @@ namespace Braphia.Laboratory.Repositories
         public async Task<Patient?> GetPatientByIdAsync(int patientId)
         {
             return await _context.Patient
-                .FirstOrDefaultAsync(p => p.Id == patientId);
+                .Include(p => p.Tests)
+                .FirstOrDefaultAsync(p => p.Id == patientId);               
+        }
+
+        public async Task<Patient?> GetPatientByRootIdAsync(int rootId)
+        {
+            return await _context.Patient
+                .Include(p => p.Tests)
+                .FirstOrDefaultAsync(p => p.RootId == rootId);
         }
 
         public async Task<IEnumerable<Patient>> GetAllPatientsAsync()

@@ -19,6 +19,8 @@ namespace Braphia.Laboratory.Database
             modelBuilder.Entity<Test>()
                 .Property(t => t.Cost)
                 .HasPrecision(18, 2);
+            modelBuilder.Entity<Patient>()
+                .HasMany(p => p.Tests);
         }
     }
 }

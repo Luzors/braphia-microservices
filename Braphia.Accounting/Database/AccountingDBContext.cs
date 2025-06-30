@@ -38,6 +38,10 @@ namespace Braphia.Accounting.Database
                 .WithMany()
                 .HasForeignKey(t => t.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Decimal precision for Test Cost
+            modelBuilder.Entity<Test>()
+                .Property(t => t.Cost)
+                .HasPrecision(18, 2);
         }
     }
 }
