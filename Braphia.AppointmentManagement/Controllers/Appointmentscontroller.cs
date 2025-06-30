@@ -5,6 +5,7 @@ using Braphia.AppointmentManagement.Commands.UserCheckId;
 using Braphia.AppointmentManagement.Databases.WriteDatabase;
 using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Enums;
+using Braphia.AppointmentManagement.Events.InternalEvents;
 using Braphia.AppointmentManagement.Models;
 using Braphia.AppointmentManagement.Query.GetAllAppointments;
 using Braphia.AppointmentManagement.Query.GetAppointmentById;
@@ -86,6 +87,7 @@ namespace Braphia.AppointmentManagement.Controllers
                     {
                         return BadRequest($"Appointment with ID {id} is not in the correct state to start the appointment.");
                     }
+                    
                     appointment.StartAppointment();
                     break;
                 case "finished":

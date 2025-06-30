@@ -1,4 +1,5 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
+using Braphia.AppointmentManagement.Enums;
 using Braphia.AppointmentManagement.Events;
 using Braphia.AppointmentManagement.Events.InternalEvents;
 using Infrastructure.Messaging;
@@ -38,6 +39,17 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
             var message = new Message(@event);
 
             await _publishEndpoint.Publish(message, cancellationToken);
+
+            //send PatientArrivedEvent to the bus
+            if (request.NewState == AppointmentStateEnum.STARTED)
+            {
+                var patientArrivedEvent = new PatientArrivedEvent
+                {
+                    AppointmentId = request.AppointmentId
+                };
+                var patientArrivedMessage = new Message(patientArrivedEvent);
+                await _publishEndpoint.Publish(patientArrivedMessage, cancellationToken);
+            }
 
             return request.AppointmentId;
 
