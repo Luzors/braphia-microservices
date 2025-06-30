@@ -2,7 +2,6 @@
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
 using Braphia.AppointmentManagement.Events;
-using Braphia.AppointmentManagement.Models.States;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
@@ -85,7 +84,7 @@ namespace Braphia.AppointmentManagement.Consumers
                 ReferralId = evt.ReferralId,
                 ReferralDate = evt.ReferralDate,
                 ReferralReason = evt.ReferralReason,
-                StateName = evt.StateName,
+                State = evt.State,
                 ScheduledTime = evt.ScheduledTime
             };
             _logger.LogInformation("aaaaaaaaaaa");

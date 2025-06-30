@@ -1,5 +1,5 @@
-﻿using Braphia.AppointmentManagement.Models;
-using Braphia.AppointmentManagement.Models.States;
+﻿using Braphia.AppointmentManagement.Enums;
+using Braphia.AppointmentManagement.Models;
 
 namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces
 {
@@ -11,7 +11,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
         Task<Appointment> GetAppointmentByIdAsync(int appointmentId );
         Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
         Task<bool> AddFollowUpAppointmentAsync(int appointmentId, Appointment followUpAppointment );
-        Task<bool> UpdateAppointmentStateAsync(int patientId, IAppointmentState appointmentState);
+        Task<bool> UpdateAppointmentStateAsync(int patientId, AppointmentStateEnum appointmentState);
 
     }
 }

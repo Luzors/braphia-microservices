@@ -85,7 +85,7 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
             existingAppointment.ReceptionistLastName = appointment.ReceptionistLastName;
             existingAppointment.ReceptionistEmail = appointment.ReceptionistEmail;
             existingAppointment.ScheduledTime = appointment.ScheduledTime;
-            existingAppointment.StateName = appointment.StateName;
+            existingAppointment.State = appointment.State;
             existingAppointment.ReferralId = appointment.ReferralId;
             existingAppointment.ReferralDate = appointment.ReferralDate;
             existingAppointment.ReferralReason = appointment.ReferralReason;

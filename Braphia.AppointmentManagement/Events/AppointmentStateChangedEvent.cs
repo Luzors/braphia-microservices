@@ -1,11 +1,11 @@
-﻿using Braphia.AppointmentManagement.Models.States;
+﻿using Braphia.AppointmentManagement.Enums;
 
 namespace Braphia.AppointmentManagement.Events
 {
     public class AppointmentStateChangedEvent
     {
         public int AppointmentId { get; set; }
-        public IAppointmentState NewState { get; set; }
+        public AppointmentStateEnum NewState { get; set; }
         
     }
 }

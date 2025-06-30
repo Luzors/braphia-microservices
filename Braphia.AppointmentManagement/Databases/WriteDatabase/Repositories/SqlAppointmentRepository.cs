@@ -1,6 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
+using Braphia.AppointmentManagement.Enums;
 using Braphia.AppointmentManagement.Models;
-using Braphia.AppointmentManagement.Models.States;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -88,7 +88,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
 
         }
 
-        public async Task<bool> UpdateAppointmentStateAsync(int patientId, IAppointmentState state)
+        public async Task<bool> UpdateAppointmentStateAsync(int patientId, AppointmentStateEnum state)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state), "State cannot be null.");

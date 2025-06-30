@@ -1,4 +1,4 @@
-﻿using Braphia.AppointmentManagement.Models.States;
+﻿using Braphia.AppointmentManagement.Enums;
 
 namespace Braphia.AppointmentManagement.Models
 {
@@ -18,8 +18,8 @@ namespace Braphia.AppointmentManagement.Models
         public Referral referral { get; set; }
 
         public DateTime ScheduledTime { get; set; }
-        //Change statepattern to enum
-        public IAppointmentState state;
+
+        public AppointmentStateEnum state;
         public int? FollowUpAppointmentId { get; set; }
         public Appointment FollowUpAppointment { get; set; }
 
@@ -35,19 +35,28 @@ namespace Braphia.AppointmentManagement.Models
             ReferralId = referralId;
             ScheduledTime = scheduledTime;
 
-            SetState(new AppointmentCreated()); // Assuming AppointmentScheduledState is a valid implementation of IAppointmentState
+            state = AppointmentStateEnum.CREATED;
         }
 
-        public void SetState(IAppointmentState state)
+       public void StartAppointment()
         {
-            state = state;
+            state = AppointmentStateEnum.STARTED;
         }
 
-        public void AppointmentCreated() => state.AppointmentCreated(this);
-        public void AppointmentStarted() => state.AppointnentStarted(this);
-        public void AppointmentFinished() => state.AppointmentFinished(this);
-        public void AppointmentCancled() => state.AppointmentCanceled(this);
-        public void AppointmentMissed() => state.AppointmentMissed(this);
+        public void FinishAppointment()
+        {
+            state = AppointmentStateEnum.FINISHED;
+        }
+
+        public void CancelAppointment()
+        {
+            state = AppointmentStateEnum.CANCELED;
+        }
+
+        public void AppointmentMissed()
+        {
+            state = AppointmentStateEnum.MISSED;
+        }
 
         public void SetScheduledTime(DateTime newTime)
         {

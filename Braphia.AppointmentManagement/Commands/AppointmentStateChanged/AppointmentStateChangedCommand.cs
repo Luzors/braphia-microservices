@@ -1,4 +1,4 @@
-﻿using Braphia.AppointmentManagement.Models.States;
+﻿using Braphia.AppointmentManagement.Enums;
 using MediatR;
 
 namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
@@ -6,11 +6,11 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
     public class AppointmentStateChangedCommand : IRequest<int>
     {
         public int AppointmentId { get; set; }
-        public IAppointmentState NewState { get; set; }
-        public AppointmentStateChangedCommand(int appointmentId, IAppointmentState newState)
+        public AppointmentStateEnum NewState { get; set; }
+        public AppointmentStateChangedCommand(int appointmentId, AppointmentStateEnum newState)
         {
             AppointmentId = appointmentId;
-            NewState = newState ?? throw new ArgumentNullException(nameof(newState), "New state cannot be null.");
+            NewState = newState;
         }
     
     

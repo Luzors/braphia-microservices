@@ -1,4 +1,4 @@
-﻿using Braphia.AppointmentManagement.Models.States;
+﻿using Braphia.AppointmentManagement.Enums;
 using Braphia.AppointmentManagement.Query.Abstractions;
 using Braphia.UserManagement.Enums;
 
@@ -25,7 +25,7 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
         public DateTime ReferralDate { get; set; } 
         public string ReferralReason { get; set; } 
         public DateTime ScheduledTime { get; set; }
-        public string StateName { get; set; }
+        public AppointmentStateEnum State { get; set; } = AppointmentStateEnum.CREATED;
 
         public bool IsIdChecked { get; set; } = false;
 
