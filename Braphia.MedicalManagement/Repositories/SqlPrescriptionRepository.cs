@@ -41,10 +41,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to add prescription.");
 
-            await _publishEndpoint.Publish(new Message(
-                messageType: "PrescriptionWritten",
-                data: new PrescriptionWrittenEvent(prescription)
-            ));
+            await _publishEndpoint.Publish(new Message(new PrescriptionWrittenEvent(prescription)));
             return true;
         }
 
@@ -57,6 +54,9 @@ namespace Braphia.MedicalManagement.Repositories
             _context.Prescription.Remove(prescription);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to delete prescription.");
+            
+            await _publishEndpoint.Publish(new Message(new PrescriptionInvokedEvent(prescription)));
+
             return true;
         }
 
@@ -69,10 +69,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update prescription.");
             
-            await _publishEndpoint.Publish(new Message(
-                messageType: "PrescriptionChanged",
-                data: new PrescriptionChangedEvent(prescription)
-            ));
+            await _publishEndpoint.Publish(new Message(new PrescriptionChangedEvent(prescription)));
             
             return true;
         }
