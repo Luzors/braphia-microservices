@@ -11,7 +11,5 @@ namespace Braphia.Laboratory.Repositories.Interfaces
         Task<Test?> GetTestByIdAsync(Guid testId);
         Task<IEnumerable<Test>> GetAllTestsAsync();
         Task<bool> UpdateTestStatus(Guid testId, TestStatus status);
-
-
     }
 }

@@ -21,7 +21,11 @@ namespace Braphia.MedicalManagement.Repositories
 
         public async Task<MedicalAnalysis> GetMedicalAnalysisAsync(int id)
         {
-            var medicalAnalysis = await _context.MedicalAnalysis.FindAsync(id);
+            var medicalAnalysis = await _context.MedicalAnalysis
+                .Include(ma => ma.Prescriptions)
+                .Include(ma => ma.Tests)
+                .FirstOrDefaultAsync(ma => ma.Id == id);
+
             if (medicalAnalysis == null)
                 throw new KeyNotFoundException($"MedicalAnalysis with ID {id} not found.");
             return medicalAnalysis;
@@ -41,10 +45,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to add medicalAnalysis.");
 
-            await _publishEndpoint.Publish(new Message(
-                messageType: "ExaminedPatient",
-                data: new ExaminedPatientEvent(medicalAnalysis)
-            ));
+            await _publishEndpoint.Publish(new Message(new ExaminedPatientEvent(medicalAnalysis)));
             return true;
         }
 
@@ -69,10 +70,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update medicalAnalysis.");
 
-            await _publishEndpoint.Publish(new Message(
-                messageType: "ChangedExamination",
-                data: new ChangedExaminationEvent(medicalAnalysis)
-            ));
+            await _publishEndpoint.Publish(new Message(new ChangedExaminationEvent(medicalAnalysis)));
 
             return true;
         }

@@ -17,6 +17,8 @@ namespace Braphia.MedicalManagement.Database
 
         public DbSet<Appointment> Appointment { get; set; }
 
+        public DbSet<Test> Test { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -32,12 +34,6 @@ namespace Braphia.MedicalManagement.Database
                 .HasOne(p => p.Physician)
                 .WithMany()
                 .HasForeignKey(p => p.PhysicianId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Prescription>()
-                .HasOne(p => p.MedicalAnalysis)
-                .WithMany(ma => ma.Prescriptions)
-                .HasForeignKey(p => p.MedicalAnalysisId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Configure MedicalAnalysis relationships

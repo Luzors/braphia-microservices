@@ -1,7 +1,9 @@
-﻿using Braphia.Laboratory.Models;
+﻿using Braphia.Laboratory.Events;
+using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Braphia.Laboratory.Controllers
 {
@@ -11,80 +13,130 @@ namespace Braphia.Laboratory.Controllers
     {
         public readonly ITestRepository _testRepository;
         public readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger<TestController> _logger;
 
-        public TestController(ITestRepository testRepository, IPublishEndpoint publishEndpoint)
+        public TestController(ILogger<TestController> logger, ITestRepository testRepository, IPublishEndpoint publishEndpoint)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
-        [HttpGet(Name = "Tests")]
-        [ProducesResponseType(typeof(IEnumerable<Test>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get()
+        [HttpGet]
+        public async Task<IActionResult> GetAllTests()
         {
+            _logger.LogInformation("Fetching all tests");
+
             try
             {
-                var records = await _testRepository.GetAllTestsAsync();
-                if (records == null || !records.Any())
+                var tests = await _testRepository.GetAllAsync();
+                if (tests == null || !tests.Any())
                 {
-                    return NotFound("No tests found");
+                    _logger.LogInformation("No tests found");
+                    return NotFound("No tests found.");
                 }
-                return Ok(records);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest($"Invalid request: {ex.Message}");
+
+                return Ok(tests);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching all tests");
                 return StatusCode(500, "Internal server error while fetching tests");
             }
         }
 
-        [HttpGet("{id}", Name = "TestById")]
-        [ProducesResponseType(typeof(Test), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get(Guid id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTestById(int id)
         {
+            _logger.LogInformation("Fetching test with ID {Id}", id);
+
             try
             {
-                var record = await _testRepository.GetTestByIdAsync(id);
-                if (record == null)
+                var test = await _testRepository.GetByIdAsync(id);
+                if (test == null)
                 {
-                    return NotFound($"No test found with ID {id}");
+                    _logger.LogInformation("Test with ID {Id} not found", id);
+                    return NotFound("Test not found.");
                 }
-                return Ok(record);
+
+                return Ok(test);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching test with ID {Id}", id);
+                return StatusCode(500, "Internal server error while fetching test");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateTest([FromBody] Test test)
+        {
+            _logger.LogInformation("Creating a new test");
+
+            try
+            {
+                if (test == null)
+                {
+                    _logger.LogWarning("Test data is null");
+                    return BadRequest("Test data is required.");
+                }
+
+                test.CompletedDate = null;
+                test.Result = null;
+
+                await _testRepository.AddAsync(test);
+                _logger.LogInformation("Test created successfully with ID {Id}", test.Id);
+                return CreatedAtAction(nameof(CreateTest), new { id = test.Id }, test);
             }
             catch (ArgumentException ex)
             {
+                _logger.LogWarning(ex, "Invalid argument while creating test");
                 return BadRequest($"Invalid request: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error while fetching test");
+                _logger.LogError(ex, "Error creating test");
+                return StatusCode(500, "Internal server error while creating test");
             }
         }
-        [HttpPost(Name = "Test")]
-        [ProducesResponseType(typeof(Test), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Post([FromBody] Test test)
+
+        [HttpPut("CompleteTest/{id}")]
+        public async Task<IActionResult> CompleteTest(int id, [FromBody] string result)
         {
-            if (test == null)
-            {
-                return BadRequest("Test data is null");
-            }
+            _logger.LogInformation("Completing test with ID {Id}", id);
+
             try
             {
-                var createdTest = await _testRepository.AddTestAsync(test);
-                if (createdTest == false)
+                var test = await _testRepository.GetByIdAsync(id);
+                if (test == null)
                 {
-                    return BadRequest("Failed to create test");
+                    _logger.LogWarning("Test with ID {Id} not found", id);
+                    return NotFound("Test not found.");
                 }
-                // Publish an event after creating the test
-                await _publishEndpoint.Publish(new { TestId = test.Id, Message = "Test created successfully" });
-                return CreatedAtAction(nameof(Get), new { id = test.Id }, test);
+
+                test.CompletedDate = DateTime.UtcNow;
+                test.Result = result;
+
+                await _testRepository.UpdateAsync(test);
+                _logger.LogInformation("Test with ID {Id} completed successfully", id);
+
+                // Stuur TestCompletedEvent
+                await _publishEndpoint.Publish(new TestCompletedEvent
+                {
+                    Test = test
+                });
+
+                return Ok(test);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument while completing test with ID {Id}", id);
+                return BadRequest($"Invalid request: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                _logger.LogError(ex, "Error completing test with ID {Id}", id);
+                return StatusCode(500, "Internal server error while completing test");
             }
         }
 

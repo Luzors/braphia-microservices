@@ -17,8 +17,8 @@ builder.Services
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<PatientCreatedConsumer>();
-    x.AddConsumer<LabTestFinishedConsumer>();
+    x.AddConsumer<PatientRegisteredConsumer>();
+    x.AddConsumer<TestCompletedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -30,9 +30,10 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-builder.Services.AddScoped<IInsurerRepository, InsurerRepository>();
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
+builder.Services.AddScoped<IInsurerRepository, SqlInsurerRepository>();
+builder.Services.AddScoped<IInvoiceRepository, SqlInvoiceRepository>();
+builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 
 // Add services to the container.
 

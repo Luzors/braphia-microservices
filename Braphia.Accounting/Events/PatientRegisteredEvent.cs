@@ -2,13 +2,13 @@ using Braphia.Accounting.Models;
 
 namespace Braphia.Accounting.Events
 {
-    public class PatientCreatedEvent
+    public class PatientRegisteredEvent
     {
         public Patient Patient { get; set; }
 
-        public PatientCreatedEvent() { }
+        public PatientRegisteredEvent() { }
 
-        public PatientCreatedEvent(Patient patient)
+        public PatientRegisteredEvent(Patient patient)
         {
             Patient = patient;
         }

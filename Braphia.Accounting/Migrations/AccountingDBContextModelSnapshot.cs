@@ -116,6 +116,45 @@ namespace Braphia.Accounting.Migrations
                     b.ToTable("Patient");
                 });
 
+            modelBuilder.Entity("Braphia.Accounting.Models.Test", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RootId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TestType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Test");
+                });
+
             modelBuilder.Entity("Braphia.Accounting.Models.Invoice", b =>
                 {
                     b.HasOne("Braphia.Accounting.Models.Insurer", "Insurer")
@@ -135,6 +174,17 @@ namespace Braphia.Accounting.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Insurer");
+                });
+
+            modelBuilder.Entity("Braphia.Accounting.Models.Test", b =>
+                {
+                    b.HasOne("Braphia.Accounting.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Braphia.Accounting.Models.Insurer", b =>

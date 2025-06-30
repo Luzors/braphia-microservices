@@ -29,5 +29,7 @@ namespace Braphia.MedicalManagement.Models
         public Appointment? Appointment { get; set; }
 
         public List<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+
+        public List<Test> Tests { get; set; } = new List<Test>();
     }
 }
