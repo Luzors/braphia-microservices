@@ -24,7 +24,7 @@ namespace Braphia.Pharmacy.Repositories
             try
             {
                 _context.Pharmacy.Add(pharmacy);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 await _publishEndpoint.Publish(new Message(new Events.PharmacyRegisteredEvent(pharmacy)));
                 return true;
             }

@@ -56,7 +56,7 @@ namespace Braphia.Pharmacy.Consumers
 
                     var patient = new Patient
                     {
-                        RootId = patientEvent.Patient.Id,
+                        Id = patientEvent.Patient.Id,
                         FirstName = patientEvent.Patient.FirstName,
                         LastName = patientEvent.Patient.LastName,
                         Email = patientEvent.Patient.Email,
@@ -67,12 +67,12 @@ namespace Braphia.Pharmacy.Consumers
 
                     if (success)
                     {
-                        _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId} to accounting database with new ID {NewPatientId}",
-                            patientEvent.Patient.RootId, patient.Id);
+                        _logger.LogInformation("Successfully added patient from UserManagement ID {OriginalPatientId}",
+                            patient.Id);
                     }
                     else
                     {
-                        _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                        _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
                     }
                 }
                 else
@@ -101,7 +101,7 @@ namespace Braphia.Pharmacy.Consumers
                         patientEvent.NewPatient.Id, patientEvent.NewPatient.FirstName, patientEvent.NewPatient.LastName, patientEvent.NewPatient.Email);
                     var patient = new Patient
                     {
-                        RootId = patientEvent.NewPatient.Id,
+                        Id = patientEvent.NewPatient.Id,
                         FirstName = patientEvent.NewPatient.FirstName,
                         LastName = patientEvent.NewPatient.LastName,
                         Email = patientEvent.NewPatient.Email,
@@ -177,7 +177,7 @@ namespace Braphia.Pharmacy.Consumers
                         prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId, prescriptionEvent.Prescription.Medicine, prescriptionEvent.Prescription.Dose);
                     var prescription = new Prescription
                     {
-                        RootId = prescriptionEvent.Prescription.Id,
+                        Id = prescriptionEvent.Prescription.Id,
                         PatientId = prescriptionEvent.Prescription.PatientId,
                         Medicine = prescriptionEvent.Prescription.Medicine,
                         Dose = prescriptionEvent.Prescription.Dose,
@@ -219,7 +219,7 @@ namespace Braphia.Pharmacy.Consumers
                         prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId, prescriptionEvent.Prescription.Medicine, prescriptionEvent.Prescription.Dose);
                     var prescription = new Prescription
                     {
-                        RootId = prescriptionEvent.Prescription.Id,
+                        Id = prescriptionEvent.Prescription.Id,
                         PatientId = prescriptionEvent.Prescription.PatientId,
                         Medicine = prescriptionEvent.Prescription.Medicine,
                         Dose = prescriptionEvent.Prescription.Dose,

@@ -6,9 +6,9 @@ namespace Braphia.Pharmacy.Models.ExternalObjects
     {
         public Patient() { }
 
-        public Patient(int rootId, string firstName, string lastName, string email, string phoneNumber)
+        public Patient(int id, string firstName, string lastName, string email, string phoneNumber)
         {
-            RootId = rootId;
+            Id = id;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
@@ -17,7 +17,6 @@ namespace Braphia.Pharmacy.Models.ExternalObjects
 
         [Key]
         public int Id { get; set; }
-        public int RootId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }

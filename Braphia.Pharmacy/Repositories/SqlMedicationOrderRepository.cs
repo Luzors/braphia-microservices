@@ -3,6 +3,7 @@ using Braphia.Pharmacy.Events;
 using Braphia.Pharmacy.Models;
 using Braphia.Pharmacy.Repositories.Interfaces;
 using Infrastructure.Messaging;
+using k8s.KubeConfigModels;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,7 @@ namespace Braphia.Pharmacy.Repositories
                 }
                 medicationOrder.AddItem(medication, amount);
                 _context.MedicationOrder.Update(medicationOrder);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 return true;
             }
             catch (Exception ex)
@@ -72,7 +73,7 @@ namespace Braphia.Pharmacy.Repositories
             try
             {
                 await _context.MedicationOrder.AddAsync(medicationOrder);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 return true;
             }
             catch (Exception ex)
