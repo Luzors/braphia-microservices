@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Events;
+using Braphia.AppointmentManagement.Events.InternalEvents;
 using Infrastructure.Messaging;
 using MassTransit;
 using MediatR;

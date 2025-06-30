@@ -1,3 +1,4 @@
+using Braphia.AppointmentManagement.BackgroundServices;
 using Braphia.AppointmentManagement.Commands.AddAppointment;
 using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
 using Braphia.AppointmentManagement.Consumers;
@@ -38,6 +39,9 @@ builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
 builder.Services.AddScoped<IReceptionistRepository, SQLReceptionistRepository>();
 builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
+
+// Services
+builder.Services.AddHostedService<AppointmentReminderBackgroundService>();
 
 // MassTransit
 builder.Services.AddMassTransit(x =>
