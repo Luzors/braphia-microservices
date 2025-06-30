@@ -1,7 +1,7 @@
 ﻿using Braphia.AppointmentManagement.Enums;
 using Braphia.UserManagement.Enums;
 
-namespace Braphia.AppointmentManagement.Events
+namespace Braphia.AppointmentManagement.Events.InternalEvents
 {
     public class AppointmentCreatedEvent
     {

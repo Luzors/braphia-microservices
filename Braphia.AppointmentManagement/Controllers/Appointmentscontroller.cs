@@ -9,6 +9,7 @@ using Braphia.AppointmentManagement.Models;
 using Braphia.AppointmentManagement.Query.GetAllAppointments;
 using Braphia.AppointmentManagement.Query.GetAppointmentById;
 using Braphia.AppointmentManagement.Query.GetAppointmentIdChecked;
+using Braphia.AppointmentManagement.Query.GetAppointmentsByPatient;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -78,7 +79,7 @@ namespace Braphia.AppointmentManagement.Controllers
                     //check if id is checked in read database
                     if (!r)
                     {
-                        return BadRequest($"Appointment with ID {id} is not checked.");
+                        return BadRequest($"User of Appointment ID {id} is not checked.");
                     }
                     // Compare the state name directly using the `Name` property
                     if (appointment.state != AppointmentStateEnum.CREATED)
@@ -166,14 +167,49 @@ namespace Braphia.AppointmentManagement.Controllers
             return result != null ? Ok(result) : NotFound();
         }
 
+        // GET: api/appointments/patient/123
+        [HttpGet("patient/{patientId}")]
+        public async Task<IActionResult> GetByPatient(int patientId)
+        {
+            var result = await _mediator.Send(new GetAppointmentsByPatientIdQuery(patientId));
+            if (result != null)
+            {
+                
 
-        
+                // Create a modified result with the desired properties
+                var modifiedResult = result.Select(appointment => new
+                {
+                    appointment.Id,
+                    appointment.PatientFirstName,
+                    appointment.PatientLastName,
+                    appointment.PhysicianFirstName,
+                    appointment.PhysicianLastName,
+                    appointment.PhysicianSpecialization,
+                    appointment.ReceptionistFirstName,
+                    appointment.ReceptionistLastName,
+                    appointment.ReferralReason,
+                    appointment.ScheduledTime,
+                    state = appointment.State == AppointmentStateEnum.CREATED ? "CREATED" :
+                            appointment.State == AppointmentStateEnum.STARTED ? "STARTED" :
+                            appointment.State == AppointmentStateEnum.FINISHED ? "FINISHED" :
+                            appointment.State == AppointmentStateEnum.CANCELED ? "CANCELED" :
+                            appointment.State == AppointmentStateEnum.MISSED ? "MISSED" : "UNKNOWN"
+                }).ToList();
 
-        
+                return Ok(modifiedResult);
+            }
+            return NotFound();
+        }
 
-        
 
-        
+
+
+
+
+
+
+
+
 
     }
 }

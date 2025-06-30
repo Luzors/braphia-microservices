@@ -1,4 +1,4 @@
-using Braphia.AppointmentManagement.BackgroundServices;
+
 using Braphia.AppointmentManagement.Commands.AddAppointment;
 using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
 using Braphia.AppointmentManagement.Consumers;

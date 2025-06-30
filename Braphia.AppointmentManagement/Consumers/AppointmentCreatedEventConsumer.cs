@@ -1,7 +1,7 @@
 ﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
-using Braphia.AppointmentManagement.Events;
+using Braphia.AppointmentManagement.Events.InternalEvents;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;

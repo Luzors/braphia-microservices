@@ -15,6 +15,7 @@ namespace Braphia.AppointmentManagement.Query.GetAppointmentsByPatient
 
         public async Task<IEnumerable<AppointmentViewQueryModel>> Handle(GetAppointmentsByPatientIdQuery request, CancellationToken cancellationToken)
         {
+            
             return await _repository.GetAppointmentsByPatientIdAsync(request.PatientId);
         }
     }
