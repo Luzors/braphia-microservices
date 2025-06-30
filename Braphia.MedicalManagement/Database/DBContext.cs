@@ -17,6 +17,8 @@ namespace Braphia.MedicalManagement.Database
 
         public DbSet<Appointment> Appointment { get; set; }
 
+        public DbSet<Test> Test { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
