@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Events;
+using Infrastructure.Messaging;
 using MassTransit;
 using MediatR;
 
@@ -9,6 +10,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentRescheduled
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPublishEndpoint _publishEndpoint; 
+       
         
         public AppointmentRescheduledCommandHandler(
             IAppointmentRepository appointmentRepository,
@@ -16,8 +18,9 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentRescheduled
         {
             _appointmentRepository = appointmentRepository;
             _publishEndpoint = publishEndpoint;
+           
         }
-
+        //De wijziging van tijd staat niet goed in de read database, hij lijkt wel de datum van vandaag te pakken
         public async Task<int> Handle(AppointmentRescheduledCommand request, CancellationToken cancellationToken)
         {
 
@@ -25,6 +28,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentRescheduled
             if (appointment == null)
                 throw new ArgumentException($"Appointment with ID {request.AppointmentId} not found.");
 
+            
             appointment.ScheduledTime = request.NewScheduledTime;
 
             var success = await _appointmentRepository.UpdateAppointmentAsync(appointment);
@@ -37,7 +41,10 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentRescheduled
                 NewScheduledTime = request.NewScheduledTime
             };
 
-            await _publishEndpoint.Publish(@event, cancellationToken);
+            var mes = new Message(@event);
+
+
+            await _publishEndpoint.Publish(mes, cancellationToken);
 
             return appointment.Id;
 

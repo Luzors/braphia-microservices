@@ -1,4 +1,5 @@
 using Braphia.AppointmentManagement.Commands.AddAppointment;
+using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
 using Braphia.AppointmentManagement.Consumers;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
@@ -13,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentCreatedCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentRescheduledCommandHandler).Assembly));
+
 
 var connectionStringRead = builder.Configuration.GetConnectionString("AppointmentReadDB")
     ?? throw new InvalidOperationException("No connection string configured for AppointmentReadDB");

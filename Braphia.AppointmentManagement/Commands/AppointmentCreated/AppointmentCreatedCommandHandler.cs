@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Events;
+using Infrastructure.Messaging;
 using MassTransit;
 using MediatR;
 
@@ -79,10 +80,10 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 ReferralId = referral.Id,
                 ReferralDate = referral.ReferralDate,
                 ReferralReason = referral.Reason,
-                StateName = appointment.state.GetType().Name
+                StateName = "Created"
             };
-
-            await _publishEndpoint.Publish(@event, cancellationToken);
+            var mes = new Message(@event);
+            await _publishEndpoint.Publish(mes, cancellationToken);
 
             return appointment.Id;
         }

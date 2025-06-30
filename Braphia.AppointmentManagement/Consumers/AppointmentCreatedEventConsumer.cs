@@ -22,17 +22,24 @@ namespace Braphia.AppointmentManagement.Consumers
 
         public async Task Consume(ConsumeContext<Message> context)
         {
+            _logger.LogInformation(
+                JsonSerializer.Serialize(context.Message));           
             var type = context.Message.MessageType;
             var data = context.Message.Data.ToString() ?? string.Empty;
 
             switch(type)
             {
                 case "AppointmentCreated":
+                    _logger.LogInformation("AppointmentCreated");
+                    _logger.LogInformation(type);
                     var createdEvent = JsonSerializer.Deserialize<AppointmentCreatedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    _logger.LogInformation(createdEvent.ToString());
                     await HandleAppointmentCreatedAsync(createdEvent);
                     break;
 
                 case "AppointmentRescheduled":
+                    _logger.LogInformation("AppointmentResc");
+                    _logger.LogInformation(type);
                     var rescheduledEvent = JsonSerializer.Deserialize<AppointmentRescheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleAppointmentRescheduledAsync(rescheduledEvent);
                     break;
@@ -49,6 +56,8 @@ namespace Braphia.AppointmentManagement.Consumers
                 _logger.LogWarning("Received null AppointmentCreatedEvent.");
                 return;
             }
+
+            _logger.LogDebug(evt.ToString());
 
             var viewModel = new AppointmentViewQueryModel
             {
@@ -72,6 +81,9 @@ namespace Braphia.AppointmentManagement.Consumers
                 StateName = evt.StateName,
                 ScheduledTime = evt.ScheduledTime
             };
+            _logger.LogInformation("aaaaaaaaaaa");
+            _logger.LogInformation(evt.PatientEmail);
+            _logger.LogInformation(evt.PatientEmail);
 
             await _readRepo.AddAppointmentAsync(viewModel);
             _logger.LogInformation("Processed AppointmentCreatedEvent for ID {AppointmentId}", evt.AppointmentId);
@@ -79,15 +91,17 @@ namespace Braphia.AppointmentManagement.Consumers
 
         private async Task HandleAppointmentRescheduledAsync(AppointmentRescheduledEvent? evt)
         {
+            _logger.LogInformation("HandleResc");
             if (evt == null)
             {
                 _logger.LogWarning("Received null AppointmentRescheduledEvent.");
                 return;
             }
-
+            _logger.LogInformation(evt.NewScheduledTime.ToString());
             var appointment = await _readRepo.GetAppointmentByIdAsync(evt.AppointmentId);
             appointment.ScheduledTime = evt.NewScheduledTime;
 
+            _logger.LogInformation(appointment.ToString());
             await _readRepo.UpdateAppointmentAsync(appointment);
             _logger.LogInformation("Processed AppointmentRescheduledEvent for ID {AppointmentId}", evt.AppointmentId);
         }
