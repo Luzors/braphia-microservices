@@ -1,4 +1,6 @@
+using Braphia.Accounting.EventSourcing;
 using Braphia.Accounting.EventSourcing.Aggregates;
+using Braphia.Accounting.EventSourcing.Events;
 using Braphia.Accounting.EventSourcing.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,9 +21,6 @@ namespace Braphia.Accounting.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         
-        // Note: Direct invoice creation via API is removed
-        // Invoices are now created only through the message consumer when lab tests are completed
-
         [HttpGet("{invoiceId}")]
         [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -41,7 +40,11 @@ namespace Braphia.Accounting.Controllers
                     return NotFound($"Invoice with ID {invoiceId} not found");
                 }
 
-                return Ok(MapToDto(invoice));
+                // Payments includen bij enkele invoice ophalen
+                var paymentEvents = await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoiceId);
+                var invoiceDto = await MapToDto(invoice, true, paymentEvents);
+
+                return Ok(invoiceDto);
             }
             catch (Exception ex)
             {
@@ -88,7 +91,13 @@ namespace Braphia.Accounting.Controllers
                     return NotFound($"Invoice with ID {invoiceId} not found");
                 }
 
-                return Ok(MapToDto(updatedInvoice));
+                // Get payment events for this invoice
+                var paymentEvents = await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoiceId);
+                
+                // Create the DTO with payments included
+                var invoiceDto = await MapToDto(updatedInvoice, true, paymentEvents);
+
+                return Ok(invoiceDto);
             }
             catch (InvalidOperationException ex)
             {
@@ -115,7 +124,15 @@ namespace Braphia.Accounting.Controllers
             {
                 // Get all unpaid invoices for the insurer
                 var invoices = await _invoiceEventService.GetInvoicesByInsurerAsync(insurerId);
-                return Ok(invoices.Select(MapToDto));
+                
+                // Create DTOs without payments
+                var invoiceDtos = new List<InvoiceDto>();
+                foreach (var invoice in invoices)
+                {
+                    invoiceDtos.Add(await MapToDto(invoice, false));
+                }
+                
+                return Ok(invoiceDtos);
             }
             catch (Exception ex)
             {
@@ -131,7 +148,15 @@ namespace Braphia.Accounting.Controllers
             try
             {
                 var invoices = await _invoiceEventService.GetAllInvoicesAsync();
-                return Ok(invoices.Select(MapToDto));
+                
+                // Create DTOs without payments
+                var invoiceDtos = new List<InvoiceDto>();
+                foreach (var invoice in invoices)
+                {
+                    invoiceDtos.Add(await MapToDto(invoice, false));
+                }
+                
+                return Ok(invoiceDtos);
             }
             catch (Exception ex)
             {
@@ -152,7 +177,15 @@ namespace Braphia.Accounting.Controllers
             try
             {
                 var invoices = await _invoiceEventService.GetInvoicesByPatientIdAsync(patientId);
-                return Ok(invoices.Select(MapToDto));
+                
+                // Create DTOs without payments
+                var invoiceDtos = new List<InvoiceDto>();
+                foreach (var invoice in invoices)
+                {
+                    invoiceDtos.Add(await MapToDto(invoice, false));
+                }
+                
+                return Ok(invoiceDtos);
             }
             catch (Exception ex)
             {
@@ -161,9 +194,9 @@ namespace Braphia.Accounting.Controllers
             }
         }
 
-        private InvoiceDto MapToDto(InvoiceAggregate invoice)
+        private async Task<InvoiceDto> MapToDto(InvoiceAggregate invoice, bool includePayments = false, IEnumerable<BaseEvent>? paymentEvents = null)
         {
-            return new InvoiceDto
+            var dto = new InvoiceDto
             {
                 Id = invoice.Id,
                 PatientId = invoice.PatientId,
@@ -176,6 +209,29 @@ namespace Braphia.Accounting.Controllers
                 CreatedDate = invoice.CreatedDate,
                 IsFullyPaid = invoice.IsFullyPaid
             };
+            
+            // Add payment details only if requested
+            if (includePayments)
+            {
+                // Fetch payment events if not provided
+                var payments = paymentEvents ?? await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoice.Id);
+                
+                foreach (var evt in payments)
+                {
+                    if (evt is PaymentReceivedEvent paymentEvent)
+                    {
+                        dto.Payments.Add(new PaymentDto
+                        {
+                            InsurerId = paymentEvent.InsurerId,
+                            PaymentAmount = paymentEvent.PaymentAmount,
+                            PaymentReference = paymentEvent.PaymentReference,
+                            PaymentDate = paymentEvent.PaymentDate
+                        });
+                    }
+                }
+            }
+            
+            return dto;
         }
     }
 
@@ -184,6 +240,14 @@ namespace Braphia.Accounting.Controllers
         public int InsurerId { get; set; }
         public decimal PaymentAmount { get; set; }
         public string? PaymentReference { get; set; }
+    }
+
+    public class PaymentDto
+    {
+        public int InsurerId { get; set; }
+        public decimal PaymentAmount { get; set; }
+        public string PaymentReference { get; set; } = string.Empty;
+        public DateTime PaymentDate { get; set; }
     }
 
     // Removed InvoiceCreationRequest and InvoiceCreationResult classes
@@ -201,5 +265,6 @@ namespace Braphia.Accounting.Controllers
         public string Description { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; }
         public bool IsFullyPaid { get; set; }
+        public List<PaymentDto> Payments { get; set; } = new List<PaymentDto>();
     }
 }

@@ -73,16 +73,19 @@ namespace Braphia.Accounting.Consumers
                         else
                         {
                             _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                            throw new InvalidOperationException($"Failed to add patient from UserManagement ID {patientEvent.Patient.Id} to accounting database");
                         }
                     }
                     else
                     {
                         _logger.LogError("Failed to deserialize PatientRegisteredEvent from message data: {Data}", message.Data.ToString());
+                        throw new InvalidOperationException("Failed to deserialize PatientRegisteredEvent from message data");
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
+                    throw new InvalidOperationException($"Error processing PatientCreated event: {message.MessageId}", ex);
                 }
             }
             else if (message.MessageType == "TestCompleted")
@@ -91,19 +94,47 @@ namespace Braphia.Accounting.Consumers
                 {
                     _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
                     // log the cost
-                    _logger.LogInformation("Message data: {Data}", message.Data.ToString());
+                    var jsonData = message.Data.ToString() ?? string.Empty;
+                    _logger.LogInformation("Message data: {Data}", jsonData);
 
+                    var serializerOptions = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        Converters = { new DecimalJsonConverter() }
+                    };
+                    
                     var labTestEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
-                        message.Data.ToString() ?? string.Empty,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true,
-                            Converters = { new DecimalJsonConverter() }
-                        }
+                        jsonData,
+                        serializerOptions
                     );
 
                     if (labTestEvent != null)
                     {
+                        // First parse the original cost string to see what it should be
+                        try {
+                            // Try to extract the cost directly from the JSON to verify the original value
+                            using (JsonDocument doc = JsonDocument.Parse(jsonData))
+                            {
+                                if (doc.RootElement.TryGetProperty("test", out var testElement) && 
+                                    testElement.TryGetProperty("cost", out var costElement))
+                                {
+                                    string rawCost = costElement.ToString();
+                                    _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
+                                    
+                                    if (decimal.TryParse(rawCost, 
+                                        System.Globalization.NumberStyles.Any, 
+                                        System.Globalization.CultureInfo.InvariantCulture, 
+                                        out decimal parsedCost))
+                                    {
+                                        _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex) {
+                            _logger.LogWarning(ex, "Error parsing raw cost value from JSON");
+                        }
+                        
                         _logger.LogInformation("Deserialized lab test data: Id={Id} LabTestId={LabTestId}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
                             labTestEvent.Test.Id, labTestEvent.Test.RootId, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
 
@@ -112,14 +143,14 @@ namespace Braphia.Accounting.Consumers
                         if (patient == null)
                         {
                             _logger.LogError("Patient with ID {PatientId} not found in accounting database", labTestEvent.Test.PatientId);
-                            return;
+                            throw new InvalidOperationException($"Patient with ID {labTestEvent.Test.PatientId} not found in accounting database");
                         }
 
                         // Check if patient has an insurer
                         if (patient.InsurerId == null)
                         {
                             _logger.LogWarning("Patient {PatientId} does not have an associated insurer. Cannot create invoice.", labTestEvent.Test.PatientId);
-                            return;
+                            throw new InvalidOperationException($"Patient {labTestEvent.Test.PatientId} does not have an associated insurer. Cannot create invoice.");
                         }
 
                         // Save the test in the TestRepository
@@ -143,17 +174,19 @@ namespace Braphia.Accounting.Consumers
                         else
                         {
                             _logger.LogError("Failed to add test {RootId} to accounting database", test.RootId);
+                            throw new InvalidOperationException($"Failed to add test {test.RootId} to accounting database");
                         }
 
                         // Create invoice through event sourcing service
                         string description = $"Lab Test: {labTestEvent.Test.TestType} - {labTestEvent.Test.Description}".Trim(' ', '-');
-                        
-                        try {
+
+                        try
+                        {
                             int invoiceId = await _invoiceEventService.CreateInvoiceAsync(
-                                patient.Id, 
-                                patient.InsurerId.Value, 
-                                test.Id, 
-                                labTestEvent.Test.Cost, 
+                                patient.Id,
+                                patient.InsurerId.Value,
+                                test.Id,
+                                labTestEvent.Test.Cost,
                                 description);
 
                             _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for lab test {LabTestId} for patient {PatientId} and insurer {InsurerId}",
@@ -161,18 +194,21 @@ namespace Braphia.Accounting.Consumers
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Failed to create invoice through event sourcing for lab test {LabTestId} for patient {PatientId}", 
+                            _logger.LogError(ex, "Failed to create invoice through event sourcing for lab test {LabTestId} for patient {PatientId}",
                                 test.Id, patient.Id);
+                            throw new InvalidOperationException($"Failed to create invoice through event sourcing for lab test {test.Id} for patient {patient.Id}", ex);
                         }
                     }
                     else
                     {
                         _logger.LogError("Failed to deserialize TestCompleted event from message data: {Data}", message.Data.ToString());
+                        throw new InvalidOperationException("Failed to deserialize TestCompleted event from message data");
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+                    throw new InvalidOperationException($"Error processing TestCompleted event: {message.MessageId}", ex);
                 }
             }
         }

@@ -15,6 +15,11 @@ var connectionString = builder.Configuration.GetConnectionString("LaboratoryDb")
 builder.Services
     .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new Braphia.Laboratory.Converters.DecimalJsonConverter());
+});
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<LaboratoryMessageConsumer>();
@@ -24,7 +29,13 @@ builder.Services.AddMassTransit(x =>
         var configuration = context.GetRequiredService<IConfiguration>();
         var rabbitMqConnection = configuration.GetConnectionString("eventbus");
         cfg.Host(rabbitMqConnection);
-
+        
+        cfg.ConfigureJsonSerializerOptions(options =>
+        {
+            options.Converters.Add(new Braphia.Laboratory.Converters.DecimalJsonConverter());
+            return options;
+        });
+        
         cfg.ConfigureEndpoints(context);
     });
 });

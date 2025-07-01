@@ -25,7 +25,7 @@ namespace Braphia.Laboratory.Repositories
             if (test == null)
                 throw new ArgumentNullException(nameof(test), "Test cannot be null.");
             await _context.Test.AddAsync(test);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesWithIdentityInsertAsync();
 
            return true;
         }

@@ -2,6 +2,7 @@
 using Braphia.MedicalManagement.Events.Test;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,7 +59,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (changesSaved <= 0)
                 throw new InvalidOperationException("Failed to add test.");
 
-            await _publishEndpoint.Publish(new TestRequestedEvent(test));
+            await _publishEndpoint.Publish(new Message(new TestRequestedEvent(test)));
             
             return true;
         }

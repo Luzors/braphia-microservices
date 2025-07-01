@@ -1,10 +1,13 @@
 ﻿using Braphia.Laboratory.Events;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Braphia.Laboratory.Converters;
 using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using Braphia.Laboratory.Events.Tests;
 
 namespace Braphia.Laboratory.Controllers
 {
@@ -137,32 +140,24 @@ namespace Braphia.Laboratory.Controllers
                 test.Result = result.Trim();
 
                 bool updateResult = await _testRepository.UpdateTestAsync(test);
-                if (updateResult)
+                _logger.LogInformation("Test with ID {Id} completed successfully", id);
+
+                var testEvent = new TestCompletedEvent(test);
+                var serializerOptions = new JsonSerializerOptions
                 {
-                    _logger.LogInformation($"Test with ID {id} completed successfully");
-                    return Ok(new
-                    {
-                        message = "Test completed successfully",
-                        testId = id,
-                        completedDate = test.CompletedDate,
-                        result = test.Result
-                    });
-                }
-                else
-                {
-                    _logger.LogError("Failed to update test with ID {Id}", id);
-                    return StatusCode(500, "Failed to complete test");
-                }
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, $"Unauthorized attempt to complete test ID {id}");
-                return Unauthorized("You are not authorized to complete this test");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, $"Test with ID {id} not found");
-                return NotFound($"Test with ID {id} not found");
+                    Converters = { new DecimalJsonConverter() }
+                };
+                
+                var json = JsonSerializer.Serialize(testEvent, serializerOptions);
+                _logger.LogInformation("Serialized event: {Json}", json);
+                
+                // Stuur TestCompletedEvent
+                await _publishEndpoint.Publish(new Message(
+                    messageType: "TestCompleted",
+                    data: new TestCompletedEvent(test)
+                ));
+
+                return Ok(test);
             }
             catch (ArgumentException ex)
             {

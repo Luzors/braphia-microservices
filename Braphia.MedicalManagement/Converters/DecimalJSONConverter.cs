@@ -1,9 +1,8 @@
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Braphia.Accounting.Converters
-{
+namespace Braphia.MedicalManagement.Converters;
+
     public class DecimalJsonConverter : JsonConverter<decimal>
     {
         public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -12,6 +11,7 @@ namespace Braphia.Accounting.Converters
             {
                 string? stringValue = reader.GetString();
                 
+                // Use InvariantCulture to ensure consistent decimal parsing
                 if (stringValue != null && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Any, 
                     System.Globalization.CultureInfo.InvariantCulture, out var value))
                 {
@@ -29,4 +29,3 @@ namespace Braphia.Accounting.Converters
             writer.WriteStringValue(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
     }
-}

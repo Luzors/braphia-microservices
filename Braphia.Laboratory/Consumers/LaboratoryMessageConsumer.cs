@@ -6,6 +6,7 @@ using Braphia.Laboratory.Events.Test;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
+using Braphia.Laboratory.Converters;
 
 namespace Braphia.Laboratory.Consumers
 {
@@ -87,7 +88,8 @@ namespace Braphia.Laboratory.Consumers
             else if (message.MessageType == "AppointmentModified")
             {
                 await AppointmentModified(message);
-            } else if (message.MessageType == "TestRequested")
+            }
+            else if (message.MessageType == "TestRequested")
             {
                 await TestRequested(message);
             }
@@ -230,16 +232,41 @@ namespace Braphia.Laboratory.Consumers
         {
             try
             {
-                _logger.LogInformation("Received TestRequested event with ID: {MessageId}", message.MessageId);
+                _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+                // log the cost
+                var jsonData = message.Data.ToString() ?? string.Empty;
+                _logger.LogInformation("Message data: {Data}", jsonData);
+
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new DecimalJsonConverter() }
+                };
+
                 var testEvent = JsonSerializer.Deserialize<TestRequestedEvent>(
-                    message.Data.ToString() ?? string.Empty,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                );
+                        jsonData,
+                        serializerOptions
+                    );
 
                 if (testEvent != null)
                 {
-                    _logger.LogInformation("Deserialized test data: ID={TestId}",
-                        testEvent.Test.Id);
+                  using (JsonDocument doc = JsonDocument.Parse(jsonData))
+                            {
+                                if (doc.RootElement.TryGetProperty("test", out var testElement) && 
+                                    testElement.TryGetProperty("cost", out var costElement))
+                                {
+                                    string rawCost = costElement.ToString();
+                                    _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
+                                    
+                                    if (decimal.TryParse(rawCost, 
+                                        System.Globalization.NumberStyles.Any, 
+                                        System.Globalization.CultureInfo.InvariantCulture, 
+                                        out decimal parsedCost))
+                                    {
+                                        _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
+                                    }
+                                }
+                            }
 
                     await _testRepository.AddTestAsync(testEvent.Test);
                 }
