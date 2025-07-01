@@ -226,7 +226,7 @@ namespace Braphia.Laboratory.Consumers
             }
         }
 
-        private async Task<bool> TestRequested(Message message)
+        private async Task TestRequested(Message message)
         {
             try
             {
@@ -242,19 +242,15 @@ namespace Braphia.Laboratory.Consumers
                         testEvent.Test.Id);
 
                     await _testRepository.AddTestAsync(testEvent.Test);
-
-                    return true;
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize TestRequestedEvent from message data: {Data}", message.Data.ToString());
-                    return false;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing TestRequested event: {MessageId}", message.MessageId);
-                return false;
             }
         }
     }

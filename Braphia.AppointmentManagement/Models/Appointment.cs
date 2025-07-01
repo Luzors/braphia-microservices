@@ -21,10 +21,12 @@ namespace Braphia.AppointmentManagement.Models
 
         public AppointmentStateEnum state { get; set; }
         public int? FollowUpAppointmentId { get; set; }
-       
+        public string? PreAppointmentQuestionnaire { get; set; }
 
 
-        public Appointment(){}
+
+
+        public Appointment() { }
 
         public Appointment(int id, int patientId, int physicianId, int receptionistId, int referralId, DateTime scheduledTime)
         {
@@ -38,7 +40,7 @@ namespace Braphia.AppointmentManagement.Models
             state = AppointmentStateEnum.CREATED;
         }
 
-       public void StartAppointment()
+        public void StartAppointment()
         {
             state = AppointmentStateEnum.STARTED;
         }
@@ -66,6 +68,20 @@ namespace Braphia.AppointmentManagement.Models
         public void SetFollowUpAppointment(Appointment followUpAppointment)
         {
             FollowUpAppointmentId = followUpAppointment.Id;
+        }
+
+        public void SetPreAppointmentQuestionnaire()
+        {
+            var DefaultQuestionnaire = new List<QuestionnaireAnswer>
+            {
+                new QuestionnaireAnswer { Question = "How are you feeling today?", Answer = "" },
+                new QuestionnaireAnswer { Question = "Any specific concerns?", Answer = "" }
+            };
+
+            // Set default questionnaire to string
+           var  questionnaireAnswers = string.Join(";", DefaultQuestionnaire.Select(q => $"{q.Question}:{q.Answer}"));
+
+            PreAppointmentQuestionnaire = questionnaireAnswers;
         }
     }
 }
