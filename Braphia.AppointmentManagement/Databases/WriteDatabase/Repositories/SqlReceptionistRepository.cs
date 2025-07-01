@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Models;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             if (receptionist == null)
                 throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
             await _context.Receptionists.AddAsync(receptionist);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesWithIdentityInsertAsync();
+            return true;
         }
         public async Task<bool> UpdateReceptionistAsync(Receptionist receptionist)
         {
@@ -33,7 +35,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingReceptionist.Email = receptionist.Email;
 
             _context.Receptionists.Update(existingReceptionist);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesWithIdentityInsertAsync();
+            return true;
         }
         public async Task<bool> DeleteReceptionistAsync(int receptionistId)
         {

@@ -25,7 +25,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
                 throw new ArgumentNullException(nameof(request.NewState), "New state cannot be null.");
             }
             var appointment = await _appointmentRepository.GetAppointmentByIdAsync(request.AppointmentId);
-            if (!appointment) throw new InvalidOperationException($"Appointment with ID {request.AppointmentId} not found.");
+            if (appointment == null) throw new InvalidOperationException($"Appointment with ID {request.AppointmentId} not found.");
             bool result = await _appointmentRepository.UpdateAppointmentStateAsync(request.AppointmentId, request.NewState);
             if (!result)
             {
