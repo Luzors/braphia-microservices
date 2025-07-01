@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Braphia.Pharmacy.Models
 {
@@ -9,6 +10,7 @@ namespace Braphia.Pharmacy.Models
         public int Id { get; set; }
 
         public int MedicationOrderId { get; set; }
+        [JsonIgnore]
         public MedicationOrder MedicationOrder { get; set; }
 
         public int MedicationId { get; set; }

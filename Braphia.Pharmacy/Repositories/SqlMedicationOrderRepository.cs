@@ -6,6 +6,7 @@ using Infrastructure.Messaging;
 using k8s.KubeConfigModels;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Braphia.Pharmacy.Repositories
 {
@@ -51,7 +52,10 @@ namespace Braphia.Pharmacy.Repositories
         {
             try
             {
-                var medicationOrder = await _context.MedicationOrder.FindAsync(medicationOrderId);
+                var medicationOrder = await _context.MedicationOrder
+                    .Include(mo => mo.Prescription)
+                    .Include(mo => mo.Items).ThenInclude(mi => mi.Medication)
+                    .FirstOrDefaultAsync(mo => mo.Id == medicationOrderId); 
                 if (medicationOrder == null)
                 {
                     _logger.LogWarning("Medication order with ID {MedicationOrderId} not found.", medicationOrderId);

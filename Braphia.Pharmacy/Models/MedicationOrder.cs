@@ -73,7 +73,8 @@ namespace Braphia.Pharmacy.Models
 
         public void CompleteOrder()
         {
-            CompletedAt = DateTime.UtcNow;
+            if (CompletedAt != null)
+                throw new InvalidOperationException("Cannot complete an already completed order");
             if (Items.Count == 0)
             {
                 throw new InvalidOperationException("Cannot complete an order with no items.");
@@ -90,6 +91,7 @@ namespace Braphia.Pharmacy.Models
                 {
                     throw new InvalidOperationException($"Order must contain the prescribed medicine: {requiredMedicine}.");
                 }
+                CompletedAt = DateTime.UtcNow;
             }
             else
             {
