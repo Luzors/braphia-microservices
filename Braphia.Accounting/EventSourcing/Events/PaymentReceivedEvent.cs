@@ -4,24 +4,25 @@ namespace Braphia.Accounting.EventSourcing.Events
 {
     public class PaymentReceivedEvent : BaseEvent
     {
-        public override string EventType => "PaymentReceived";
-        
-        public Guid InvoiceAggregateId { get; private set; }
-        public int InsurerId { get; private set; }
-        public decimal PaymentAmount { get; private set; }
-        public string PaymentReference { get; private set; }
-        public DateTime PaymentDate { get; private set; }
+        public int InsurerId { get; set; }
+        public decimal PaymentAmount { get; set; }
+        public string PaymentReference { get; set; } = string.Empty;
+        public DateTime PaymentDate { get; set; }
 
-        public PaymentReceivedEvent(Guid invoiceAggregateId, int insurerId, decimal paymentAmount, string paymentReference)
+        public PaymentReceivedEvent(int aggregateId, int version, int insurerId, decimal paymentAmount, string paymentReference)
+            : base(aggregateId, version)
         {
-            InvoiceAggregateId = invoiceAggregateId;
+            EventType = "PaymentReceived";
             InsurerId = insurerId;
             PaymentAmount = paymentAmount;
             PaymentReference = paymentReference;
             PaymentDate = DateTime.UtcNow;
         }
 
-        // For serialization
-        private PaymentReceivedEvent() { }
+        // For serialization/EF
+        public PaymentReceivedEvent() : base() 
+        { 
+            EventType = "PaymentReceived";
+        }
     }
 }

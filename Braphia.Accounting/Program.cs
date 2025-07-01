@@ -2,6 +2,8 @@ using Braphia.Accounting.Database;
 using Braphia.Accounting.Repositories;
 using Braphia.Accounting.Repositories.Interfaces;
 using Braphia.Accounting.Consumers;
+using Braphia.Accounting.EventSourcing.Repositories;
+using Braphia.Accounting.EventSourcing.Services;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +35,8 @@ builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IInsurerRepository, SqlInsurerRepository>();
 builder.Services.AddScoped<IInvoiceRepository, SqlInvoiceRepository>();
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
+builder.Services.AddScoped<IEventStoreRepository, SqlEventStoreRepository>();
+builder.Services.AddScoped<IInvoiceEventService, InvoiceEventService>();
 
 // Add services to the container.
 
