@@ -39,7 +39,7 @@ namespace Braphia.AppointmentManagement.Controllers
 
         // POST: api/appointments
         [HttpPost]
-        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreatedCommand command)
+        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentScheduledCommand command)
         {
             //Mediator will handle the command and publish the event
             //Will send the command to the matching handler

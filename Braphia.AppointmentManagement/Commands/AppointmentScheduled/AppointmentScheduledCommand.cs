@@ -2,7 +2,7 @@
 
 namespace Braphia.AppointmentManagement.Commands.AddAppointment
 {
-    public class AppointmentCreatedCommand : IRequest<int>
+    public class AppointmentScheduledCommand : IRequest<int>
     {
         public int PatientId { get; set; }
         public int PhysicianId { get; set; }

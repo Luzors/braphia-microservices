@@ -3,7 +3,7 @@ using Braphia.UserManagement.Enums;
 
 namespace Braphia.AppointmentManagement.Events.InternalEvents
 {
-    public class AppointmentCreatedEvent
+    public class AppointmentScheduledEvent
     {
         public int AppointmentId { get; set; }
         public int PatientId { get; set; }
