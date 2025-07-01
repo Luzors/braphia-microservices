@@ -65,29 +65,5 @@ namespace Braphia.Laboratory.Controllers
                 return StatusCode(500, "Internal server error while fetching appointment");
             }
         }
-
-        [HttpPost(Name = "Appointment")]
-        [ProducesResponseType(typeof(Appointment), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Post([FromBody] Appointment appointment)
-        {
-            if (appointment == null)
-            {
-                return BadRequest("Appointment data is required");
-            }
-            try
-            {
-                var createdAppointment = await appointmentRepository.AddAppointmentAsync(appointment);
-                if (createdAppointment == false)
-                {
-                    return BadRequest("Failed to create appointment");
-                }
-
-                return (IActionResult)appointment;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error while creating appointment: {ex.Message}");
-            }
-        }
     }
 }
