@@ -59,6 +59,8 @@ namespace Braphia.MedicalManagement.Repositories
             if (changesSaved <= 0)
                 throw new InvalidOperationException("Failed to add test.");
 
+            await _publishEndpoint.Publish(new TestRequestedEvent(test));
+            
             return true;
         }
 
