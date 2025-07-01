@@ -9,6 +9,6 @@ namespace Braphia.Accounting.Repositories.Interfaces
         Task<bool> DeletePatientAsync(int PatientId);
         Task<Patient?> GetPatientByIdAsync(int PatientId);
         Task<IEnumerable<Patient>> GetAllPatientsAsync();
-
+        Task<IEnumerable<Patient>> GetPatientsByInsurerIdAsync(int insurerId);
     }
 }

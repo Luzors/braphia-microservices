@@ -1,4 +1,5 @@
-﻿using Braphia.Laboratory.Models;
+﻿using Braphia.Laboratory.Enums;
+using Braphia.Laboratory.Models;
 
 namespace Braphia.Laboratory.Repositories.Interfaces
 {
@@ -6,10 +7,8 @@ namespace Braphia.Laboratory.Repositories.Interfaces
     {
         Task<bool> AddTestAsync(Test test);
         Task<bool> UpdateTestAsync(Test test);
-        Task<bool> DeleteTestAsync(Guid testId);
-        Task<Test?> GetTestByIdAsync(Guid testId);
-        Task<IEnumerable<Test>> GetAllTestsAsync();
-  
-        
+        Task<bool> DeleteTestAsync(int testId);
+        Task<Test?> GetTestByIdAsync(int testId);
+        Task<IEnumerable<Test>> GetAllAsync();
     }
 }

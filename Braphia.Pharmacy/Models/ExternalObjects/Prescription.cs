@@ -6,17 +6,20 @@ namespace Braphia.Pharmacy.Models.ExternalObjects
     {
         [Key]
         public int Id { get; set; }
-        public int RootId { get; set; }
         public int PatientId { get; set; }
-
-        // TODO: copy from medicalmanagement <- hurry up jorn :)
+        public string Medicine { get; set; }
+        public string Dose { get; set; }
+        public UnitEnum Unit { get; set; }
 
         public Prescription() { }
 
-        public Prescription(int rootId, int patientId)
+        public Prescription(int id, int patientId, string medicine, string dose, UnitEnum unit)
         {
-            RootId = rootId;
+            Id = id;
             PatientId = patientId;
+            Medicine = medicine;
+            Dose = dose;
+            Unit = unit;
         }
     }
 }

@@ -21,8 +21,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Braphia.Accounting\Braphia.Accounting.csproj" />
     <ProjectReference Include="..\Braphia.AppointmentManagement\Braphia.AppointmentManagement.csproj" />
+    <ProjectReference Include="..\Braphia.NotificationDispatcher\Braphia.NotificationDispatcher.csproj" />
     <ProjectReference Include="..\Braphia.Pharmacy\Braphia.Pharmacy.csproj" />
     <ProjectReference Include="..\Braphia.Laboratory\Braphia.Laboratory.csproj" />
+    <ProjectReference Include="..\Braphia.MedicalManagement\Braphia.MedicalManagement.csproj" />
     <ProjectReference Include="..\Bravia.UserManagement\Braphia.UserManagement.csproj" />
   </ItemGroup>
 

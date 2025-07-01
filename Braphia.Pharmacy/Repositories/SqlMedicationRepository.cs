@@ -1,6 +1,7 @@
 ﻿using Braphia.Pharmacy.Database;
 using Braphia.Pharmacy.Models;
 using Braphia.Pharmacy.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,7 @@ namespace Braphia.Pharmacy.Repositories
             try
             {
                 _context.Medication.Add(medication);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 return true;
             }
             catch (Exception ex)

@@ -6,8 +6,7 @@ namespace Braphia.Laboratory.Repositories.Interfaces
     {
         Task<bool> AddAppointmentAsync(Appointment appointment);
         Task<bool> UpdateAppointmentAsync(Appointment appointment);
-        Task<bool> DeleteAppointmentAsync(Guid appointmentId);
-        Task<Appointment?> GetAppointmentByIdAsync(Guid appointmentId);
+        Task<Appointment?> GetAppointmentByIdAsync(int id);
         Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
     }
 }
