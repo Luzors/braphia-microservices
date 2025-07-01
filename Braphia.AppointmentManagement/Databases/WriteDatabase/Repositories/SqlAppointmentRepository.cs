@@ -1,6 +1,9 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Enums;
+using Braphia.AppointmentManagement.Events;
+using Braphia.AppointmentManagement.Events.InternalEvents;
 using Braphia.AppointmentManagement.Models;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +23,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
             await _context.Appointments.AddAsync(appointment);
-            return await _context.SaveChangesAsync() > 0;
+            var succes = await _context.SaveChangesAsync() > 0;
+            if (!succes) return false;
+            await _publishEndpoint.Publish(new Message(new AppointmentScheduledEvent(appointment)));
+            return true;
         }
         public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
         {
@@ -35,7 +41,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingAppointment.ReferralId = appointment.ReferralId;
 
             _context.Appointments.Update(existingAppointment);
-            return await _context.SaveChangesAsync() > 0;
+            var succes = await _context.SaveChangesAsync() > 0;
+            if (!succes) return false;
+            await _publishEndpoint.Publish(new Message(new AppointmentModifiedEvent(appointment.Id, existingAppointment)));
+            return true;
         }
         public async Task<bool> DeleteAppointmentAsync(int appointmentId)
         {
@@ -84,8 +93,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
                 throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
             existingAppointment.SetFollowUpAppointment(followUpAppointment);
             _context.Appointments.Update(existingAppointment);
-            return await _context.SaveChangesAsync() > 0;
-
+            var succes = await _context.SaveChangesAsync() > 0;
+            if (!succes) return false;
+            await _publishEndpoint.Publish(new Message(new AppointmentScheduledFollowUpEvent(existingAppointment.Id, followUpAppointment)));
+            return true;
         }
 
         public async Task<bool> UpdateAppointmentStateAsync(int patientId, AppointmentStateEnum state)
@@ -97,7 +108,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
                 throw new ArgumentException($"Appointment with ID {patientId} not found.");
             appointment.state = state;
             _context.Appointments.Update(appointment);
-            return await _context.SaveChangesAsync() > 0;
+            var succes = await _context.SaveChangesAsync() > 0;
+            if (!succes) return false;
+            await _publishEndpoint.Publish(new Message(new AppointmentStateChangedEvent() { AppointmentId = appointment.Id, NewState = state}));
+            return true;
         }
 
         public async Task<bool> AddFollowUpAppointment(int appointmentId, Appointment followUpAppointment)
@@ -111,7 +125,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             if (!result)
                 throw new InvalidOperationException("Failed to add follow-up appointment.");
             originalAppointment.SetFollowUpAppointment(followUpAppointment);
-            return await UpdateAppointmentAsync(originalAppointment);
+            var succes = await UpdateAppointmentAsync(originalAppointment);
+            if (!succes) return false;
+            await _publishEndpoint.Publish(new Message(new AppointmentScheduledFollowUpEvent(originalAppointment.Id, followUpAppointment)));
+            return true;
         }
     }
 }
