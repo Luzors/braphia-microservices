@@ -1,14 +1,15 @@
 # This powershell script runs a shitton of curl requests to seed the system
 # Might be some AI inspired stuff :)
 
-Write-Host "🌱 Starting Braphia System Seeding..." -ForegroundColor Green
+Write-Host "Starting Braphia System Seeding..." -ForegroundColor Green
 
 # Base URLs for microservices (adjust ports as needed)
-$UserManagementBaseUrl = "https://localhost:7001"
-$MedicalManagementBaseUrl = "https://localhost:7002"
-$PharmacyBaseUrl = "https://localhost:7003"
-$LaboratoryBaseUrl = "https://localhost:7004"
-$AccountingBaseUrl = "https://localhost:7005"
+$AppointmentManagementBaseUrl = "https://localhost:7049/api"
+$AccountingBaseUrl = "https://localhost:7076/api"
+$LaboratoryBaseUrl = "https://localhost:7014/api"
+$PharmacyBaseUrl = "https://localhost:7042/api"
+$UserManagementBaseUrl = "https://localhost:7260/api"
+$MedicalManagementBaseUrl = "https://localhost:7060"
 
 # Function to make curl requests with error handling
 function Invoke-CurlRequest {
@@ -20,94 +21,90 @@ function Invoke-CurlRequest {
     )
     
     try {
-        if ($Method -eq "POST" -and $Data -ne "") {
-            $result = curl -X $Method $Url -H "Content-Type: $ContentType" -d $Data --insecure --silent
+        $headers = @{ "Content-Type" = $ContentType }
+        if (($Method -eq "POST" -or $Method -eq "PUT") -and $Data -ne "") {
+            $result = Invoke-WebRequest -Method $Method -Uri $Url -Headers $headers -Body $Data -UseBasicParsing
         } else {
-            $result = curl -X $Method $Url --insecure --silent
+            $result = Invoke-WebRequest -Method $Method -Uri $Url -Headers $headers -UseBasicParsing
         }
-        Write-Host "✅ Success: $Method $Url" -ForegroundColor Green
+        Write-Host "Success: $Method $Url" -ForegroundColor Green
         return $result
     }
     catch {
-        Write-Host "❌ Failed: $Method $Url - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Failed: $Method $Url - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Data: $Data" -ForegroundColor Yellow
         return $null
     }
 }
 
 # Create Insurers first (needed for patients)
-Write-Host "`n🏢 Creating Insurers..." -ForegroundColor Yellow
+Write-Host "Creating Insurers..." -ForegroundColor Yellow
 
 $insurers = @(
-    @{ Name = "HealthCare Plus"; ContactEmail = "contact@healthcareplus.com"; PhoneNumber = "+1-555-0101" },
-    @{ Name = "MediCare Insurance"; ContactEmail = "info@medicare.com"; PhoneNumber = "+1-555-0102" },
-    @{ Name = "VitalCare"; ContactEmail = "support@vitalcare.com"; PhoneNumber = "+1-555-0103" },
-    @{ Name = "SecureHealth"; ContactEmail = "claims@securehealth.com"; PhoneNumber = "+1-555-0104" },
-    @{ Name = "PremiumCare"; ContactEmail = "service@premiumcare.com"; PhoneNumber = "+1-555-0105" }
+    @{ Name = "HealthCare Plus"; ContactEmail = "contact@healthcareplus.com"; ContactPhone = "+1-555-0101" },
+    @{ Name = "MediCare Insurance"; ContactEmail = "info@medicare.com"; ContactPhone = "+1-555-0102" },
+    @{ Name = "VitalCare"; ContactEmail = "support@vitalcare.com"; ContactPhone = "+1-555-0103" },
+    @{ Name = "SecureHealth"; ContactEmail = "claims@securehealth.com"; ContactPhone = "+1-555-0104" },
+    @{ Name = "PremiumCare"; ContactEmail = "service@premiumcare.com"; ContactPhone = "+1-555-0105" }
 )
 
 foreach ($insurer in $insurers) {
     $data = $insurer | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$AccountingBaseUrl/api/Insurer" -Data $data
+    Invoke-CurlRequest -Url "$AccountingBaseUrl/Insurer" -Data $data
 }
 
 # Create General Practitioners
-Write-Host "`n👨‍⚕️ Creating General Practitioners..." -ForegroundColor Yellow
+Write-Host "Creating General Practitioners..." -ForegroundColor Yellow
 
 $gps = @(
-    @{ FirstName = "John"; LastName = "Smith"; Email = "j.smith@clinic.com"; PhoneNumber = "+1-555-1001"; Specialization = "Family Medicine" },
-    @{ FirstName = "Sarah"; LastName = "Johnson"; Email = "s.johnson@clinic.com"; PhoneNumber = "+1-555-1002"; Specialization = "Internal Medicine" },
-    @{ FirstName = "Michael"; LastName = "Brown"; Email = "m.brown@clinic.com"; PhoneNumber = "+1-555-1003"; Specialization = "General Practice" },
-    @{ FirstName = "Emily"; LastName = "Davis"; Email = "e.davis@clinic.com"; PhoneNumber = "+1-555-1004"; Specialization = "Family Medicine" },
-    @{ FirstName = "David"; LastName = "Wilson"; Email = "d.wilson@clinic.com"; PhoneNumber = "+1-555-1005"; Specialization = "Preventive Medicine" }
+    @{ FirstName = "John"; LastName = "Smith"; Email = "j.smith@clinic.com"; PhoneNumber = "+1-555-1001"; BirthDate = "1980-01-01T00:00:00Z" },
+    @{ FirstName = "Sarah"; LastName = "Johnson"; Email = "s.johnson@clinic.com"; PhoneNumber = "+1-555-1002"; BirthDate = "1985-05-05T00:00:00Z" },
+    @{ FirstName = "Michael"; LastName = "Brown"; Email = "m.brown@clinic.com"; PhoneNumber = "+1-555-1003"; BirthDate = "1990-10-10T00:00:00Z" },
+    @{ FirstName = "Emily"; LastName = "Davis"; Email = "e.davis@clinic.com"; PhoneNumber = "+1-555-1004"; BirthDate = "1992-02-02T00:00:00Z" },
+    @{ FirstName = "David"; LastName = "Wilson"; Email = "d.wilson@clinic.com"; PhoneNumber = "+1-555-1005"; BirthDate = "1988-08-08T00:00:00Z" }
 )
 
 foreach ($gp in $gps) {
     $data = $gp | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$UserManagementBaseUrl/api/GeneralPracticioner" -Data $data
+    Invoke-CurlRequest -Url "$UserManagementBaseUrl/GeneralPracticioner" -Data $data
 }
 
 # Create Physicians
-Write-Host "`n👩‍⚕️ Creating Physicians..." -ForegroundColor Yellow
+Write-Host "Creating Physicians..." -ForegroundColor Yellow
 
 $physicians = @(
-    @{ FirstName = "Robert"; LastName = "Anderson"; Email = "r.anderson@hospital.com"; PhoneNumber = "+1-555-2001"; Specialization = "Cardiology" },
-    @{ FirstName = "Lisa"; LastName = "Martinez"; Email = "l.martinez@hospital.com"; PhoneNumber = "+1-555-2002"; Specialization = "Dermatology" },
-    @{ FirstName = "James"; LastName = "Taylor"; Email = "j.taylor@hospital.com"; PhoneNumber = "+1-555-2003"; Specialization = "Orthopedics" },
-    @{ FirstName = "Maria"; LastName = "Garcia"; Email = "m.garcia@hospital.com"; PhoneNumber = "+1-555-2004"; Specialization = "Neurology" },
-    @{ FirstName = "Christopher"; LastName = "Lee"; Email = "c.lee@hospital.com"; PhoneNumber = "+1-555-2005"; Specialization = "Gastroenterology" },
-    @{ FirstName = "Amanda"; LastName = "White"; Email = "a.white@hospital.com"; PhoneNumber = "+1-555-2006"; Specialization = "Endocrinology" },
-    @{ FirstName = "Kevin"; LastName = "Thompson"; Email = "k.thompson@hospital.com"; PhoneNumber = "+1-555-2007"; Specialization = "Pulmonology" },
-    @{ FirstName = "Jessica"; LastName = "Miller"; Email = "j.miller@hospital.com"; PhoneNumber = "+1-555-2008"; Specialization = "Oncology" }
+    @{ FirstName = "Robert"; LastName = "Anderson"; Email = "r.anderson@hospital.com"; PhoneNumber = "+1-555-2001"; BirthDate = "1975-12-25T00:00:00Z"; Specialization = 0 },
+    @{ FirstName = "Lisa"; LastName = "Martinez"; Email = "l.martinez@hospital.com"; PhoneNumber = "+1-555-2002"; BirthDate = "1983-06-30T00:00:00Z"; Specialization = 8 },
+    @{ FirstName = "James"; LastName = "Taylor"; Email = "j.taylor@hospital.com"; PhoneNumber = "+1-555-2003"; BirthDate = "1970-11-11T00:00:00Z"; Specialization = 4 },
+    @{ FirstName = "Maria"; LastName = "Garcia"; Email = "m.garcia@hospital.com"; PhoneNumber = "+1-555-2004"; BirthDate = "1982-09-09T00:00:00Z"; Specialization = 1 },
+    @{ FirstName = "Christopher"; LastName = "Lee"; Email = "c.lee@hospital.com"; PhoneNumber = "+1-555-2005"; BirthDate = "1978-03-03T00:00:00Z"; Specialization = 3 },
+    @{ FirstName = "Amanda"; LastName = "White"; Email = "a.white@hospital.com"; PhoneNumber = "+1-555-2006"; BirthDate = "1986-07-07T00:00:00Z"; Specialization = 7 },
+    @{ FirstName = "Kevin"; LastName = "Thompson"; Email = "k.thompson@hospital.com"; PhoneNumber = "+1-555-2007"; BirthDate = "1984-04-04T00:00:00Z"; Specialization = 2 },
+    @{ FirstName = "Jessica"; LastName = "Miller"; Email = "j.miller@hospital.com"; PhoneNumber = "+1-555-2008"; BirthDate = "1990-08-08T00:00:00Z"; Specialization = 5 }
 )
 
 foreach ($physician in $physicians) {
     $data = $physician | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$UserManagementBaseUrl/api/Physician" -Data $data
+    Invoke-CurlRequest -Url "$UserManagementBaseUrl/Physician" -Data $data
 }
 
-# Create Patients
-Write-Host "`n👤 Creating Patients..." -ForegroundColor Yellow
+# Create Receptionists (needed for appointments)
+Write-Host "Creating Receptionists..." -ForegroundColor Yellow
 
-$patients = @(
-    @{ FirstName = "Alice"; LastName = "Cooper"; Email = "alice.cooper@email.com"; PhoneNumber = "+1-555-3001"; BirthDate = "1985-03-15T00:00:00Z" },
-    @{ FirstName = "Bob"; LastName = "Dylan"; Email = "bob.dylan@email.com"; PhoneNumber = "+1-555-3002"; BirthDate = "1978-07-22T00:00:00Z" },
-    @{ FirstName = "Carol"; LastName = "King"; Email = "carol.king@email.com"; PhoneNumber = "+1-555-3003"; BirthDate = "1992-11-08T00:00:00Z" },
-    @{ FirstName = "Daniel"; LastName = "Craig"; Email = "daniel.craig@email.com"; PhoneNumber = "+1-555-3004"; BirthDate = "1968-04-12T00:00:00Z" },
-    @{ FirstName = "Emma"; LastName = "Stone"; Email = "emma.stone@email.com"; PhoneNumber = "+1-555-3005"; BirthDate = "1990-09-25T00:00:00Z" },
-    @{ FirstName = "Frank"; LastName = "Sinatra"; Email = "frank.sinatra@email.com"; PhoneNumber = "+1-555-3006"; BirthDate = "1955-12-12T00:00:00Z" },
-    @{ FirstName = "Grace"; LastName = "Kelly"; Email = "grace.kelly@email.com"; PhoneNumber = "+1-555-3007"; BirthDate = "1988-02-28T00:00:00Z" },
-    @{ FirstName = "Henry"; LastName = "Ford"; Email = "henry.ford@email.com"; PhoneNumber = "+1-555-3008"; BirthDate = "1975-06-18T00:00:00Z" },
-    @{ FirstName = "Ivy"; LastName = "League"; Email = "ivy.league@email.com"; PhoneNumber = "+1-555-3009"; BirthDate = "1995-01-03T00:00:00Z" },
-    @{ FirstName = "Jack"; LastName = "Sparrow"; Email = "jack.sparrow@email.com"; PhoneNumber = "+1-555-3010"; BirthDate = "1982-08-14T00:00:00Z" }
+$receptionists = @(
+    @{ FirstName = "Alice"; LastName = "Cooper"; Email = "a.cooper@clinic.com"; PhoneNumber = "+1-555-3001"; BirthDate = "1985-03-15T00:00:00Z" },
+    @{ FirstName = "Bob"; LastName = "Johnson"; Email = "b.johnson@clinic.com"; PhoneNumber = "+1-555-3002"; BirthDate = "1990-07-20T00:00:00Z" },
+    @{ FirstName = "Carol"; LastName = "Williams"; Email = "c.williams@clinic.com"; PhoneNumber = "+1-555-3003"; BirthDate = "1988-11-10T00:00:00Z" },
+    @{ FirstName = "David"; LastName = "Brown"; Email = "d.brown@clinic.com"; PhoneNumber = "+1-555-3004"; BirthDate = "1992-05-25T00:00:00Z" }
 )
 
-foreach ($patient in $patients) {
-    $data = $patient | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$UserManagementBaseUrl/api/Patient" -Data $data
+foreach ($receptionist in $receptionists) {
+    $data = $receptionist | ConvertTo-Json -Compress
+    Invoke-CurlRequest -Url "$UserManagementBaseUrl/Receptionist" -Data $data
 }
 
 # Create Pharmacies
-Write-Host "`n💊 Creating Pharmacies..." -ForegroundColor Yellow
+Write-Host "Creating Pharmacies..." -ForegroundColor Yellow
 
 $pharmacies = @(
     @{ Name = "CityPharm Downtown"; Address = "123 Main St, Downtown"; PhoneNumber = "+1-555-4001"; Email = "downtown@citypharm.com" },
@@ -119,57 +116,99 @@ $pharmacies = @(
 
 foreach ($pharmacy in $pharmacies) {
     $data = $pharmacy | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$PharmacyBaseUrl/api/Pharmacy" -Data $data
+    Invoke-CurlRequest -Url "$PharmacyBaseUrl/Pharmacy" -Data $data
 }
 
 # Create Medications
-Write-Host "`n💉 Creating Medications..." -ForegroundColor Yellow
+Write-Host "Creating Medications..." -ForegroundColor Yellow
 
 $medications = @(
-    @{ Name = "Aspirin"; Dosage = "325mg"; Manufacturer = "PharmaCorp"; Price = 12.99; Description = "Pain reliever and anti-inflammatory" },
-    @{ Name = "Ibuprofen"; Dosage = "200mg"; Manufacturer = "MediLab"; Price = 8.49; Description = "Nonsteroidal anti-inflammatory drug" },
-    @{ Name = "Acetaminophen"; Dosage = "500mg"; Manufacturer = "HealthGen"; Price = 6.99; Description = "Pain reliever and fever reducer" },
-    @{ Name = "Amoxicillin"; Dosage = "250mg"; Manufacturer = "BioPharm"; Price = 15.75; Description = "Antibiotic for bacterial infections" },
-    @{ Name = "Lisinopril"; Dosage = "10mg"; Manufacturer = "CardioMed"; Price = 22.50; Description = "ACE inhibitor for high blood pressure" },
-    @{ Name = "Metformin"; Dosage = "500mg"; Manufacturer = "DiabetesCare"; Price = 18.25; Description = "Diabetes medication" },
-    @{ Name = "Atorvastatin"; Dosage = "20mg"; Manufacturer = "CholesterolRx"; Price = 28.99; Description = "Cholesterol lowering medication" },
-    @{ Name = "Omeprazole"; Dosage = "20mg"; Manufacturer = "GastroMed"; Price = 16.75; Description = "Proton pump inhibitor" }
+    @{ Name = "Aspirin"; Dosage = "325mg"; Manufacturer = "PharmaCorp"; Price = 12.99; Description = "Pain reliever and anti-inflammatory"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Ibuprofen"; Dosage = "200mg"; Manufacturer = "MediLab"; Price = 8.49; Description = "Nonsteroidal anti-inflammatory drug"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Acetaminophen"; Dosage = "500mg"; Manufacturer = "HealthGen"; Price = 6.99; Description = "Pain reliever and fever reducer"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Amoxicillin"; Dosage = "250mg"; Manufacturer = "BioPharm"; Price = 15.75; Description = "Antibiotic for bacterial infections"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Lisinopril"; Dosage = "10mg"; Manufacturer = "CardioMed"; Price = 22.50; Description = "ACE inhibitor for high blood pressure"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Metformin"; Dosage = "500mg"; Manufacturer = "DiabetesCare"; Price = 18.25; Description = "Diabetes medication"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Atorvastatin"; Dosage = "20mg"; Manufacturer = "CholesterolRx"; Price = 28.99; Description = "Cholesterol lowering medication"; ExpiryDate = "2028-07-01T16:30:39.022Z" },
+    @{ Name = "Omeprazole"; Dosage = "20mg"; Manufacturer = "GastroMed"; Price = 16.75; Description = "Proton pump inhibitor"; ExpiryDate = "2028-07-01T16:30:39.022Z" }
 )
 
 foreach ($medication in $medications) {
     $data = $medication | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$PharmacyBaseUrl/api/Medication" -Data $data
+    Invoke-CurlRequest -Url "$PharmacyBaseUrl/Medication" -Data $data
 }
 
-# Create Laboratory Appointments
-Write-Host "`n🧪 Creating Laboratory Appointments..." -ForegroundColor Yellow
+# Create Central Laboratories (needed for lab appointments)
+Write-Host "Creating Central Laboratories..." -ForegroundColor Yellow
 
-$labAppointments = @(
-    @{ PatientId = 1; AppointmentDate = "2024-01-15T09:00:00Z"; Purpose = "Blood work"; Status = "Scheduled" },
-    @{ PatientId = 2; AppointmentDate = "2024-01-16T10:30:00Z"; Purpose = "Urine analysis"; Status = "Scheduled" },
-    @{ PatientId = 3; AppointmentDate = "2024-01-17T14:00:00Z"; Purpose = "X-ray chest"; Status = "Scheduled" },
-    @{ PatientId = 4; AppointmentDate = "2024-01-18T11:15:00Z"; Purpose = "MRI scan"; Status = "Scheduled" },
-    @{ PatientId = 5; AppointmentDate = "2024-01-19T08:45:00Z"; Purpose = "CT scan"; Status = "Scheduled" },
-    @{ PatientId = 6; AppointmentDate = "2024-01-20T13:30:00Z"; Purpose = "Blood glucose test"; Status = "Scheduled" },
-    @{ PatientId = 7; AppointmentDate = "2024-01-21T15:00:00Z"; Purpose = "Cholesterol panel"; Status = "Scheduled" },
-    @{ PatientId = 8; AppointmentDate = "2024-01-22T09:30:00Z"; Purpose = "Liver function test"; Status = "Scheduled" }
+$centralLabs = @(
+    @{ LaboratoryName = "Central Medical Lab"; Address = "100 Medical Center Dr"; PhoneNumber = "+1-555-5001"; Email = "contact@centralmedlab.com" },
+    @{ LaboratoryName = "Advanced Diagnostics"; Address = "200 Science Blvd"; PhoneNumber = "+1-555-5002"; Email = "info@advanceddiag.com" },
+    @{ LaboratoryName = "QuickTest Laboratory"; Address = "300 Research Ave"; PhoneNumber = "+1-555-5003"; Email = "support@quicktest.com" }
 )
 
-foreach ($appointment in $labAppointments) {
-    $data = $appointment | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$LaboratoryBaseUrl/api/Appointment" -Data $data
+foreach ($lab in $centralLabs) {
+    $data = $lab | ConvertTo-Json -Compress
+    Invoke-CurlRequest -Url "$LaboratoryBaseUrl/CentralLaboratory" -Data $data
 }
 
-# Create Medical Prescriptions
-Write-Host "`n📋 Creating Medical Prescriptions..." -ForegroundColor Yellow
+# Create Referrals (required for appointments)
+Write-Host "Creating Referrals..." -ForegroundColor Yellow
+
+$referrals = @(
+    @{ PatientId = 1; GeneralPracticionerId = 1; ReferralDate = "2024-01-01T00:00:00Z"; Reason = "Routine checkup" },
+    @{ PatientId = 2; GeneralPracticionerId = 2; ReferralDate = "2024-01-02T00:00:00Z"; Reason = "Follow-up on test results" },
+    @{ PatientId = 3; GeneralPracticionerId = 3; ReferralDate = "2024-01-03T00:00:00Z"; Reason = "Specialist consultation" },
+    @{ PatientId = 4; GeneralPracticionerId = 4; ReferralDate = "2024-01-04T00:00:00Z"; Reason = "Chronic condition management" },
+    @{ PatientId = 5; GeneralPracticionerId = 5; ReferralDate = "2024-01-05T00:00:00Z"; Reason = "Medication review" }
+)
+
+foreach ($referral in $referrals) {
+    $data = $referral | ConvertTo-Json -Compress
+    Invoke-CurlRequest -Url "$UserManagementBaseUrl/Referral" -Data $data
+}
+
+# Create Appointments (using AppointmentManagement service)
+Write-Host "Creating Appointments..." -ForegroundColor Yellow
+$appointments = @(
+    @{ PatientId = 1; PhysicianId = 1; ReceptionistId = 1; ReferralId = 1; ScheduledTime = "2024-01-15T09:00:00Z" },
+    @{ PatientId = 2; PhysicianId = 2; ReceptionistId = 2; ReferralId = 2; ScheduledTime = "2024-01-16T10:30:00Z" },
+    @{ PatientId = 3; PhysicianId = 3; ReceptionistId = 3; ReferralId = 3; ScheduledTime = "2024-01-17T14:00:00Z" },
+    @{ PatientId = 4; PhysicianId = 4; ReceptionistId = 4; ReferralId = 4; ScheduledTime = "2024-01-18T11:15:00Z" },
+    @{ PatientId = 5; PhysicianId = 5; ReceptionistId = 1; ReferralId = 5; ScheduledTime = "2024-01-19T08:45:00Z" }
+)
+
+foreach ($appointment in $appointments) {
+    $data = $appointment | ConvertTo-Json -Compress
+    Invoke-CurlRequest -Url "$AppointmentManagementBaseUrl/Appointments" -Data $data
+}
+
+# Create Medical Analysis
+Write-Host "Creating Medical Analysis..." -ForegroundColor Yellow
+
+$medicalAnalyses = @(
+    @{ PatientId = 1; PhysicianId = 1; Description = "Routine blood work"; AppointmentId = 1 },
+    @{ PatientId = 2; PhysicianId = 2; Description = "Follow-up on diabetes management"; AppointmentId = 2 },
+    @{ PatientId = 3; PhysicianId = 3; Description = "Chest pain evaluation"; AppointmentId = 3 },
+    @{ PatientId = 4; PhysicianId = 4; Description = "Annual physical exam"; AppointmentId = 4 },
+    @{ PatientId = 5; PhysicianId = 5; Description = "Medication review and adjustment"; AppointmentId = 5 }
+)
+
+foreach ($analysis in $medicalAnalyses) {
+    $data = $analysis | ConvertTo-Json -Compress
+    Invoke-CurlRequest -Url "$MedicalManagementBaseUrl/MedicalAnalysis" -Data $data
+}
+
+# Create Prescriptions
+Write-Host "Creating Prescriptions..." -ForegroundColor Yellow
 
 $prescriptions = @(
-    @{ PatientId = 1; PhysicianId = 1; Medicine = "Aspirin"; Dosage = "325mg twice daily"; Instructions = "Take with food"; DatePrescribed = "2024-01-10T00:00:00Z" },
-    @{ PatientId = 2; PhysicianId = 2; Medicine = "Ibuprofen"; Dosage = "200mg as needed"; Instructions = "For pain relief"; DatePrescribed = "2024-01-11T00:00:00Z" },
-    @{ PatientId = 3; PhysicianId = 3; Medicine = "Amoxicillin"; Dosage = "250mg three times daily"; Instructions = "Complete full course"; DatePrescribed = "2024-01-12T00:00:00Z" },
-    @{ PatientId = 4; PhysicianId = 4; Medicine = "Lisinopril"; Dosage = "10mg once daily"; Instructions = "Take in morning"; DatePrescribed = "2024-01-13T00:00:00Z" },
-    @{ PatientId = 5; PhysicianId = 5; Medicine = "Metformin"; Dosage = "500mg twice daily"; Instructions = "Take with meals"; DatePrescribed = "2024-01-14T00:00:00Z" },
-    @{ PatientId = 6; PhysicianId = 6; Medicine = "Atorvastatin"; Dosage = "20mg once daily"; Instructions = "Take at bedtime"; DatePrescribed = "2024-01-15T00:00:00Z" }
+    @{ Medicine = "Aspirin"; Dose = "325"; Unit = 0; PatientId = 1; PhysicianId = 1; MedicalAnalysisId = 1 },
+    @{ Medicine = "Ibuprofen"; Dose = "200"; Unit = 1; PatientId = 2; PhysicianId = 2; MedicalAnalysisId = 2 },
+    @{ Medicine = "Amoxicillin"; Dose = "250"; Unit = 0; PatientId = 3; PhysicianId = 3; MedicalAnalysisId = 3 },
+    @{ Medicine = "Lisinopril"; Dose = "10"; Unit = 0; PatientId = 4; PhysicianId = 4; MedicalAnalysisId = 4 },
+    @{ Medicine = "Metformin"; Dose = "500"; Unit = 1; PatientId = 5; PhysicianId = 5; MedicalAnalysisId = 5 },
+    @{ Medicine = "Atorvastatin"; Dose = "20"; Unit = 0; PatientId = 1; PhysicianId = 1; MedicalAnalysisId = 1 }
 )
 
 foreach ($prescription in $prescriptions) {
@@ -177,18 +216,18 @@ foreach ($prescription in $prescriptions) {
     Invoke-CurlRequest -Url "$MedicalManagementBaseUrl/Prescription" -Data $data
 }
 
-# Create Laboratory Tests
-Write-Host "`n🔬 Creating Laboratory Tests..." -ForegroundColor Yellow
+# Create Lab Tests
+Write-Host "Creating Laboratory Tests..." -ForegroundColor Yellow
 
 $labTests = @(
-    @{ PatientId = 1; TestType = "Complete Blood Count"; Description = "CBC with differential"; OrderedDate = "2024-01-15T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 2; TestType = "Urinalysis"; Description = "Complete urine analysis"; OrderedDate = "2024-01-16T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 3; TestType = "Chest X-Ray"; Description = "PA and lateral chest X-ray"; OrderedDate = "2024-01-17T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 4; TestType = "Basic Metabolic Panel"; Description = "Glucose, electrolytes, kidney function"; OrderedDate = "2024-01-18T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 5; TestType = "Lipid Panel"; Description = "Total cholesterol, HDL, LDL, triglycerides"; OrderedDate = "2024-01-19T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 6; TestType = "Liver Function Test"; Description = "ALT, AST, bilirubin, alkaline phosphatase"; OrderedDate = "2024-01-20T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 7; TestType = "Thyroid Function"; Description = "TSH, T3, T4"; OrderedDate = "2024-01-21T00:00:00Z"; Status = "Ordered" },
-    @{ PatientId = 8; TestType = "Hemoglobin A1C"; Description = "3-month average blood sugar"; OrderedDate = "2024-01-22T00:00:00Z"; Status = "Ordered" }
+    @{ patientId = 1; testType = 0; description = "Complete Blood Count"; cost = 45.00; medicalAnalysisId = 1 },
+    @{ patientId = 2; testType = 1; description = "Urinalysis"; cost = 30.00; medicalAnalysisId = 2 },
+    @{ patientId = 3; testType = 2; description = "Chest X-ray"; cost = 120.00; medicalAnalysisId = 3 },
+    @{ patientId = 4; testType = 3; description = "Blood Glucose Test"; cost = 25.00; medicalAnalysisId = 4 },
+    @{ patientId = 5; testType = 4; description = "Cholesterol Panel"; cost = 55.00; medicalAnalysisId = 5 },
+    @{ patientId = 1; testType = 5; description = "Liver Function Test"; cost = 65.00; medicalAnalysisId = 1 },
+    @{ patientId = 2; testType = 6; description = "Creatinine Test"; cost = 40.00; medicalAnalysisId = 2 },
+    @{ patientId = 3; testType = 7; description = "MRI Scan"; cost = 350.00; medicalAnalysisId = 3 }
 )
 
 foreach ($test in $labTests) {
@@ -197,23 +236,23 @@ foreach ($test in $labTests) {
 }
 
 # Create Medication Orders
-Write-Host "`n💊 Creating Medication Orders..." -ForegroundColor Yellow
+Write-Host "Creating Medication Orders..." -ForegroundColor Yellow
 
 $medicationOrders = @(
-    @{ PatientId = 1; PharmacyId = 1; OrderDate = "2024-01-10T00:00:00Z"; Status = "Pending"; TotalAmount = 12.99 },
-    @{ PatientId = 2; PharmacyId = 2; OrderDate = "2024-01-11T00:00:00Z"; Status = "Pending"; TotalAmount = 8.49 },
-    @{ PatientId = 3; PharmacyId = 3; OrderDate = "2024-01-12T00:00:00Z"; Status = "Pending"; TotalAmount = 15.75 },
-    @{ PatientId = 4; PharmacyId = 4; OrderDate = "2024-01-13T00:00:00Z"; Status = "Pending"; TotalAmount = 22.50 },
-    @{ PatientId = 5; PharmacyId = 5; OrderDate = "2024-01-14T00:00:00Z"; Status = "Pending"; TotalAmount = 18.25 }
+    @{ patientId = 1; prescriptionId = 1; pharmacyId = 1; createdAt = "2025-07-01T17:00:31.352Z" },
+    @{ patientId = 2; prescriptionId = 2; pharmacyId = 2; createdAt = "2025-07-01T17:05:31.352Z" },
+    @{ patientId = 3; prescriptionId = 3; pharmacyId = 3; createdAt = "2025-07-01T17:10:31.352Z" },
+    @{ patientId = 4; prescriptionId = 4; pharmacyId = 4; createdAt = "2025-07-01T17:15:31.352Z" },
+    @{ patientId = 5; prescriptionId = 5; pharmacyId = 5; createdAt = "2025-07-01T17:20:31.352Z" }
 )
 
 foreach ($order in $medicationOrders) {
     $data = $order | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$PharmacyBaseUrl/api/MedicationOrder" -Data $data
+    Invoke-CurlRequest -Url "$PharmacyBaseUrl/MedicationOrder" -Data $data
 }
 
 # Assign patients to insurers
-Write-Host "`n🏥 Assigning Patients to Insurers..." -ForegroundColor Yellow
+Write-Host "Assigning Patients to Insurers..." -ForegroundColor Yellow
 
 $patientInsurerAssignments = @(
     @{ PatientId = 1; InsurerId = 1 },
@@ -229,30 +268,34 @@ $patientInsurerAssignments = @(
 )
 
 foreach ($assignment in $patientInsurerAssignments) {
-    Invoke-CurlRequest -Url "$AccountingBaseUrl/api/Patient/$($assignment.PatientId)/assign-insurer/$($assignment.InsurerId)" -Method "PUT"
+    Invoke-CurlRequest -Url "$AccountingBaseUrl/Patient/$($assignment.PatientId)/assign-insurer/$($assignment.InsurerId)" -Method "PUT"
 }
+# Add medications to orders
+Write-Host "Adding Medications to Orders..." -ForegroundColor Yellow
 
-# Create Invoices
-Write-Host "`n💰 Creating Invoices..." -ForegroundColor Yellow
-
-$invoices = @(
-    @{ PatientId = 1; InsurerId = 1; Amount = 150.00; Description = "Consultation and blood work"; DateCreated = "2024-01-15T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 2; InsurerId = 2; Amount = 95.50; Description = "Urine analysis and consultation"; DateCreated = "2024-01-16T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 3; InsurerId = 3; Amount = 275.75; Description = "X-ray and antibiotic prescription"; DateCreated = "2024-01-17T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 4; InsurerId = 4; Amount = 180.25; Description = "MRI scan consultation"; DateCreated = "2024-01-18T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 5; InsurerId = 5; Amount = 320.00; Description = "CT scan and diabetes medication"; DateCreated = "2024-01-19T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 6; InsurerId = 1; Amount = 125.75; Description = "Blood glucose test and consultation"; DateCreated = "2024-01-20T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 7; InsurerId = 2; Amount = 145.50; Description = "Cholesterol panel and medication"; DateCreated = "2024-01-21T00:00:00Z"; Status = "Pending" },
-    @{ PatientId = 8; InsurerId = 3; Amount = 165.25; Description = "Liver function test consultation"; DateCreated = "2024-01-22T00:00:00Z"; Status = "Pending" }
+$medicationAdditions = @(
+    @{ OrderId = 1; MedicationId = 1; Amount = 1 },
+    @{ OrderId = 2; MedicationId = 2; Amount = 1 },
+    @{ OrderId = 3; MedicationId = 4; Amount = 1 },
+    @{ OrderId = 4; MedicationId = 5; Amount = 1 },
+    @{ OrderId = 5; MedicationId = 6; Amount = 1 }
 )
 
-foreach ($invoice in $invoices) {
-    $data = $invoice | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$AccountingBaseUrl/api/Invoice" -Data $data
+foreach ($addition in $medicationAdditions) {
+    Invoke-CurlRequest -Url "$PharmacyBaseUrl/MedicationOrder/$($addition.OrderId)/medication?medicationId=$($addition.MedicationId)&amount=$($addition.Amount)" -Method "POST"
+}
+
+# Complete some medication orders
+Write-Host "Completing Some Medication Orders..." -ForegroundColor Yellow
+
+$medicationOrdersToComplete = @(1, 2, 3)
+
+foreach ($orderId in $medicationOrdersToComplete) {
+    Invoke-CurlRequest -Url "$PharmacyBaseUrl/MedicationOrder/$orderId/complete" -Method "PUT"
 }
 
 # Complete some tests to trigger notifications
-Write-Host "`n✅ Completing Some Laboratory Tests..." -ForegroundColor Yellow
+Write-Host "Completing Some Laboratory Tests..." -ForegroundColor Yellow
 
 $testCompletions = @(
     @{ TestId = 1; Result = "Normal CBC values. WBC: 7.2, RBC: 4.5, Hemoglobin: 14.2" },
@@ -264,45 +307,71 @@ $testCompletions = @(
 
 foreach ($completion in $testCompletions) {
     $data = @{ Result = $completion.Result } | ConvertTo-Json -Compress
-    Invoke-CurlRequest -Url "$LaboratoryBaseUrl/api/Test/$($completion.TestId)/Complete" -Method "PUT" -Data $data
+    Invoke-CurlRequest -Url "$LaboratoryBaseUrl/Test/$($completion.TestId)/Complete" -Method "PUT" -Data $data
 }
 
-# Complete some medication orders
-Write-Host "`n💊 Completing Some Medication Orders..." -ForegroundColor Yellow
+# Add the accounting seeding (pay of some invoices partially and completely)
+Write-Host "Processing Invoice Payments..." -ForegroundColor Yellow
 
-$medicationOrdersToComplete = @(1, 2, 3)
-
-foreach ($orderId in $medicationOrdersToComplete) {
-    Invoke-CurlRequest -Url "$PharmacyBaseUrl/api/MedicationOrder/$orderId/complete" -Method "PUT"
+# 1. Get all invoices
+try {
+    $invoicesResponse = Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice" -Method "GET"
+    $invoices = $invoicesResponse | ConvertFrom-Json
+    
+    if ($invoices -and $invoices.Count -gt 0) {
+        Write-Host "Found $($invoices.Count) invoices to process" -ForegroundColor Cyan
+        
+        # 2. Take about 2/3rds of invoices
+        $invoicesToProcess = $invoices | Select-Object -First ([Math]::Ceiling($invoices.Count * 2 / 3))
+        Write-Host "Processing $($invoicesToProcess.Count) invoices for payments" -ForegroundColor Cyan
+        
+        # 3. Split them in half
+        $halfCount = [Math]::Ceiling($invoicesToProcess.Count / 2)
+        $invoicesForFullPayment = $invoicesToProcess | Select-Object -First $halfCount
+        $invoicesForPartialPayment = $invoicesToProcess | Select-Object -Skip $halfCount
+        
+        # 4. Pay half of them completely
+        Write-Host "Making Full Payments..." -ForegroundColor Green
+        foreach ($invoice in $invoicesForFullPayment) {
+            $paymentData = @{
+                InsurerId = $invoice.InsurerId
+                PaymentAmount = $invoice.AmountOutstanding
+                PaymentReference = "FULL-PAY-$(Get-Random -Maximum 9999)"
+            }
+            
+            $data = $paymentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($invoice.Id)/payment" -Data $data -Method "POST"
+        }
+        
+        # 5. Pay the other half partially (50-80% of amount)
+        Write-Host "Making Partial Payments..." -ForegroundColor Green
+        foreach ($invoice in $invoicesForPartialPayment) {
+            $partialPercentage = Get-Random -Minimum 50 -Maximum 81  # 50-80%
+            $partialAmount = [Math]::Round($invoice.AmountOutstanding * $partialPercentage / 100, 2)
+            
+            $paymentData = @{
+                InsurerId = $invoice.InsurerId
+                PaymentAmount = $partialAmount
+                PaymentReference = "PARTIAL-PAY-$(Get-Random -Maximum 9999)"
+            }
+            
+            $data = $paymentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($invoice.Id)/payment" -Data $data -Method "POST"
+        }
+        
+        Write-Host "Payment processing completed!" -ForegroundColor Green
+        Write-Host "  - Full payments: $($invoicesForFullPayment.Count)" -ForegroundColor Cyan
+        Write-Host "  - Partial payments: $($invoicesForPartialPayment.Count)" -ForegroundColor Cyan
+    }
+    else {
+        Write-Host " No invoices found to process payments" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "Error processing invoice payments: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-# Add medications to orders
-Write-Host "`n📦 Adding Medications to Orders..." -ForegroundColor Yellow
-
-$medicationAdditions = @(
-    @{ OrderId = 1; MedicationId = 1; Amount = 1 },
-    @{ OrderId = 2; MedicationId = 2; Amount = 1 },
-    @{ OrderId = 3; MedicationId = 4; Amount = 1 },
-    @{ OrderId = 4; MedicationId = 5; Amount = 1 },
-    @{ OrderId = 5; MedicationId = 6; Amount = 1 }
-)
-
-foreach ($addition in $medicationAdditions) {
-    Invoke-CurlRequest -Url "$PharmacyBaseUrl/api/MedicationOrder/$($addition.OrderId)/medication?medicationId=$($addition.MedicationId)&amount=$($addition.Amount)" -Method "POST"
-}
-
-Write-Host "`n🎉 Seeding Complete!" -ForegroundColor Green
-Write-Host "Created:" -ForegroundColor Cyan
-Write-Host "  - 5 Insurers" -ForegroundColor White
-Write-Host "  - 5 General Practitioners" -ForegroundColor White
-Write-Host "  - 8 Physicians" -ForegroundColor White
-Write-Host "  - 10 Patients" -ForegroundColor White
-Write-Host "  - 5 Pharmacies" -ForegroundColor White
-Write-Host "  - 8 Medications" -ForegroundColor White
-Write-Host "  - 8 Laboratory Appointments" -ForegroundColor White
-Write-Host "  - 6 Prescriptions" -ForegroundColor White
-Write-Host "  - 8 Laboratory Tests" -ForegroundColor White
-Write-Host "  - 5 Medication Orders" -ForegroundColor White
-Write-Host "  - 8 Invoices" -ForegroundColor White
-Write-Host "  - Completed 5 tests and 3 medication orders" -ForegroundColor White
-Write-Host "`n💡 Note: Adjust the base URLs and ports to match your actual microservice endpoints." -ForegroundColor Yellow
+# Conclude
+Write-Host "Braphia System Seeding Completed!" -ForegroundColor Green
+Write-Host "You can now start using the system with seeded data." -ForegroundColor Cyan
+Write-Host "Check the logs for any errors or issues during seeding." -ForegroundColor Yellow
