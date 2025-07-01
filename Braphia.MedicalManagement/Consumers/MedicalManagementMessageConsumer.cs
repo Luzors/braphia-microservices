@@ -1,6 +1,8 @@
+using Braphia.MedicalManagement.Converters;
 using Braphia.MedicalManagement.Events.Appointments;
 using Braphia.MedicalManagement.Events.Patients;
 using Braphia.MedicalManagement.Events.Physicians;
+using Braphia.MedicalManagement.Events.Tests;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
@@ -13,17 +15,21 @@ namespace Braphia.MedicalManagement.Consumers
     {
         private readonly IPatientRepository _patientRepository;
         private readonly IPhysicianRepository _physicianRepository;
+
+        private readonly ITestRepository _testRepository;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly ILogger<MedicalManagementMessageConsumer> _logger;
 
         public MedicalManagementMessageConsumer(IPatientRepository patientRepository,
                                                 IPhysicianRepository physicianRepository,
                                                 IAppointmentRepository appointmentRepository,
+                                                ITestRepository testRepository,
                                                 ILogger<MedicalManagementMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
             _physicianRepository = physicianRepository;
             _appointmentRepository = appointmentRepository;
+            _testRepository = testRepository;
             _logger = logger;
         }
 
@@ -434,6 +440,58 @@ namespace Braphia.MedicalManagement.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task TestCompleted(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+
+                var jsonData = message.Data.ToString() ?? string.Empty;
+                _logger.LogInformation("Message data: {Data}", jsonData);
+
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new DecimalJsonConverter() }
+                };
+
+                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(jsonData, serializerOptions);
+
+                if (testEvent != null)
+                {
+                    // Get the existing test from Medical Management database
+                    var existingTest = await _testRepository.GetTestAsync(testEvent.Test.Id);
+
+                    if (existingTest != null)
+                    {
+                        // Only update the fields that should be updated from the lab
+                        existingTest.Result = testEvent.Test.Result;
+                        existingTest.CompletedDate = testEvent.Test.CompletedDate;
+                        existingTest.Cost = testEvent.Test.Cost; // If this field exists
+
+                        // DON'T update foreign keys like MedicalAnalysisId, PatientId, etc.
+                        // Keep the existing relationships from Medical Management
+
+                        await _testRepository.UpdateTestAsync(existingTest);
+
+                        _logger.LogInformation("Successfully updated test with ID {TestId} with completion data", existingTest.Id);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Test with ID {TestId} not found in Medical Management database", testEvent.Test.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", jsonData);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
             }
         }
     }
