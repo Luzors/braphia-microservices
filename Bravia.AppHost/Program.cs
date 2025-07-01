@@ -103,7 +103,7 @@ var laboratory = builder
     .WaitFor(rabbitMq);
 
 var notificationDbServer = builder
-    .AddSqlServer("sql-server-notification", port: 2018)
+    .AddSqlServer("sql-server-notification", port: 2020)
     .WithDataVolume("braphia-notification")
     .WithLifetime(ContainerLifetime.Persistent);
 
