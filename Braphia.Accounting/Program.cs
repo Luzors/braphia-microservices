@@ -1,11 +1,12 @@
-using Braphia.Accounting.Database;
-using Braphia.Accounting.Repositories;
-using Braphia.Accounting.Repositories.Interfaces;
 using Braphia.Accounting.Consumers;
+using Braphia.Accounting.Database;
 using Braphia.Accounting.EventSourcing.Repositories;
 using Braphia.Accounting.EventSourcing.Services;
+using Braphia.Accounting.Repositories;
+using Braphia.Accounting.Repositories.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
