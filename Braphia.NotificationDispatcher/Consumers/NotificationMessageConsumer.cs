@@ -635,5 +635,39 @@ namespace Braphia.NotificationDispatcher.Consumers
                 _logger.LogError(ex, "Error processing AppointmentReminder event: {MessageId}", message.MessageId);
             }
         }
+
+        private async Task PatientArrived(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PatientArrived event with ID: {MessageId}", message.MessageId);
+                var patientEvent = JsonSerializer.Deserialize<PatientArrivedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (patientEvent != null)
+                {
+                    _logger.LogInformation("Deserialized patientarrived data: AppointmentId: {AID}, PhysicianId: {PID}",
+                        patientEvent.AppointmentId, patientEvent.PhysicianId);
+
+                    var user = await _userRepository.GetUserByIdAsync(patientEvent.PhysicianId, UserTypeEnum.Physician) ??
+                        throw new Exception($"User with ID {patientEvent.PhysicianId} not found in notification database.");
+                    var notification = new Notification(title: "Patient Arrived",
+                        message: $"Patient has arrived for appointment {patientEvent.AppointmentId}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for patient arrival for AppointmentId {AppointmentId}", patientEvent.AppointmentId);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PatientArrivedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PatientArrived event: {MessageId}", message.MessageId);
+            }
+        }
     }
 }
