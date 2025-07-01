@@ -103,42 +103,80 @@ namespace Braphia.Laboratory.Controllers
             }
         }
 
-        [HttpPut("CompleteTest/{id}")]
-        public async Task<IActionResult> CompleteTest(int id, [FromBody] string result)
+        [HttpPut("{id}/Complete")]
+        public async Task<IActionResult> CompleteTest(int id, [FromBody] CompleteTestDto body)
         {
-            _logger.LogInformation("Completing test with ID {Id}", id);
+            _logger.LogInformation($"Completing test with ID {id}");
+
+            // Validate input parameters
+            if (id <= 0)
+            {
+                _logger.LogWarning($"Invalid test ID: {id}");
+                return BadRequest("Test ID must be a positive integer");
+            }
+
+            if (string.IsNullOrWhiteSpace(body.Result))
+            {
+                _logger.LogWarning("Test result is null or empty");
+                return BadRequest("Test result cannot be null or empty");
+            }
+
+            string result = body.Result.Trim();
 
             try
             {
-                var test = await _testRepository.GetTestByIdAsync(id);
+                Test test = await _testRepository.GetTestByIdAsync(id);
                 if (test == null)
                 {
                     _logger.LogWarning("Test with ID {Id} not found", id);
-                    return NotFound("Test not found.");
+                    return NotFound($"Test with ID {id} not found");
                 }
 
+                // Update test with completion data
                 test.CompletedDate = DateTime.UtcNow;
-                test.Result = result;
+                test.Result = result.Trim();
 
-                await _testRepository.UpdateTestAsync(test);
-                _logger.LogInformation("Test with ID {Id} completed successfully", id);
-
-                // Stuur TestCompletedEvent
-                await _publishEndpoint.Publish(new Message(
-                    messageType: "TestCompleted",
-                    data: new TestCompletedEvent(test)
-                ));
-
-                return Ok(test);
+                bool updateResult = await _testRepository.UpdateTestAsync(test);
+                if (updateResult)
+                {
+                    _logger.LogInformation($"Test with ID {id} completed successfully");
+                    return Ok(new
+                    {
+                        message = "Test completed successfully",
+                        testId = id,
+                        completedDate = test.CompletedDate,
+                        result = test.Result
+                    });
+                }
+                else
+                {
+                    _logger.LogError("Failed to update test with ID {Id}", id);
+                    return StatusCode(500, "Failed to complete test");
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, $"Unauthorized attempt to complete test ID {id}");
+                return Unauthorized("You are not authorized to complete this test");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, $"Test with ID {id} not found");
+                return NotFound($"Test with ID {id} not found");
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Invalid argument while completing test with ID {Id}", id);
-                return BadRequest($"Invalid request: {ex.Message}");
+                _logger.LogWarning(ex, $"Invalid argument when completing test ID {id}");
+                return BadRequest($"Invalid test data: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, $"Invalid operation when completing test ID {id}");
+                return Conflict($"Unable to complete test: {ex.Message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error completing test with ID {Id}", id);
+                _logger.LogError(ex, $"Unexpected error completing test ID {id}");
                 return StatusCode(500, "Internal server error while completing test");
             }
         }
