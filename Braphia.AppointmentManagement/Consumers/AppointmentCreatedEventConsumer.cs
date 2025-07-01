@@ -185,7 +185,7 @@ namespace Braphia.AppointmentManagement.Consumers
                 ScheduledTime = evt.ScheduledTime
             };
 
-            await _readRepo.AddFollowUpAppointment( viewModel, evt.AppointmentId);
+            await _readRepo.AddFollowUpAppointment( viewModel, evt.OriginalAppointmentId);
         }
     }
 

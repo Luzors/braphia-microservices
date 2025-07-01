@@ -39,16 +39,23 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             if (OriginalAppointment == null)
                 throw new ArgumentException($"Original appointment with ID {request.OriginalAppointmentId} not found.");
 
-            OriginalAppointment.ScheduledTime = request.ScheduledTime;
+            var followUpAppointment = new Models.Appointment(
+                id: 0,
+                patientId: OriginalAppointment.PatientId,
+                physicianId: OriginalAppointment.PhysicianId,
+                receptionistId: OriginalAppointment.ReceptionistId,
+                referralId: OriginalAppointment.ReferralId,
+                scheduledTime: request.ScheduledTime
+            );
 
-            var success = await _appointmentRepository.AddFollowUpAppointment( request.OriginalAppointmentId,OriginalAppointment);
+            var success = await _appointmentRepository.AddFollowUpAppointment( request.OriginalAppointmentId, followUpAppointment);
             if (!success)
                 throw new InvalidOperationException("Failed to add appointment to the repository.");
 
-            var patient = await _patientRepository.GetPatientByIdAsync(OriginalAppointment.PatientId);
-            var physician = await _physicianRepository.GetPhysicianByIdAsync(OriginalAppointment.PhysicianId);
-            var receptionist = await _receptionistRepository.GetReceptionistByIdAsync(OriginalAppointment.ReceptionistId);
-            var referral = await _referralRepository.GetReferralByIdAsync(OriginalAppointment.ReferralId);
+            var physician = await _physicianRepository.GetPhysicianByIdAsync(followUpAppointment.PhysicianId);
+            var receptionist = await _receptionistRepository.GetReceptionistByIdAsync(followUpAppointment.ReceptionistId);
+            var referral = await _referralRepository.GetReferralByIdAsync(followUpAppointment.ReferralId);
+            var patient = await _patientRepository.GetPatientByIdAsync(followUpAppointment.PatientId);
 
             if (patient == null)
                 throw new ArgumentException($"Patient with ID not found.");
@@ -59,13 +66,14 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             if (referral == null)
                 throw new ArgumentException($"Referral with ID not found.");
 
+
             var @event = new ScheduledFollowUpAppointmentEvent
             {
                 OriginalAppointmentId = request.OriginalAppointmentId,
-                AppointmentId = OriginalAppointment.Id,
+                AppointmentId = followUpAppointment.Id,
                 PatientId = patient.Id,
                 PhysicianId = physician.Id,
-                ScheduledTime = OriginalAppointment.ScheduledTime,
+                ScheduledTime = followUpAppointment.ScheduledTime,
                 PatientFirstName = patient.FirstName,
                 PatientLastName = patient.LastName,
                 PatientEmail = patient.Email,
@@ -81,10 +89,11 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 ReferralId = referral.Id,
                 ReferralDate = referral.ReferralDate,
                 ReferralReason = referral.Reason,
-                State = OriginalAppointment.state
+                State = followUpAppointment.state
             };
             
             var mes = new Message(@event);
+            Console.WriteLine($"Publishing ScheduledFollowUpAppointmentEvent for Original Appointment ID: {request.OriginalAppointmentId}");
             await _publishEndpoint.Publish(mes, cancellationToken);
 
 

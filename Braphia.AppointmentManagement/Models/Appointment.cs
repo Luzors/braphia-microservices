@@ -21,7 +21,7 @@ namespace Braphia.AppointmentManagement.Models
 
         public AppointmentStateEnum state { get; set; }
         public int? FollowUpAppointmentId { get; set; }
-        public Appointment FollowUpAppointment { get; set; }
+       
 
 
         public Appointment(){}
@@ -65,7 +65,6 @@ namespace Braphia.AppointmentManagement.Models
 
         public void SetFollowUpAppointment(Appointment followUpAppointment)
         {
-            FollowUpAppointment = followUpAppointment;
             FollowUpAppointmentId = followUpAppointment.Id;
         }
     }

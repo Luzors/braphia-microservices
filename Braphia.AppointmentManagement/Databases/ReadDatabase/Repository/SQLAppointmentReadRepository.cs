@@ -31,6 +31,8 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
 
         public async Task<bool> AddFollowUpAppointment(AppointmentViewQueryModel appointment, int originalAppointmentId)
         {
+            if (appointment == null)
+                throw new ArgumentNullException(nameof(appointment), "Follow-up appointment cannot be null.");
             var originalAppointment = await GetAppointmentByIdAsync(originalAppointmentId);
             if (originalAppointment == null)
                 throw new ArgumentException($"Original appointment with ID {originalAppointmentId} not found.");
