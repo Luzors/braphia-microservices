@@ -75,6 +75,7 @@ namespace Braphia.UserManagement.Consumers
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error processing record: {Record}", JsonSerializer.Serialize(context.Message.ExternalUserData));
+                throw;
             }
         }
     }

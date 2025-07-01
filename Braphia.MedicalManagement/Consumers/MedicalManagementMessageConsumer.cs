@@ -85,16 +85,19 @@ namespace Braphia.MedicalManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
+                        throw new InvalidOperationException($"Failed to add patient with ID {patientEvent.Patient.Id} to accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -131,21 +134,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update patient with UserManagement ID {PatientId}", patientEvent.PatientId);
+                            throw new InvalidOperationException($"Failed to update patient with ID {patientEvent.PatientId} in medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.PatientId);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.PatientId} not found in medical database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -177,21 +184,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove patient with UserManagement ID {PatientId} from medical database", patientEvent.Patient.Id);
+                            throw new InvalidOperationException($"Failed to remove patient with ID {patientEvent.Patient.Id} from medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.Patient.Id);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.Patient.Id} not found in medical database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -227,12 +238,19 @@ namespace Braphia.MedicalManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add physician from UserManagement ID {OriginalPhysicianId} to accounting database", physicianEvent.Physician.Id);
+                        throw new InvalidOperationException($"Failed to add physician with ID {physicianEvent.Physician.Id} to medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -264,17 +282,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update physician with UserManagement ID {PhysicianId}", physicianEvent.PhysicianId);
+                            throw new InvalidOperationException($"Failed to update physician with ID {physicianEvent.PhysicianId} in medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.PhysicianId);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.PhysicianId} not found in medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -301,17 +327,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove physician with UserManagement ID {PhysicianId} from medical database", physicianEvent.Physician.Id);
+                            throw new InvalidOperationException($"Failed to remove physician with ID {physicianEvent.Physician.Id} from medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.Physician.Id);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.Physician.Id} not found in medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -344,12 +378,19 @@ namespace Braphia.MedicalManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add appointment with ID {AppointmentId} to medical database", appointment.Id);
+                        throw new InvalidOperationException($"Failed to add appointment with ID {appointment.Id} to medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduled from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentScheduledEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentScheduled event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -385,20 +426,36 @@ namespace Braphia.MedicalManagement.Consumers
                         if (originalAppointment != null)
                         {
                             originalAppointment.FollowUpAppointmentId = followUpAppointment.Id;
-                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment, true);
-                            _logger.LogInformation("Updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
-                                appointmentEvent.AppointmentId, followUpAppointment.Id);
+                            var succes2 = await _appointmentRepository.UpdateAppointmentAsync(originalAppointment, true);
+                            if (succes2)
+                            {
+                                _logger.LogInformation("Successfully updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
+                                    appointmentEvent.AppointmentId, followUpAppointment.Id);
+                            }
+                            else
+                            {
+                                _logger.LogError("Failed to update original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
+                                    appointmentEvent.AppointmentId, followUpAppointment.Id);
+                                throw new InvalidOperationException($"Failed to update original appointment with ID {appointmentEvent.AppointmentId} to include follow-up appointment ID {followUpAppointment.Id}.");
+                            }
                         }
                     }
                     else
                     {
                         _logger.LogError("Failed to add follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                        throw new InvalidOperationException($"Failed to add follow-up appointment with ID {followUpAppointment.Id} to medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduledFollowUp from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentScheduledFollowUpEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentScheduledFollowUp event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -429,17 +486,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                            throw new InvalidOperationException($"Failed to update appointment with ID {appointmentEvent.AppointmentId} in medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Appointment with ID {AppointmentId} not found in medical database", appointmentEvent.AppointmentId);
+                        throw new KeyNotFoundException($"Appointment with ID {appointmentEvent.AppointmentId} not found in medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -475,23 +540,31 @@ namespace Braphia.MedicalManagement.Consumers
                         // DON'T update foreign keys like MedicalAnalysisId, PatientId, etc.
                         // Keep the existing relationships from Medical Management
 
-                        await _testRepository.UpdateTestAsync(existingTest);
+                        var succes = await _testRepository.UpdateTestAsync(existingTest);
+                        if (!succes)
+                        {
+                            _logger.LogError("Failed to update test with ID {TestId} in Medical Management database", existingTest.Id);
+                            throw new InvalidOperationException($"Failed to update test with ID {existingTest.Id} in Medical Management database.");
+                        }
 
                         _logger.LogInformation("Successfully updated test with ID {TestId} with completion data", existingTest.Id);
                     }
                     else
                     {
                         _logger.LogWarning("Test with ID {TestId} not found in Medical Management database", testEvent.Test.Id);
+                        throw new KeyNotFoundException($"Test with ID {testEvent.Test.Id} not found in Medical Management database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", jsonData);
+                    throw new JsonException($"Failed to deserialize TestCompletedEvent from message data: {jsonData}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+                throw;
             }
         }
     }

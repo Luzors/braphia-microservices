@@ -73,16 +73,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
+                        throw new InvalidOperationException($"Failed to add patient with ID {patientEvent.Patient.Id} to accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientCreatedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientCreatedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -115,16 +118,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to update patient with ID {PatientId}", patient.Id);
+                        throw new InvalidOperationException($"Failed to update patient with ID {patient.Id} in accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientModifiedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -149,16 +155,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to remove patient with ID {PatientId}", patientEvent.Patient.Id);
+                        throw new InvalidOperationException($"Failed to remove patient with ID {patientEvent.Patient.Id} from accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientRemovedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -191,16 +200,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to add prescription with ID {PrescriptionId}", prescription.Id);
+                        throw new InvalidOperationException($"Failed to add prescription with ID {prescription.Id} to accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PrescriptionWrittenEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PrescriptionWrittenEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PrescriptionWritten event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -233,16 +245,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to update prescription with ID {PrescriptionId}", prescription.Id);
+                        throw new InvalidOperationException($"Failed to update prescription with ID {prescription.Id} in accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PrescriptionChangedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PrescriptionChangedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PrescriptionModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -267,16 +282,19 @@ namespace Braphia.Pharmacy.Consumers
                     else
                     {
                         _logger.LogError("Failed to remove prescription with ID {PrescriptionId}", prescriptionEvent.Prescription.Id);
+                        throw new InvalidOperationException($"Failed to remove prescription with ID {prescriptionEvent.Prescription.Id} from accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PrescriptionRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PrescriptionRemovedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PrescriptionRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
     }

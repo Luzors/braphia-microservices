@@ -86,16 +86,19 @@ namespace Braphia.AppointmentManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
+                        throw new InvalidOperationException($"Failed to add patient with ID {patientEvent.Patient.Id} to the accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientRegistered event data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -131,21 +134,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update patient with UserManagement ID {PatientId}", patientEvent.PatientId);
+                            throw new InvalidOperationException($"Failed to update patient with ID {patientEvent.PatientId} in the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.PatientId);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.PatientId} not found in the accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientModifiedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -177,21 +184,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove patient with UserManagement ID {PatientId} from medical database", patientEvent.Patient.Id);
+                            throw new InvalidOperationException($"Failed to remove patient with ID {patientEvent.Patient.Id} from the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.Patient.Id);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.Patient.Id} not found in the accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PatientRemovedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -226,12 +237,19 @@ namespace Braphia.AppointmentManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add physician from UserManagement ID {OriginalPhysicianId} to accounting database", physicianEvent.Physician.Id);
+                        throw new InvalidOperationException($"Failed to add physician with ID {physicianEvent.Physician.Id} to the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PhysicianRegistered event data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -261,17 +279,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update physician with UserManagement ID {PhysicianId}", physicianEvent.PhysicianId);
+                            throw new InvalidOperationException($"Failed to update physician with ID {physicianEvent.PhysicianId} in the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.PhysicianId);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.PhysicianId} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PhysicianModifiedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -298,17 +324,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove physician with UserManagement ID {PhysicianId} from medical database", physicianEvent.Physician.Id);
+                            throw new InvalidOperationException($"Failed to remove physician with ID {physicianEvent.Physician.Id} from the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.Physician.Id);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.Physician.Id} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize PhysicianRemovedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -341,12 +375,19 @@ namespace Braphia.AppointmentManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add receptionist from UserManagement ID {OriginalReceptionistId} to accounting database", receptionistEvent.Receptionist.Id);
+                        throw new InvalidOperationException($"Failed to add receptionist with ID {receptionistEvent.Receptionist.Id} to the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize ReceptionistRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReceptionistRegistered event data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReceptionistRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -376,17 +417,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update receptionist with UserManagement ID {ReceptionistId}", receptionistEvent.ReceptionistId);
+                            throw new InvalidOperationException($"Failed to update receptionist with ID {receptionistEvent.ReceptionistId} in the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Receptionist with UserManagement ID {ReceptionistId} not found in medical database", receptionistEvent.ReceptionistId);
+                        throw new KeyNotFoundException($"Receptionist with ID {receptionistEvent.ReceptionistId} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize ReceptionistModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReceptionistModifiedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReceptionistModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -413,17 +462,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove receptionist with UserManagement ID {ReceptionistId} from medical database", receptionistEvent.Receptionist.Id);
+                            throw new InvalidOperationException($"Failed to remove receptionist with ID {receptionistEvent.Receptionist.Id} from the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Receptionist with UserManagement ID {ReceptionistId} not found in medical database", receptionistEvent.Receptionist.Id);
+                        throw new KeyNotFoundException($"Receptionist with ID {receptionistEvent.Receptionist.Id} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize ReceptionistRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReceptionistRemovedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReceptionistRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -455,16 +512,19 @@ namespace Braphia.AppointmentManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add referral with ID {ReferralId}", referral.Id);
+                        throw new InvalidOperationException($"Failed to add referral with ID {referral.Id} to the accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize ReferralSubmittedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReferralSubmittedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReferralSubmitted event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -493,17 +553,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update referral with ID {ReferralId}", referralEvent.ReferralId);
+                            throw new InvalidOperationException($"Failed to update referral with ID {referralEvent.ReferralId} in the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Referral with ID {ReferralId} not found in medical database", referralEvent.ReferralId);
+                        throw new KeyNotFoundException($"Referral with ID {referralEvent.ReferralId} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize ReferralModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReferralModifiedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReferralModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -530,17 +598,25 @@ namespace Braphia.AppointmentManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove referral with ID {ReferralId} from medical database", referralEvent.Referral.Id);
+                            throw new InvalidOperationException($"Failed to remove referral with ID {referralEvent.Referral.Id} from the accounting database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Referral with ID {ReferralId} not found in medical database", referralEvent.Referral.Id);
+                        throw new KeyNotFoundException($"Referral with ID {referralEvent.Referral.Id} not found in the accounting database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize ReferralRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize ReferralRemovedEvent data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing ReferralRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
     }

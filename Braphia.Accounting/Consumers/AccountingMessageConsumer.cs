@@ -85,7 +85,7 @@ namespace Braphia.Accounting.Consumers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
-                    throw new InvalidOperationException($"Error processing PatientCreated event: {message.MessageId}", ex);
+                    throw;
                 }
             }
             else if (message.MessageType == "TestCompleted")
@@ -208,7 +208,7 @@ namespace Braphia.Accounting.Consumers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
-                    throw new InvalidOperationException($"Error processing TestCompleted event: {message.MessageId}", ex);
+                    throw;
                 }
             }
         }

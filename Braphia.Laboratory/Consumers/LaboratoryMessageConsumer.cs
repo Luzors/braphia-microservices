@@ -65,16 +65,19 @@ namespace Braphia.Laboratory.Consumers
                         else
                         {
                             _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
+                            throw new InvalidOperationException($"Failed to add patient with ID {patientEvent.Patient.Id} to the database.");
                         }
                     }
                     else
                     {
                         _logger.LogError("Failed to deserialize PatientRegisteredEvent from message data: {Data}", message.Data.ToString());
+                        throw new JsonException("Failed to deserialize PatientRegisteredEvent from message data.");
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
+                    throw;
                 }
             }
             else if (message.MessageType == "AppointmentScheduled")
@@ -129,12 +132,19 @@ namespace Braphia.Laboratory.Consumers
                     else
                     {
                         _logger.LogError("Failed to add appointment with ID {AppointmentId} to medical database", appointment.Id);
+                        throw new InvalidOperationException($"Failed to add appointment with ID {appointment.Id} to the database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduledEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize AppointmentScheduledEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentScheduled event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -178,12 +188,19 @@ namespace Braphia.Laboratory.Consumers
                     else
                     {
                         _logger.LogError("Failed to add follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                        throw new InvalidOperationException($"Failed to add follow-up appointment with ID {followUpAppointment.Id} to the database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduledFollowUpEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize AppointmentScheduledFollowUpEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentScheduledFollowUp event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -214,17 +231,25 @@ namespace Braphia.Laboratory.Consumers
                         else
                         {
                             _logger.LogError("Failed to update appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                            throw new InvalidOperationException($"Failed to update appointment with ID {appointmentEvent.AppointmentId} in the database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Appointment with ID {AppointmentId} not found in medical database", appointmentEvent.AppointmentId);
+                        throw new KeyNotFoundException($"Appointment with ID {appointmentEvent.AppointmentId} not found in the database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize AppointmentModifiedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -250,34 +275,45 @@ namespace Braphia.Laboratory.Consumers
 
                 if (testEvent != null)
                 {
-                  using (JsonDocument doc = JsonDocument.Parse(jsonData))
-                            {
-                                if (doc.RootElement.TryGetProperty("test", out var testElement) && 
-                                    testElement.TryGetProperty("cost", out var costElement))
-                                {
-                                    string rawCost = costElement.ToString();
-                                    _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
-                                    
-                                    if (decimal.TryParse(rawCost, 
-                                        System.Globalization.NumberStyles.Any, 
-                                        System.Globalization.CultureInfo.InvariantCulture, 
-                                        out decimal parsedCost))
-                                    {
-                                        _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
-                                    }
-                                }
-                            }
+                    using (JsonDocument doc = JsonDocument.Parse(jsonData))
+                    {
+                        if (doc.RootElement.TryGetProperty("test", out var testElement) &&
+                            testElement.TryGetProperty("cost", out var costElement))
+                        {
+                            string rawCost = costElement.ToString();
+                            _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
 
-                    await _testRepository.AddTestAsync(testEvent.Test, true);
+                            if (decimal.TryParse(rawCost,
+                                System.Globalization.NumberStyles.Any,
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                out decimal parsedCost))
+                            {
+                                _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
+                            }
+                        }
+                    }
+
+                    var succes = await _testRepository.AddTestAsync(testEvent.Test, true);
+                    if (succes)
+                    {
+                        _logger.LogInformation("Successfully added test with ID {TestId} to medical database", testEvent.Test.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add test with ID {TestId} to medical database", testEvent.Test.Id);
+                        throw new InvalidOperationException($"Failed to add test with ID {testEvent.Test.Id} to the database.");
+                    }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize TestRequestedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize TestRequestedEvent from message data.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing TestRequested event: {MessageId}", message.MessageId);
+                throw;
             }
         }
     }
