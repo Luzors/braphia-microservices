@@ -1,3 +1,4 @@
+using Braphia.MedicalManagement.Events.Appointments;
 using Braphia.MedicalManagement.Events.Patients;
 using Braphia.MedicalManagement.Events.Physicians;
 using Braphia.MedicalManagement.Models;
@@ -309,6 +310,132 @@ namespace Braphia.MedicalManagement.Consumers
             }
         }
 
-        //TODO: events for appointment
+        private async Task AppointmentScheduled(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentScheduled event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentScheduledEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized appointment data: ID={Id}, PatientId={PatientId}, PhysicianId={PhysicianId}, ScheduledTime={ScheduledTime}",
+                        appointmentEvent.Appointment.Id, appointmentEvent.Appointment.PatientId, appointmentEvent.Appointment.PhysicianId, appointmentEvent.Appointment.ScheduledTime);
+                    var appointment = new Appointment
+                    {
+                        Id = appointmentEvent.Appointment.Id,
+                        PatientId = appointmentEvent.Appointment.PatientId,
+                        PhysicianId = appointmentEvent.Appointment.PhysicianId,
+                        ScheduledTime = appointmentEvent.Appointment.ScheduledTime,
+                        FollowUpAppointmentId = null
+                    };
+                    var success = await _appointmentRepository.AddAppointmentAsync(appointment);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully added appointment with ID {AppointmentId} to medical database", appointment.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add appointment with ID {AppointmentId} to medical database", appointment.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentScheduled event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task AppointmentScheduledFollowUp(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentScheduledFollowUp event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentScheduledFollowUpEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized follow-up appointment data: original ID={OriginalAppointmentId}, FollowUpId={FollowUpAppointmentId}",
+                        appointmentEvent.AppointmentId, appointmentEvent.FollowUpAppointment.Id);
+
+                    var followUpAppointment = new Appointment()
+                    {
+                        Id = appointmentEvent.FollowUpAppointment.Id,
+                        PatientId = appointmentEvent.FollowUpAppointment.PatientId,
+                        PhysicianId = appointmentEvent.FollowUpAppointment.PhysicianId,
+                        ScheduledTime = appointmentEvent.FollowUpAppointment.ScheduledTime,
+                        FollowUpAppointmentId = null
+                    };
+
+                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully added follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                        // Update the original appointment with the follow-up appointment ID
+                        var originalAppointment = await _appointmentRepository.GetAppointmentAsync(appointmentEvent.AppointmentId);
+                        if (originalAppointment != null)
+                        {
+                            originalAppointment.FollowUpAppointmentId = followUpAppointment.Id;
+                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment);
+                            _logger.LogInformation("Updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
+                                appointmentEvent.AppointmentId, followUpAppointment.Id);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentScheduledFollowUp event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task AppointmentModified(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentModified event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentModifiedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Updating appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                    var existingAppointment = await _appointmentRepository.GetAppointmentAsync(appointmentEvent.AppointmentId);
+                    if (existingAppointment != null)
+                    {
+                        existingAppointment.PatientId = appointmentEvent.NewAppointment.PatientId;
+                        existingAppointment.PhysicianId = appointmentEvent.NewAppointment.PhysicianId;
+                        existingAppointment.ScheduledTime = appointmentEvent.NewAppointment.ScheduledTime;
+                        existingAppointment.FollowUpAppointmentId = appointmentEvent.NewAppointment.FollowUpAppointmentId;
+                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment);
+                        if (success)
+                        {
+                            _logger.LogInformation("Successfully updated appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to update appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Appointment with ID {AppointmentId} not found in medical database", appointmentEvent.AppointmentId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+            }
+        }
     }
 }
