@@ -43,7 +43,7 @@ namespace Braphia.MedicalManagement.Consumers
                 _logger.LogDebug("No handler found for message type: {MessageType}", message.MessageType);
         }
 
-        public async Task PatientRegistered(Message message)
+        private async Task PatientRegistered(Message message)
         {
             try
             {
