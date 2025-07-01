@@ -638,7 +638,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                         medicationEvent.MedicationOrder.Id, medicationEvent.MedicationOrder.PatientId, medicationEvent.MedicationOrder.PharmacyId);
 
                     var user = await _userRepository.GetUserByIdAsync(medicationEvent.MedicationOrder.PatientId, UserTypeEnum.Patient) ??
-                        throw new Exception($"User with ID {medicationEvent.MedicationOrder.PatientId} not found in notification database.");
+                        throw new KeyNotFoundException($"User with ID {medicationEvent.MedicationOrder.PatientId} not found in notification database.");
 
                     Console.WriteLine(JsonSerializer.Serialize(user));
                     var notification = new Notification(title: "Medication Order Completed",
@@ -678,7 +678,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                     _logger.LogInformation("Deserialized appointment reminder data: AppointmentId={AppointmentId}, PatientId={PatientId}, ScheduledTime={ScheduledTime}",
                         appointmentEvent.AppointmentId, appointmentEvent.PatientId, appointmentEvent.ScheduledTime);
                     var user = await _userRepository.GetUserByIdAsync(appointmentEvent.PatientId, UserTypeEnum.Patient) ??
-                        throw new Exception($"User with ID {appointmentEvent.PatientId} not found in notification database.");
+                        throw new KeyNotFoundException($"User with ID {appointmentEvent.PatientId} not found in notification database.");
                     var notification = new Notification(title: "Appointment Reminder",
                         message: $"You have an upcoming appointment scheduled for {appointmentEvent.ScheduledTime}.",
                         userId: user.Id);
@@ -715,7 +715,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                         patientEvent.AppointmentId, patientEvent.PhysicianId);
 
                     var user = await _userRepository.GetUserByIdAsync(patientEvent.PhysicianId, UserTypeEnum.Physician) ??
-                        throw new Exception($"User with ID {patientEvent.PhysicianId} not found in notification database.");
+                        throw new KeyNotFoundException($"User with ID {patientEvent.PhysicianId} not found in notification database.");
                     var notification = new Notification(title: "Patient Arrived",
                         message: $"Patient has arrived for appointment {patientEvent.AppointmentId}.",
                         userId: user.Id);
@@ -750,7 +750,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                     _logger.LogInformation("Deserialized test data: TestId={TestId}, PatientId={PatientId}",
                         testEvent.Test.Id, testEvent.Test.PatientId);
                     var user = await _userRepository.GetUserByIdAsync(testEvent.Test.PatientId, UserTypeEnum.Patient) ??
-                        throw new Exception($"User with ID {testEvent.Test.PatientId} not found in notification database.");
+                        throw new KeyNotFoundException($"User with ID {testEvent.Test.PatientId} not found in notification database.");
                     var notification = new Notification(title: "Test Completed",
                         message: $"Your test {testEvent.Test.Id} has been completed with Result: {testEvent.Test.Result}.",
                         userId: user.Id);

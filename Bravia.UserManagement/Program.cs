@@ -19,6 +19,7 @@ builder.Services
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<ExternalUserFetchedConsumer>();
+    x.AddConsumer<UserManagementMessageConsumer>();
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
