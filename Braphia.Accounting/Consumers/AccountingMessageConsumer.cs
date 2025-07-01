@@ -6,6 +6,7 @@ using Braphia.Accounting.Models;
 using Braphia.Accounting.Repositories.Interfaces;
 using Infrastructure.Messaging;
 using MassTransit;
+using System.Linq;
 using System.Text.Json;
 
 namespace Braphia.Accounting.Consumers
@@ -19,9 +20,9 @@ namespace Braphia.Accounting.Consumers
         private readonly ILogger<AccountingMessageConsumer> _logger;
 
         public AccountingMessageConsumer(
-            IPatientRepository patientRepository, 
-            ITestRepository testRepository, 
-            IInvoiceRepository invoiceRepository, 
+            IPatientRepository patientRepository,
+            ITestRepository testRepository,
+            IInvoiceRepository invoiceRepository,
             IInvoiceEventService invoiceEventService,
             ILogger<AccountingMessageConsumer> logger)
         {
@@ -102,7 +103,7 @@ namespace Braphia.Accounting.Consumers
                         PropertyNameCaseInsensitive = true,
                         Converters = { new DecimalJsonConverter() }
                     };
-                    
+
                     var labTestEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
                         jsonData,
                         serializerOptions
@@ -111,19 +112,20 @@ namespace Braphia.Accounting.Consumers
                     if (labTestEvent != null)
                     {
                         // First parse the original cost string to see what it should be
-                        try {
+                        try
+                        {
                             // Try to extract the cost directly from the JSON to verify the original value
                             using (JsonDocument doc = JsonDocument.Parse(jsonData))
                             {
-                                if (doc.RootElement.TryGetProperty("test", out var testElement) && 
+                                if (doc.RootElement.TryGetProperty("test", out var testElement) &&
                                     testElement.TryGetProperty("cost", out var costElement))
                                 {
                                     string rawCost = costElement.ToString();
                                     _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
-                                    
-                                    if (decimal.TryParse(rawCost, 
-                                        System.Globalization.NumberStyles.Any, 
-                                        System.Globalization.CultureInfo.InvariantCulture, 
+
+                                    if (decimal.TryParse(rawCost,
+                                        System.Globalization.NumberStyles.Any,
+                                        System.Globalization.CultureInfo.InvariantCulture,
                                         out decimal parsedCost))
                                     {
                                         _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
@@ -131,10 +133,11 @@ namespace Braphia.Accounting.Consumers
                                 }
                             }
                         }
-                        catch (Exception ex) {
+                        catch (Exception ex)
+                        {
                             _logger.LogWarning(ex, "Error parsing raw cost value from JSON");
                         }
-                        
+
                         _logger.LogInformation("Deserialized lab test data: Id={Id} LabTestId={LabTestId}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
                             labTestEvent.Test.Id, labTestEvent.Test.RootId, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
 
@@ -208,6 +211,71 @@ namespace Braphia.Accounting.Consumers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+                    throw;
+                }
+            }
+            else if (message.MessageType == "MedicationOrderCompleted")
+            {
+                try
+                {
+                    _logger.LogInformation("Received MedicationOrderCompleted event with ID: {MessageId}", message.MessageId);
+                    var serializerOptions = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        Converters = { new DecimalJsonConverter() }
+                    };
+
+                    var medicationOrderEvent = JsonSerializer.Deserialize<MedicationOrderCompletedEvent>(
+                        message.Data.ToString() ?? string.Empty,
+                        serializerOptions
+                    );
+
+                    if (medicationOrderEvent != null)
+                    {
+                        _logger.LogInformation("Deserialized medication order data: Id={Id}, PatientId={PatientId}, TotalCost={TotalCost}",
+                            medicationOrderEvent.MedicationOrder.Id, medicationOrderEvent.MedicationOrder.PatientId, medicationOrderEvent.MedicationOrder.CalculateTotalPrice());
+
+                        var patient = await _patientRepository.GetPatientByIdAsync(medicationOrderEvent.MedicationOrder.PatientId);
+                        if (patient == null)
+                        {
+                            _logger.LogError("Patient with ID {PatientId} not found in accounting database", medicationOrderEvent.MedicationOrder.PatientId);
+                            throw new InvalidOperationException($"Patient with ID {medicationOrderEvent.MedicationOrder.PatientId} not found in accounting database");
+                        }
+
+                        if (patient.InsurerId == null)
+                        {
+                            _logger.LogWarning("Patient {PatientId} does not have an associated insurer. Cannot create invoice.", medicationOrderEvent.MedicationOrder.PatientId);
+                            throw new InvalidOperationException($"Patient {medicationOrderEvent.MedicationOrder.PatientId} does not have an associated insurer. Cannot create invoice.");
+                        }
+
+                        string description = $"Medication Order - {medicationOrderEvent.MedicationOrder.Id} - {string.Join(", ", medicationOrderEvent.MedicationOrder.Items.Select(x => x.Medication.Name))}".Trim(' ', '-');
+                        try
+                        {
+                            int invoiceId = await _invoiceEventService.CreateInvoiceAsync(
+                                patient.Id,
+                                patient.InsurerId.Value,
+                                medicationOrderEvent.MedicationOrder.Id,
+                                medicationOrderEvent.MedicationOrder.CalculateTotalPrice(),
+                                description);
+                            _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for medication order {MedicationOrderId} for patient {PatientId} and insurer {InsurerId}",
+                                invoiceId, medicationOrderEvent.MedicationOrder.Id, patient.Id, patient.InsurerId.Value);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to create invoice through event sourcing for medication order {MedicationOrderId} for patient {PatientId}",
+                                medicationOrderEvent.MedicationOrder.Id, patient.Id);
+                            throw new InvalidOperationException($"Failed to create invoice through event sourcing for medication order {medicationOrderEvent.MedicationOrder.Id} for patient {patient.Id}", ex);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to deserialize MedicationOrderCompleted event from message data: {Data}", message.Data.ToString());
+                        throw new InvalidOperationException("Failed to deserialize MedicationOrderCompleted event from message data");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing MedicationOrderCompleted event: {MessageId}", message.MessageId);
                     throw;
                 }
             }
