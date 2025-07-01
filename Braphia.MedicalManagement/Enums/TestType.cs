@@ -1,4 +1,4 @@
-namespace Braphia.Accounting.Enums
+namespace Braphia.MedicalManagement.Enums
 {
     public enum TestType
     {

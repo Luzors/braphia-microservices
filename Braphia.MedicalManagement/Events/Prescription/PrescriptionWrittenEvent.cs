@@ -1,14 +1,12 @@
-using Braphia.MedicalManagement.Models;
-
-namespace Braphia.MedicalManagement.Events
+namespace Braphia.MedicalManagement.Events.Prescription
 {
     public class PrescriptionWrittenEvent
     {
-        public Prescription Prescription { get; set; }
+        public Models.Prescription Prescription { get; set; }
 
         public PrescriptionWrittenEvent() { }
 
-        public PrescriptionWrittenEvent(Prescription prescription)
+        public PrescriptionWrittenEvent(Models.Prescription prescription)
         {
             Prescription = prescription;
         }

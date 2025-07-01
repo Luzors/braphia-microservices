@@ -1,6 +1,6 @@
 using Braphia.MedicalManagement.Models;
 
-namespace Braphia.MedicalManagement.Events
+namespace Braphia.MedicalManagement.Events.Examination
 {
     public class ExaminedPatientEvent
     {

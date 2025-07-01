@@ -49,10 +49,10 @@ namespace Braphia.Laboratory.Repositories
 
         public async Task<bool> DeleteTestAsync(int testId)
         {
-            var test = await _context.Tests.FindAsync(testId);
+            var test = await _context.Test.FindAsync(testId);
             if (test == null)
                 return false;
-            _context.Tests.Remove(test);
+            _context.Test.Remove(test);
             await _context.SaveChangesAsync();
             return true;
         }

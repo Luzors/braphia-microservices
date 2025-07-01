@@ -20,5 +20,4 @@ public abstract class User
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
-    public int RootId { get; set; }
     }

@@ -1,14 +1,12 @@
-using Braphia.MedicalManagement.Models;
-
-namespace Braphia.MedicalManagement.Events
+namespace Braphia.MedicalManagement.Events.Test
 {
     public class TestRequestedEvent
     {
-        public Test Test { get; set; }
+        public Models.Test Test { get; set; }
 
         public TestRequestedEvent() { }
 
-        public TestRequestedEvent(Test test)
+        public TestRequestedEvent(Models.Test test)
         {
             Test = test ?? throw new ArgumentNullException(nameof(test), "Test cannot be null.");
         }

@@ -1,5 +1,5 @@
 ﻿using Braphia.MedicalManagement.Database;
-using Braphia.MedicalManagement.Events;
+using Braphia.MedicalManagement.Events.Prescription;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;

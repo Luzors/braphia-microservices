@@ -1,8 +1,7 @@
 ﻿using Braphia.MedicalManagement.Database;
-using Braphia.MedicalManagement.Events;
+using Braphia.MedicalManagement.Events.Test;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
-using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
