@@ -1,3 +1,4 @@
+using Braphia.AppointmentManagement.Events;
 using Braphia.NotificationDispatcher.Events.ExternalEvents;
 using Braphia.NotificationDispatcher.Events.ExternalEvents.GeneralPracticioners;
 using Braphia.NotificationDispatcher.Events.ExternalEvents.Patients;
@@ -598,6 +599,40 @@ namespace Braphia.NotificationDispatcher.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing MedicationOrderCompleted event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task AppointmentReminder(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentReminder event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentReminderEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized appointment reminder data: AppointmentId={AppointmentId}, PatientId={PatientId}, ScheduledTime={ScheduledTime}",
+                        appointmentEvent.AppointmentId, appointmentEvent.PatientId, appointmentEvent.ScheduledTime);
+                    var user = await _userRepository.GetUserByIdAsync(appointmentEvent.PatientId, UserTypeEnum.Patient) ??
+                        throw new Exception($"User with ID {appointmentEvent.PatientId} not found in notification database.");
+                    var notification = new Notification(title: "Appointment Reminder",
+                        message: $"You have an upcoming appointment scheduled for {appointmentEvent.ScheduledTime}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    //Makt it warning to make it more visible in logs
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for appointment reminder for AppointmentId {AppointmentId}", appointmentEvent.AppointmentId);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentReminderEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentReminder event: {MessageId}", message.MessageId);
             }
         }
     }
