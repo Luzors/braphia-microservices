@@ -21,7 +21,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             if (referral == null)
                 throw new ArgumentNullException(nameof(referral), "Patient cannot be null.");
             await _context.Referral.AddAsync(referral);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesWithIdentityInsertAsync();
+            return true;
 
             // Patient created event
             //await _publishEndpoint.Publish(new Message(new PatientRegisteredEvent(patient)));
@@ -39,7 +40,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingReferral.Reason = referral.Reason;
             existingReferral.ReferralDate = referral.ReferralDate;
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesWithIdentityInsertAsync();
             return true;
         }
 

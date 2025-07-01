@@ -1,4 +1,4 @@
-﻿namespace Braphia.AppointmentManagement.Events
+﻿namespace Braphia.NotificationDispatcher.Events.ExternalEvents
 {
     public class PatientArrivedEvent
     {
