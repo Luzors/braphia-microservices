@@ -2,6 +2,7 @@
 using Braphia.AppointmentManagement.Commands.AppointmentFollowUpScheduled;
 using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
 using Braphia.AppointmentManagement.Commands.AppointmentStateChanged;
+using Braphia.AppointmentManagement.Commands.QuestionnaireAnswered;
 using Braphia.AppointmentManagement.Commands.UserCheckId;
 using Braphia.AppointmentManagement.Databases.WriteDatabase;
 using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
@@ -212,6 +213,46 @@ namespace Braphia.AppointmentManagement.Controllers
             }
             return NotFound();
         }
+
+        [HttpGet("{appointmentId}/questionnaire")]
+        public async Task<IActionResult> GetPreAppointmentQuestionnaire(int appointmentId)
+        {
+            var appointment = await _appointmentRepository.GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+                return NotFound($"Appointment with ID {appointmentId} not found.");
+
+            if (appointment.PreAppointmentQuestionnaire == null)
+                appointment.SetPreAppointmentQuestionnaire(); // default vragenlijst
+
+            var questionnaire = appointment.PreAppointmentQuestionnaire;
+               
+
+            await _appointmentRepository.UpdateAppointmentAsync(appointment);
+
+            return Ok(questionnaire);
+        }
+
+        [HttpPost("{appointmentId}/questionnaire")]
+        public async Task<IActionResult> SubmitPreAppointmentQuestionnaire([FromBody] QuestionnaireAnsweredCommand command)
+        {
+            if (command.AppointmentId != command.AppointmentId)
+                return BadRequest("Appointment ID mismatch.");
+
+            var appointment = await _appointmentRepository.GetAppointmentByIdAsync(command.AppointmentId);
+            if (appointment == null)
+                return NotFound($"Appointment with ID {command.AppointmentId} not found.");
+
+            if (appointment.PreAppointmentQuestionnaire == null)
+                return BadRequest("Questionnaire has not been initialized for this appointment.");
+
+            appointment.PreAppointmentQuestionnaire = command.Answers;
+
+            // Hier gebruik je de bestaande update
+            await _appointmentRepository.UpdateAppointmentAsync(appointment);
+
+            return Ok("Questionnaire submitted successfully.");
+        }
+
 
 
 

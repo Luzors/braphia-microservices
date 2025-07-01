@@ -4,16 +4,19 @@ using Braphia.AppointmentManagement.Databases.WriteDatabase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Braphia.AppointmentManagement.Migrations
+namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20250701085504_AddedQuestionare")]
+    partial class AddedQuestionare
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,9 +41,6 @@ namespace Braphia.AppointmentManagement.Migrations
 
                     b.Property<int>("PhysicianId")
                         .HasColumnType("int");
-
-                    b.Property<string>("PreAppointmentQuestionnaire")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ReceptionistId")
                         .HasColumnType("int");
@@ -121,6 +121,32 @@ namespace Braphia.AppointmentManagement.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Physicians");
+                });
+
+            modelBuilder.Entity("Braphia.AppointmentManagement.Models.QuestionnaireAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.ToTable("QuestionnaireAnswer");
                 });
 
             modelBuilder.Entity("Braphia.AppointmentManagement.Models.Receptionist", b =>
@@ -204,6 +230,18 @@ namespace Braphia.AppointmentManagement.Migrations
                     b.Navigation("receptionist");
 
                     b.Navigation("referral");
+                });
+
+            modelBuilder.Entity("Braphia.AppointmentManagement.Models.QuestionnaireAnswer", b =>
+                {
+                    b.HasOne("Braphia.AppointmentManagement.Models.Appointment", null)
+                        .WithMany("PreAppointmentQuestionnaire")
+                        .HasForeignKey("AppointmentId");
+                });
+
+            modelBuilder.Entity("Braphia.AppointmentManagement.Models.Appointment", b =>
+                {
+                    b.Navigation("PreAppointmentQuestionnaire");
                 });
 #pragma warning restore 612, 618
         }
