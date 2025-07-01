@@ -669,5 +669,79 @@ namespace Braphia.NotificationDispatcher.Consumers
                 _logger.LogError(ex, "Error processing PatientArrived event: {MessageId}", message.MessageId);
             }
         }
+
+        private async Task TestCompleted(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (testEvent != null)
+                {
+                    _logger.LogInformation("Deserialized test data: TestId={TestId}, PatientId={PatientId}",
+                        testEvent.Test.Id, testEvent.Test.PatientId);
+                    var user = await _userRepository.GetUserByIdAsync(testEvent.Test.PatientId, UserTypeEnum.Patient) ??
+                        throw new Exception($"User with ID {testEvent.Test.PatientId} not found in notification database.");
+                    var notification = new Notification(title: "Test Completed",
+                        message: $"Your test {testEvent.Test.Id} has been completed with Result: {testEvent.Test.Result}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for completed test {TestId}", testEvent.Test.Id);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task PrescriptionWritten(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PrescriptionWritten event with ID: {MessageId}", message.MessageId);
+                var prescriptionEvent = JsonSerializer.Deserialize<PrescriptionWrittenEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (prescriptionEvent != null)
+                {
+                    _logger.LogInformation("Deserialized prescription data: PrescriptionId={PrescriptionId}, PatientId={PatientId}",
+                        prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId);
+                    var pharmacies = await _pharmacyRepository.GetAllPharmaciesAsync();
+                    if (pharmacies == null || !pharmacies.Any())
+                    {
+                        _logger.LogWarning("No pharmacies found in the database for PrescriptionWritten event.");
+                        return;
+                    }
+                    foreach (var pharmacy in pharmacies)
+                    {
+                        _logger.LogInformation("Processing pharmacy: {PharmacyName} (ID: {PharmacyId})", pharmacy.Name, pharmacy.Id);
+                        var notification = new Notification(title: "Prescription Written",
+                            message: $"A new prescription {prescriptionEvent.Prescription.Id} has been written, please fulfill the order.",
+                            pharmacyId: pharmacy.Id);
+                        await _notificationRepository.AddNotificationAsync(notification);
+                        _logger.LogWarning(notification.SendNotification());
+                    }
+                    _logger.LogInformation("Successfully created notifications for prescription {PrescriptionId} for all pharmacies", prescriptionEvent.Prescription.Id);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PrescriptionWrittenEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PrescriptionWritten event: {MessageId}", message.MessageId);
+            }
+        }
     }
 }
