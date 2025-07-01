@@ -9,6 +9,6 @@ namespace Braphia.NotificationDispatcher.Repositories.Interfaces
         Task<bool> DeleteUserAsync(int userId);
         Task<User?> GetUserByIdAsync(int userId);
         Task<User?> GetUserByIdAsync(int rootId, UserTypeEnum userType);
-        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<IEnumerable<User>> GetAllUsersAsync(UserTypeEnum? userType = null);
     }
 }
