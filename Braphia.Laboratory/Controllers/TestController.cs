@@ -72,40 +72,6 @@ namespace Braphia.Laboratory.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateTest([FromBody] Test test)
-        {
-            _logger.LogInformation("Creating a new test");
-
-            try
-            {
-                if (test == null)
-                {
-                    _logger.LogWarning("Test data is null");
-                    return BadRequest("Test data is required.");
-                }
-                
-                _logger.LogInformation("Received test data: {TestData}", test);
-
-                test.CompletedDate = null;
-                test.Result = null;
-
-                await _testRepository.AddTestAsync(test);
-                _logger.LogInformation("Test created successfully with ID {Id}", test.Id);
-                return CreatedAtAction(nameof(CreateTest), new { id = test.Id }, test);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid argument while creating test");
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating test");
-                return StatusCode(500, "Internal server error while creating test");
-            }
-        }
-
         [HttpPut("{id}/Complete")]
         public async Task<IActionResult> CompleteTest(int id, [FromBody] CompleteTestDto body)
         {
@@ -147,10 +113,10 @@ namespace Braphia.Laboratory.Controllers
                 {
                     Converters = { new DecimalJsonConverter() }
                 };
-                
+
                 var json = JsonSerializer.Serialize(testEvent, serializerOptions);
                 _logger.LogInformation("Serialized event: {Json}", json);
-                
+
                 // Stuur TestCompletedEvent
                 await _publishEndpoint.Publish(new Message(
                     messageType: "TestCompleted",
@@ -173,31 +139,6 @@ namespace Braphia.Laboratory.Controllers
             {
                 _logger.LogError(ex, $"Unexpected error completing test ID {id}");
                 return StatusCode(500, "Internal server error while completing test");
-            }
-        }
-
-        [HttpPut("{id}", Name = "UpdateTestStatus")]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Put(int id, [FromBody] Test test)
-        {
-            if (test == null || test.Id != id)
-            {
-                return BadRequest("Test data is null or ID mismatch");
-            }
-            try
-            {
-                var updated = await _testRepository.UpdateTestAsync(test);
-                if (!updated)
-                {
-                    return NotFound($"No test found with ID {id} to update");
-                }
-                // Publish an event after updating the test
-                await _publishEndpoint.Publish(new { TestId = id, Message = "Test updated successfully" });
-                return Ok(updated);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }
