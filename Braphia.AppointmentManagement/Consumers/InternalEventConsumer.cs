@@ -1,7 +1,5 @@
 ﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
-using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
-//using Braphia.AppointmentManagement.Events;
 using Braphia.AppointmentManagement.Events.InternalEvents;
 using Infrastructure.Messaging;
 using MassTransit;
@@ -9,12 +7,12 @@ using System.Text.Json;
 
 namespace Braphia.AppointmentManagement.Consumers
 {
-    public class AppointmentCreatedEventConsumer : IConsumer<Message>
+    public class InternalEventConsumer : IConsumer<Message>
     {
         private readonly SQLAppointmentReadRepository _readRepo;
-        private readonly ILogger<AppointmentCreatedEventConsumer> _logger;
+        private readonly ILogger<InternalEventConsumer> _logger;
 
-        public AppointmentCreatedEventConsumer(SQLAppointmentReadRepository readRepo, ILogger<AppointmentCreatedEventConsumer> logger)
+        public InternalEventConsumer(SQLAppointmentReadRepository readRepo, ILogger<InternalEventConsumer> logger)
         {
             _readRepo = readRepo;
             _logger = logger;
