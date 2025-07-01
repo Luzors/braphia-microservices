@@ -1,11 +1,12 @@
 using Braphia.Accounting.Converters;
 using Braphia.Accounting.Events;
+using Braphia.Accounting.EventSourcing.Events;
+using Braphia.Accounting.EventSourcing.Services;
 using Braphia.Accounting.Models;
 using Braphia.Accounting.Repositories.Interfaces;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Braphia.Accounting.Consumers
 {
@@ -14,13 +15,20 @@ namespace Braphia.Accounting.Consumers
         private readonly IPatientRepository _patientRepository;
         private readonly ITestRepository _testRepository;
         private readonly IInvoiceRepository _invoiceRepository;
+        private readonly IInvoiceEventService _invoiceEventService;
         private readonly ILogger<AccountingMessageConsumer> _logger;
 
-        public AccountingMessageConsumer(IPatientRepository patientRepository, ITestRepository testRepository, IInvoiceRepository invoiceRepository, ILogger<AccountingMessageConsumer> logger)
+        public AccountingMessageConsumer(
+            IPatientRepository patientRepository, 
+            ITestRepository testRepository, 
+            IInvoiceRepository invoiceRepository, 
+            IInvoiceEventService invoiceEventService,
+            ILogger<AccountingMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
             _testRepository = testRepository;
             _invoiceRepository = invoiceRepository;
+            _invoiceEventService = invoiceEventService;
             _logger = logger;
         }
 
@@ -114,29 +122,6 @@ namespace Braphia.Accounting.Consumers
                             return;
                         }
 
-                        // Create invoice for the lab test
-                        var invoice = new Invoice
-                        {
-                            Date = labTestEvent.Test.CompletedDate,
-                            Amount = labTestEvent.Test.Cost,
-                            Description = $"Lab Test: {labTestEvent.Test.TestType} - {labTestEvent.Test.Description}".Trim(' ', '-'),
-                            PatientId = patient.Id,
-                            InsurerId = patient.InsurerId.Value
-                        };
-
-                        var success = await _invoiceRepository.AddInvoiceAsync(invoice);
-
-                        if (success)
-                        {
-                            _logger.LogInformation("Successfully created invoice {InvoiceId} for lab test {LabTestId} for patient {PatientId} and insurer {InsurerId}",
-                                invoice.Id, labTestEvent.Test.Id, labTestEvent.Test.PatientId, patient.InsurerId);
-                        }
-                        else
-                        {
-                            _logger.LogError("Failed to create invoice for lab test {LabTestId} for patient {PatientId}",
-                                labTestEvent.Test.Id, labTestEvent.Test.PatientId);
-                        }
-
                         // Save the test in the TestRepository
                         var test = new Test
                         {
@@ -158,6 +143,26 @@ namespace Braphia.Accounting.Consumers
                         else
                         {
                             _logger.LogError("Failed to add test {RootId} to accounting database", test.RootId);
+                        }
+
+                        // Create invoice through event sourcing service
+                        string description = $"Lab Test: {labTestEvent.Test.TestType} - {labTestEvent.Test.Description}".Trim(' ', '-');
+                        
+                        try {
+                            int invoiceId = await _invoiceEventService.CreateInvoiceAsync(
+                                patient.Id, 
+                                patient.InsurerId.Value, 
+                                test.Id, 
+                                labTestEvent.Test.Cost, 
+                                description);
+
+                            _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for lab test {LabTestId} for patient {PatientId} and insurer {InsurerId}",
+                                invoiceId, test.Id, patient.Id, patient.InsurerId.Value);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to create invoice through event sourcing for lab test {LabTestId} for patient {PatientId}", 
+                                test.Id, patient.Id);
                         }
                     }
                     else
