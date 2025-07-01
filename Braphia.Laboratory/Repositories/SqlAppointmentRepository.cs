@@ -14,13 +14,15 @@ namespace Braphia.Laboratory.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
        
-        // TODO: verwijderen want appointment wordt overgenomen vanuit event
-        public async Task<bool> AddAppointmentAsync(Appointment appointment)
+        public async Task<bool> AddAppointmentAsync(Appointment appointment, bool ignoreIdentity = false)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
             await _context.Appointment.AddAsync(appointment);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 
@@ -35,7 +37,7 @@ namespace Braphia.Laboratory.Repositories
 
         }
 
-        public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
+        public async Task<bool> UpdateAppointmentAsync(Appointment appointment, bool ignoreIdentity = false)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
@@ -43,7 +45,10 @@ namespace Braphia.Laboratory.Repositories
             if (existing == null)
                 throw new ArgumentException($"Appointment with ID {appointment.Id} not found.");
             _context.Appointment.Update(appointment);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
     }

@@ -76,7 +76,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         PhoneNumber = patientEvent.Patient.PhoneNumber
                     };
 
-                    var success = await _patientRepository.AddPatientAsync(patient);
+                    var success = await _patientRepository.AddPatientAsync(patient, true);
 
                     if (success)
                     {
@@ -122,7 +122,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         existingPatient.Email = patientEvent.NewPatient.Email;
                         existingPatient.PhoneNumber = patientEvent.NewPatient.PhoneNumber;
 
-                        var success = await _patientRepository.UpdatePatientAsync(existingPatient);
+                        var success = await _patientRepository.UpdatePatientAsync(existingPatient, true);
 
                         if (success)
                         {
@@ -217,7 +217,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         Specialization = physicianEvent.Physician.Specialization
                     };
 
-                    var success = await _physicianRepository.AddPhysicianAsync(physician);
+                    var success = await _physicianRepository.AddPhysicianAsync(physician, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added physician from UserManagement ID {OriginalPhysicianId} to accounting database with new ID {NewPhysicianId}",
@@ -253,7 +253,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         existingPhysician.FirstName = physicianEvent.Physician.FirstName;
                         existingPhysician.LastName = physicianEvent.Physician.LastName;
                         existingPhysician.Specialization = physicianEvent.Physician.Specialization;
-                        var success = await _physicianRepository.UpdatePhysicianAsync(existingPhysician);
+                        var success = await _physicianRepository.UpdatePhysicianAsync(existingPhysician, true);
                         if (success)
                         {
                             _logger.LogInformation("Successfully updated physician with UserManagement ID {PhysicianId}", physicianEvent.PhysicianId);
@@ -332,7 +332,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         LastName = receptionistEvent.Receptionist.LastName,
                         Email = receptionistEvent.Receptionist.Email
                     };
-                    var success = await _receptionistRepository.AddReceptionistAsync(receptionist);
+                    var success = await _receptionistRepository.AddReceptionistAsync(receptionist, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added receptionist from UserManagement ID {OriginalReceptionistId} to accounting database with new ID {NewReceptionistId}",
@@ -368,7 +368,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         existingReceptionist.FirstName = receptionistEvent.NewReceptionist.FirstName;
                         existingReceptionist.LastName = receptionistEvent.NewReceptionist.LastName;
                         existingReceptionist.Email = receptionistEvent.NewReceptionist.Email;
-                        var success = await _receptionistRepository.UpdateReceptionistAsync(existingReceptionist);
+                        var success = await _receptionistRepository.UpdateReceptionistAsync(existingReceptionist, true);
                         if (success)
                         {
                             _logger.LogInformation("Successfully updated receptionist with UserManagement ID {ReceptionistId}", receptionistEvent.ReceptionistId);
@@ -447,7 +447,7 @@ namespace Braphia.AppointmentManagement.Consumers
                         ReferralDate = referralEvent.Referral.ReferralDate,
                         Reason = referralEvent.Referral.Reason
                     };
-                    var success = await _referralRepository.AddReferralAsync(referral);
+                    var success = await _referralRepository.AddReferralAsync(referral, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added referral with ID {ReferralId}", referral.Id);
@@ -485,7 +485,7 @@ namespace Braphia.AppointmentManagement.Consumers
                     {
                         existingReferral.Reason = referralEvent.NewReferral.Reason;
                         existingReferral.ReferralDate = referralEvent.NewReferral.ReferralDate;
-                        var success = await _referralRepository.UpdateReferralAsync(existingReferral);
+                        var success = await _referralRepository.UpdateReferralAsync(existingReferral, true);
                         if (success)
                         {
                             _logger.LogInformation("Successfully updated referral with ID {ReferralId}", referralEvent.ReferralId);

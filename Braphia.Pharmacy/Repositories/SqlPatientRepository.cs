@@ -20,12 +20,15 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddPatientAsync(Patient patient)
+        public async Task<bool> AddPatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Patient.Add(patient);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch

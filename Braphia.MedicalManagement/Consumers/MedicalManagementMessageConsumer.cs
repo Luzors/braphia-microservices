@@ -75,7 +75,7 @@ namespace Braphia.MedicalManagement.Consumers
                         PhoneNumber = patientEvent.Patient.PhoneNumber
                     };
 
-                    var success = await _patientRepository.AddPatientAsync(patient);
+                    var success = await _patientRepository.AddPatientAsync(patient, true);
 
                     if (success)
                     {
@@ -218,7 +218,7 @@ namespace Braphia.MedicalManagement.Consumers
                         PhoneNumber = physicianEvent.Physician.PhoneNumber
                     };
 
-                    var success = await _physicianRepository.AddPhysicianAsync(physician);
+                    var success = await _physicianRepository.AddPhysicianAsync(physician, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added physician from UserManagement ID {OriginalPhysicianId} to accounting database with new ID {NewPhysicianId}",
@@ -336,7 +336,7 @@ namespace Braphia.MedicalManagement.Consumers
                         ScheduledTime = appointmentEvent.Appointment.ScheduledTime,
                         FollowUpAppointmentId = null
                     };
-                    var success = await _appointmentRepository.AddAppointmentAsync(appointment);
+                    var success = await _appointmentRepository.AddAppointmentAsync(appointment, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added appointment with ID {AppointmentId} to medical database", appointment.Id);
@@ -376,7 +376,7 @@ namespace Braphia.MedicalManagement.Consumers
                         FollowUpAppointmentId = null
                     };
 
-                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment);
+                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
@@ -385,7 +385,7 @@ namespace Braphia.MedicalManagement.Consumers
                         if (originalAppointment != null)
                         {
                             originalAppointment.FollowUpAppointmentId = followUpAppointment.Id;
-                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment);
+                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment, true);
                             _logger.LogInformation("Updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
                                 appointmentEvent.AppointmentId, followUpAppointment.Id);
                         }
@@ -421,7 +421,7 @@ namespace Braphia.MedicalManagement.Consumers
                         existingAppointment.PhysicianId = appointmentEvent.NewAppointment.PhysicianId;
                         existingAppointment.ScheduledTime = appointmentEvent.NewAppointment.ScheduledTime;
                         existingAppointment.FollowUpAppointmentId = appointmentEvent.NewAppointment.FollowUpAppointmentId;
-                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment);
+                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment, true);
                         if (success)
                         {
                             _logger.LogInformation("Successfully updated appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);

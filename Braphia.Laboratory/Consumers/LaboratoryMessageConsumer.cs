@@ -48,14 +48,14 @@ namespace Braphia.Laboratory.Consumers
 
                         var patient = new Patient
                         {
-                            RootId = patientEvent.Patient.Id,
+                            Id = patientEvent.Patient.Id,
                             FirstName = patientEvent.Patient.FirstName,
                             LastName = patientEvent.Patient.LastName,
                             Email = patientEvent.Patient.Email,
                             PhoneNumber = patientEvent.Patient.PhoneNumber
                         };
 
-                        var success = await _patientRepository.AddPatientAsync(patient);
+                        var success = await _patientRepository.AddPatientAsync(patient, true);
 
                         if (success)
                         {
@@ -64,7 +64,7 @@ namespace Braphia.Laboratory.Consumers
                         }
                         else
                         {
-                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
                         }
                     }
                     else
@@ -121,7 +121,7 @@ namespace Braphia.Laboratory.Consumers
                         ScheduledTime = appointmentEvent.Appointment.ScheduledTime,
                         FollowUpAppointmentId = null
                     };
-                    var success = await _appointmentRepository.AddAppointmentAsync(appointment);
+                    var success = await _appointmentRepository.AddAppointmentAsync(appointment, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added appointment with ID {AppointmentId} to medical database", appointment.Id);
@@ -161,7 +161,7 @@ namespace Braphia.Laboratory.Consumers
                         FollowUpAppointmentId = null
                     };
 
-                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment);
+                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
@@ -170,7 +170,7 @@ namespace Braphia.Laboratory.Consumers
                         if (originalAppointment != null)
                         {
                             originalAppointment.FollowUpAppointmentId = followUpAppointment.Id;
-                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment);
+                            await _appointmentRepository.UpdateAppointmentAsync(originalAppointment, true);
                             _logger.LogInformation("Updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
                                 appointmentEvent.AppointmentId, followUpAppointment.Id);
                         }
@@ -206,7 +206,7 @@ namespace Braphia.Laboratory.Consumers
                         existingAppointment.PhysicianId = appointmentEvent.NewAppointment.PhysicianId;
                         existingAppointment.ScheduledTime = appointmentEvent.NewAppointment.ScheduledTime;
                         existingAppointment.FollowUpAppointmentId = appointmentEvent.NewAppointment.FollowUpAppointmentId;
-                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment);
+                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment, true);
                         if (success)
                         {
                             _logger.LogInformation("Successfully updated appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
@@ -268,7 +268,7 @@ namespace Braphia.Laboratory.Consumers
                                 }
                             }
 
-                    await _testRepository.AddTestAsync(testEvent.Test);
+                    await _testRepository.AddTestAsync(testEvent.Test, true);
                 }
                 else
                 {

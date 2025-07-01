@@ -8,10 +8,10 @@ namespace Braphia.MedicalManagement.Repositories.Interfaces
 
         Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
 
-        Task<bool> AddAppointmentAsync(Appointment appointment);
+        Task<bool> AddAppointmentAsync(Appointment appointment, bool ignoreIdentity = false);
 
         Task<bool> DeleteAppointmentAsync(int id);
 
-        Task<bool> UpdateAppointmentAsync(Appointment appointment);
+        Task<bool> UpdateAppointmentAsync(Appointment appointment, bool ignoreIdentity = false);
     }
 }

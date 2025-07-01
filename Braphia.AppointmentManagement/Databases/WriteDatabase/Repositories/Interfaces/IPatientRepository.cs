@@ -4,8 +4,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
 {
     public interface IPatientRepository
     {
-        Task<bool> AddPatientAsync(Patient patient);
-        Task<bool> UpdatePatientAsync(Patient patient);
+        Task<bool> AddPatientAsync(Patient patient, bool ignoreIdentity = false);
+        Task<bool> UpdatePatientAsync(Patient patient, bool ignoreIdentity = false);
         Task<bool> DeletePatientAsync(int patientId);
         Task<Patient> GetPatientByIdAsync(int patientId);
         Task<IEnumerable<Patient>> GetAllPatientsAsync();

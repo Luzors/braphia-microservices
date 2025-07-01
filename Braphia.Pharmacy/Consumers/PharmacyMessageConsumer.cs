@@ -63,7 +63,7 @@ namespace Braphia.Pharmacy.Consumers
                         PhoneNumber = patientEvent.Patient.PhoneNumber
                     };
 
-                    var success = await _patientRepository.AddPatientAsync(patient);
+                    var success = await _patientRepository.AddPatientAsync(patient, true);
 
                     if (success)
                     {
@@ -183,7 +183,7 @@ namespace Braphia.Pharmacy.Consumers
                         Dose = prescriptionEvent.Prescription.Dose,
                         Unit = prescriptionEvent.Prescription.Unit
                     };
-                    var success = await _prescriptionRepository.AddPrescriptionAsync(prescription);
+                    var success = await _prescriptionRepository.AddPrescriptionAsync(prescription, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added prescription with ID {PrescriptionId}", prescription.Id);

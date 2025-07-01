@@ -15,12 +15,15 @@ namespace Braphia.MedicalManagement.Repositories
         }
 
 
-        public async Task<bool> AddPatientAsync(Patient patient)
+        public async Task<bool> AddPatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
             await _context.Patient.AddAsync(patient);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 

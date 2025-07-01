@@ -22,7 +22,7 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddMedicationToMedicationOrderAsync(int medicationOrderId, Medication medication, int amount)
+        public async Task<bool> AddMedicationToMedicationOrderAsync(int medicationOrderId, Medication medication, int amount, bool ignoreIdentity = false)
         {
             try
             {
@@ -34,7 +34,10 @@ namespace Braphia.Pharmacy.Repositories
                 }
                 medicationOrder.AddItem(medication, amount);
                 _context.MedicationOrder.Update(medicationOrder);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -68,12 +71,15 @@ namespace Braphia.Pharmacy.Repositories
             }
         }
 
-        public async Task<bool> CreateMedicationOrderAsync(MedicationOrder medicationOrder)
+        public async Task<bool> CreateMedicationOrderAsync(MedicationOrder medicationOrder, bool ignoreIdentity = false)
         {
             try
             {
                 await _context.MedicationOrder.AddAsync(medicationOrder);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)

@@ -4,8 +4,8 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Int
 {
     public interface IReferralRepository
     {
-        Task<bool> AddReferralAsync(Referral referral);
-        Task<bool> UpdateReferralAsync(Referral referral);
+        Task<bool> AddReferralAsync(Referral referral, bool ignoreIdentity = false);
+        Task<bool> UpdateReferralAsync(Referral referral, bool ignoreIdentity = false);
         Task<bool> DeleteReferralAsync(int referralId);
         Task<Referral> GetReferralByIdAsync(int referralId);
         Task<IEnumerable<Referral>> GetAllReferralsAsync();

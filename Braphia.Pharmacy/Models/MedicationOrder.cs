@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Braphia.Pharmacy.Models.ExternalObjects;
 
 namespace Braphia.Pharmacy.Models
 {
@@ -11,7 +13,9 @@ namespace Braphia.Pharmacy.Models
         public IList<MedicationOrderItem> Items { get; set; } = [];
         public int PatientId { get; set; }
         public int PrescriptionId { get; set; }
+        public Prescription? Prescription { get; set; }
         public int PharmacyId { get; set; }
+        public Pharmacy? Pharmacy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CompletedAt { get; set; } = null;
 
@@ -70,7 +74,27 @@ namespace Braphia.Pharmacy.Models
         public void CompleteOrder()
         {
             CompletedAt = DateTime.UtcNow;
-            //TODO: check if order is fulfilled (all items from prescription have been added)
+            if (Items.Count == 0)
+            {
+                throw new InvalidOperationException("Cannot complete an order with no items.");
+            }
+            if (Items.Any(i => i.Amount <= 0))
+            {
+                throw new InvalidOperationException("Cannot complete an order with items that have zero or negative amounts.");
+            }
+
+            var requiredMedicine = Prescription?.Medicine;
+            if (requiredMedicine != null)
+            {
+                if (!Items.Any(i => i.Medication.Name == requiredMedicine))
+                {
+                    throw new InvalidOperationException($"Order must contain the prescribed medicine: {requiredMedicine}.");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Prescription is not set for this order.");
+            }
         }
     }
 }

@@ -15,15 +15,18 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context must be of type WriteDbContext.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
-        public async Task<bool> AddPatientAsync(Patient patient)
+        public async Task<bool> AddPatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
             await _context.Patients.AddAsync(patient);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> UpdatePatientAsync(Patient patient)
+        public async Task<bool> UpdatePatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
@@ -34,7 +37,10 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingPatient.Email = patient.Email;
             existingPatient.PhoneNumber = patient.PhoneNumber;
             _context.Patients.Update(existingPatient);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
         public async Task<bool> DeletePatientAsync(int patientId)
