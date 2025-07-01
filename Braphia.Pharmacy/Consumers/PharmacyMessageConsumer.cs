@@ -245,5 +245,39 @@ namespace Braphia.Pharmacy.Consumers
                 _logger.LogError(ex, "Error processing PrescriptionModified event: {MessageId}", message.MessageId);
             }
         }
+
+        private async Task PrescriptionInvoked(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PrescriptionRemoved event with ID: {MessageId}", message.MessageId);
+                var prescriptionEvent = JsonSerializer.Deserialize<PrescriptionInvokedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (prescriptionEvent != null)
+                {
+                    _logger.LogInformation("Deserialized prescription data: ID={PrescriptionId}, PatientId={PatientId}, Medication={Medication}, Dosage={Dosage}",
+                        prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId, prescriptionEvent.Prescription.Medicine, prescriptionEvent.Prescription.Dose);
+                    var success = await _prescriptionRepository.DeletePrescriptionAsync(prescriptionEvent.Prescription.Id);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully removed prescription with ID {PrescriptionId}", prescriptionEvent.Prescription.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to remove prescription with ID {PrescriptionId}", prescriptionEvent.Prescription.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PrescriptionRemovedEvent from message data: {Data}", message.Data.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PrescriptionRemoved event: {MessageId}", message.MessageId);
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Braphia.Laboratory.Repositories
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
-        public async Task<bool> AddAsync(Test test)
+        public async Task<bool> AddTestAsync(Test test)
         {
             if (test == null)
                 throw new ArgumentNullException(nameof(test), "Test cannot be null.");
@@ -30,7 +30,7 @@ namespace Braphia.Laboratory.Repositories
            return true;
         }
 
-        public async Task<Test?> GetByIdAsync(int id)
+        public async Task<Test?> GetTestByIdAsync(int id)
         {
             return await _context.Test.FirstOrDefaultAsync(t => t.Id == id);
         }
@@ -40,21 +40,21 @@ namespace Braphia.Laboratory.Repositories
             return await _context.Test.ToListAsync();
         }
 
-        public async Task UpdateAsync(Test test)
+        public async Task<bool> UpdateTestAsync(Test test)
         {
             _context.Test.Update(test);
             await _context.SaveChangesAsync();
+            return true;
         }
-        public async Task<bool> UpdateTestStatus(Guid testId, TestStatus status)
+
+        public async Task<bool> DeleteTestAsync(int testId)
         {
             var test = await _context.Tests.FindAsync(testId);
             if (test == null)
-
-                throw new ArgumentException($"Test with ID {testId} not found.");
-            test.TestStatus = status;
+                return false;
+            _context.Tests.Remove(test);
             await _context.SaveChangesAsync();
             return true;
-
         }
     }
 }

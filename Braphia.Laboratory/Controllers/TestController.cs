@@ -53,7 +53,7 @@ namespace Braphia.Laboratory.Controllers
 
             try
             {
-                var test = await _testRepository.GetByIdAsync(id);
+                var test = await _testRepository.GetTestByIdAsync(id);
                 if (test == null)
                 {
                     _logger.LogInformation("Test with ID {Id} not found", id);
@@ -87,9 +87,7 @@ namespace Braphia.Laboratory.Controllers
                 test.CompletedDate = null;
                 test.Result = null;
 
-                _logger.LogInformation("Received test data no date res: {TestData}", test);
-
-                await _testRepository.AddAsync(test);
+                await _testRepository.AddTestAsync(test);
                 _logger.LogInformation("Test created successfully with ID {Id}", test.Id);
                 return CreatedAtAction(nameof(CreateTest), new { id = test.Id }, test);
             }
@@ -112,7 +110,7 @@ namespace Braphia.Laboratory.Controllers
 
             try
             {
-                var test = await _testRepository.GetByIdAsync(id);
+                var test = await _testRepository.GetTestByIdAsync(id);
                 if (test == null)
                 {
                     _logger.LogWarning("Test with ID {Id} not found", id);
@@ -122,7 +120,7 @@ namespace Braphia.Laboratory.Controllers
                 test.CompletedDate = DateTime.UtcNow;
                 test.Result = result;
 
-                await _testRepository.UpdateAsync(test);
+                await _testRepository.UpdateTestAsync(test);
                 _logger.LogInformation("Test with ID {Id} completed successfully", id);
 
                 // Stuur TestCompletedEvent
@@ -147,7 +145,7 @@ namespace Braphia.Laboratory.Controllers
 
         [HttpPut("{id}", Name = "UpdateTestStatus")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Test test)
+        public async Task<IActionResult> Put(int id, [FromBody] Test test)
         {
             if (test == null || test.Id != id)
             {
