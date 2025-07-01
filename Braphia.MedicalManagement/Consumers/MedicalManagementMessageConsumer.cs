@@ -189,7 +189,6 @@ namespace Braphia.MedicalManagement.Consumers
             }
         }
 
-
         private async Task PhysicianRegistered(Message message)
         {
             try
