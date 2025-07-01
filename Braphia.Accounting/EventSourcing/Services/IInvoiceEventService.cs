@@ -8,6 +8,7 @@ namespace Braphia.Accounting.EventSourcing.Services
         Task<bool> ProcessPaymentAsync(int invoiceAggregateId, int insurerId, decimal paymentAmount, string paymentReference);
         Task<InvoiceAggregate?> GetInvoiceAsync(int invoiceAggregateId);
         Task<IEnumerable<InvoiceAggregate>> GetInvoicesByInsurerAsync(int insurerId);
+        Task<IEnumerable<BaseEvent>> GetPaymentEventsByInvoiceIdAsync(int invoiceAggregateId);
         Task<IEnumerable<InvoiceAggregate>> GetAllInvoicesAsync();
         Task<IEnumerable<InvoiceAggregate>> GetInvoicesByPatientIdAsync(int patientId);
     }

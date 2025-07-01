@@ -125,6 +125,27 @@ namespace Braphia.Accounting.EventSourcing.Services
             }
         }
 
+        public async Task<IEnumerable<BaseEvent>> GetPaymentEventsByInvoiceIdAsync(int invoiceAggregateId)
+        {
+            if (invoiceAggregateId <= 0)
+                throw new ArgumentException("Invoice ID must be positive", nameof(invoiceAggregateId));
+
+            try
+            {
+                var allEvents = await _eventStoreRepository.GetEventsByAggregateIdAsync(invoiceAggregateId);
+                
+                // Filter to get only PaymentReceivedEvent instances
+                var paymentEvents = allEvents.Where(e => e is PaymentReceivedEvent).ToList();
+                
+                return paymentEvents;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting payment events for invoice {InvoiceId}", invoiceAggregateId);
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<InvoiceAggregate>> GetAllInvoicesAsync()
         {
             try

@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Braphia.Accounting.Converters
+namespace Braphia.Laboratory.Converters
 {
     public class DecimalJsonConverter : JsonConverter<decimal>
     {
@@ -12,6 +12,7 @@ namespace Braphia.Accounting.Converters
             {
                 string? stringValue = reader.GetString();
                 
+                // Use InvariantCulture to ensure consistent decimal parsing
                 if (stringValue != null && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Any, 
                     System.Globalization.CultureInfo.InvariantCulture, out var value))
                 {

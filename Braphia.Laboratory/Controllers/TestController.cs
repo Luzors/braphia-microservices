@@ -1,10 +1,12 @@
 ﻿using Braphia.Laboratory.Events;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Braphia.Laboratory.Converters;
 using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Braphia.Laboratory.Controllers
 {
@@ -125,10 +127,19 @@ namespace Braphia.Laboratory.Controllers
                 await _testRepository.UpdateAsync(test);
                 _logger.LogInformation("Test with ID {Id} completed successfully", id);
 
+                var testEvent = new TestCompletedEvent(test);
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    Converters = { new DecimalJsonConverter() }
+                };
+                
+                var json = JsonSerializer.Serialize(testEvent, serializerOptions);
+                _logger.LogInformation("Serialized event: {Json}", json);
+                
                 // Stuur TestCompletedEvent
                 await _publishEndpoint.Publish(new Message(
                     messageType: "TestCompleted",
-                    data: new TestCompletedEvent(test)
+                    data: testEvent
                 ));
 
                 return Ok(test);
