@@ -26,18 +26,16 @@ namespace Braphia.Accounting.Database
                 .WithMany()
                 .HasForeignKey(p => p.InsurerId)
                 .OnDelete(DeleteBehavior.SetNull);
-            // Invoice - Insurer relationship (many invoices to one insurer)
-            modelBuilder.Entity<Invoice>()
-                .HasOne(i => i.Insurer)
-                .WithMany(ins => ins.Invoices)
-                .HasForeignKey(i => i.InsurerId)
-                .OnDelete(DeleteBehavior.Restrict);
             // Test - Patient relationship (many tests to one patient)
             modelBuilder.Entity<Test>()
                 .HasOne(t => t.Patient)
                 .WithMany()
                 .HasForeignKey(t => t.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Decimal precision for Test Cost
+            modelBuilder.Entity<Test>()
+                .Property(t => t.Cost)
+                .HasPrecision(18, 2);
         }
     }
 }

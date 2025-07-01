@@ -1,6 +1,7 @@
 ﻿using Braphia.MedicalManagement.Database;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.MedicalManagement.Repositories
@@ -19,7 +20,7 @@ namespace Braphia.MedicalManagement.Repositories
             if (patient == null)
                 throw new ArgumentNullException(nameof(patient), "Patient cannot be null.");
             await _context.Patient.AddAsync(patient);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesWithIdentityInsertAsync();
             return true;
         }
 

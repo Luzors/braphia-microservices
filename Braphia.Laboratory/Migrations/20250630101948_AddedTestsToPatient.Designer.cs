@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.Laboratory.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250627140531_UpdateAppointmentModel")]
-    partial class UpdateAppointmentModel
+    [Migration("20250630101948_AddedTestsToPatient")]
+    partial class AddedTestsToPatient
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,7 +41,7 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointment");
                 });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.CentralLaboratory", b =>
@@ -70,7 +70,39 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CentralLaboratories");
+                    b.ToTable("CentralLaboratory");
+                });
+
+            modelBuilder.Entity("Braphia.Laboratory.Models.Patient", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RootId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patient");
                 });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.Test", b =>
@@ -85,6 +117,7 @@ namespace Braphia.Laboratory.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
@@ -102,7 +135,23 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tests");
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Test");
+                });
+
+            modelBuilder.Entity("Braphia.Laboratory.Models.Test", b =>
+                {
+                    b.HasOne("Braphia.Laboratory.Models.Patient", null)
+                        .WithMany("Tests")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Braphia.Laboratory.Models.Patient", b =>
+                {
+                    b.Navigation("Tests");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Braphia.Accounting.Enums;
+using Braphia.MedicalManagement.Enums;
 
 namespace Braphia.MedicalManagement.Models;
 
@@ -7,9 +7,9 @@ public class Test
 {
     public Test() { }
 
-    public Test(int rootId, int patientId, TestType testType, string description, decimal cost, DateTime completedDate, int medicalAnalysisId)
+    public Test(int id, int patientId, TestType testType, string description, decimal cost, DateTime completedDate, int medicalAnalysisId)
     {
-        RootId = rootId;
+        Id = id;
         PatientId = patientId;
         TestType = testType;
         Description = description;
@@ -20,8 +20,6 @@ public class Test
 
     [Key]
     public int Id { get; set; }
-
-    public int RootId { get; set; }
 
     public int PatientId { get; set; }
     public Patient? Patient { get; set; }

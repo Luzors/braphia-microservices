@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Braphia.MedicalManagement.Models
@@ -7,15 +6,14 @@ namespace Braphia.MedicalManagement.Models
     {
         public Appointment() { }
 
-        public Appointment(int rootId, DateTime dateTime)
+        public Appointment(int id, DateTime dateTime)
         {
-            RootId = rootId;
+            Id = id;
             DateTime = dateTime;
         }
 
         [Key]
         public int Id { get; set; }
-        public int RootId { get; set; }
         public DateTime DateTime { get; set; }
     }
 }
