@@ -22,11 +22,11 @@ namespace Braphia.AppointmentManagement.Consumers
         public async Task Consume(ConsumeContext<Message> context)
         {
             _logger.LogInformation(
-                JsonSerializer.Serialize(context.Message));           
+                JsonSerializer.Serialize(context.Message));
             var type = context.Message.MessageType;
             var data = context.Message.Data.ToString() ?? string.Empty;
 
-            switch(type)
+            switch (type)
             {
                 case "AppointmentCreated":
                     _logger.LogInformation("AppointmentCreated");
@@ -59,6 +59,11 @@ namespace Braphia.AppointmentManagement.Consumers
                 case "ScheduledFollowUpAppointment":
                     var followUpEvent = JsonSerializer.Deserialize<ScheduledFollowUpAppointmentEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleFollowUpAppointment(followUpEvent);
+                    break;
+
+                case "PreAppointmentQuestionairFilledIn":
+                    var preQuestionnaireEvent = JsonSerializer.Deserialize<PreAppointmentQuestionairFilledInEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    await HandlePreQuestionaireFilledIn(preQuestionnaireEvent);
                     break;
                 default:
                     _logger.LogWarning("Unhandled message type: {MessageType}", type);
@@ -96,7 +101,8 @@ namespace Braphia.AppointmentManagement.Consumers
                 ReferralDate = evt.ReferralDate,
                 ReferralReason = evt.ReferralReason,
                 State = evt.State,
-                ScheduledTime = evt.ScheduledTime
+                ScheduledTime = evt.ScheduledTime,
+                PreAppointmentQuestionnaire = evt.PreAppointmentQuestionnaire ?? string.Empty
             };
 
             await _readRepo.AddAppointmentAsync(viewModel);
@@ -185,8 +191,26 @@ namespace Braphia.AppointmentManagement.Consumers
                 ScheduledTime = evt.ScheduledTime
             };
 
-            await _readRepo.AddFollowUpAppointment( viewModel, evt.OriginalAppointmentId);
+            await _readRepo.AddFollowUpAppointment(viewModel, evt.OriginalAppointmentId);
+        }
+
+        private async Task HandlePreQuestionaireFilledIn(PreAppointmentQuestionairFilledInEvent? evt)
+        {
+            if (evt == null)
+            {
+                _logger.LogWarning("Received null PreAppointmentQuestionairFilledInEvent.");
+                return;
+            }
+            var appointment = await _readRepo.GetAppointmentByIdAsync(evt.AppointmentId);
+            if (appointment == null)
+            {
+                _logger.LogWarning("No appointment found for ID {AppointmentId}", evt.AppointmentId);
+                return;
+            }
+            appointment.IsPreAppointmentQuestionnaireFilled = true;
+            appointment.PreAppointmentQuestionnaire = evt.answers;
+            await _readRepo.UpdateAppointmentAsync(appointment);
+            _logger.LogInformation("Updated Pre-Appointment Questionnaire for Appointment ID {AppointmentId}", evt.AppointmentId);
         }
     }
-
 }

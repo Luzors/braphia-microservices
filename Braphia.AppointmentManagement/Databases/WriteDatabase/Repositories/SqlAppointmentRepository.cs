@@ -40,19 +40,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingAppointment.ScheduledTime = appointment.ScheduledTime;
             existingAppointment.state = appointment.state;
             existingAppointment.ReferralId = appointment.ReferralId;
-            Console.WriteLine(existingAppointment.PreAppointmentQuestionnaire);
+            existingAppointment.IsPreAppointmentQuestionnaireFilled = appointment.IsPreAppointmentQuestionnaireFilled;
             if (appointment.PreAppointmentQuestionnaire != null)
             {
-                Console.WriteLine("Inside if");
                 existingAppointment.PreAppointmentQuestionnaire = appointment.PreAppointmentQuestionnaire;
             }
-            Console.WriteLine(existingAppointment.PreAppointmentQuestionnaire);
-
-            foreach(var questions in appointment.PreAppointmentQuestionnaire)
-            {
-                Console.WriteLine($"Question: {questions}");
-            }
-
 
             _context.Appointments.Update(existingAppointment);
             var succes = await _context.SaveChangesAsync() > 0;

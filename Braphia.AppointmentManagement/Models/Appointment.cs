@@ -21,6 +21,8 @@ namespace Braphia.AppointmentManagement.Models
 
         public AppointmentStateEnum state { get; set; }
         public int? FollowUpAppointmentId { get; set; }
+
+        public bool IsPreAppointmentQuestionnaireFilled { get; set; } = false;
         public string? PreAppointmentQuestionnaire { get; set; }
 
 
@@ -82,6 +84,11 @@ namespace Braphia.AppointmentManagement.Models
            var  questionnaireAnswers = string.Join(";", DefaultQuestionnaire.Select(q => $"{q.Question}:{q.Answer}"));
 
             PreAppointmentQuestionnaire = questionnaireAnswers;
+        }
+
+        public void PreAppointmentQuestionnaireFilled()
+        {
+            IsPreAppointmentQuestionnaireFilled = true;
         }
     }
 }

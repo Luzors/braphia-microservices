@@ -13,8 +13,8 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interf
         Task<IEnumerable<AppointmentViewQueryModel>> GetAppointmentsByPatientIdAsync(int patientId);
         Task<IEnumerable<AppointmentViewQueryModel>> GetAppointmentsByPhysicianIdAsync(int physicianId);
         Task<IEnumerable<AppointmentViewQueryModel>> GetAppointmentsOfTodayAsync();
-
         Task<bool> UserIdChecked(int userId);
+        Task<IEnumerable<string>> GetQuestionareAsync (int appointmentId);
 
     }
 }

@@ -13,6 +13,7 @@ using Braphia.AppointmentManagement.Query.GetAllAppointments;
 using Braphia.AppointmentManagement.Query.GetAppointmentById;
 using Braphia.AppointmentManagement.Query.GetAppointmentIdChecked;
 using Braphia.AppointmentManagement.Query.GetAppointmentsByPatient;
+using Braphia.AppointmentManagement.Query.GetQuestionaireByAppointment;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -221,36 +222,27 @@ namespace Braphia.AppointmentManagement.Controllers
             if (appointment == null)
                 return NotFound($"Appointment with ID {appointmentId} not found.");
 
-            if (appointment.PreAppointmentQuestionnaire == null)
-                appointment.SetPreAppointmentQuestionnaire(); // default vragenlijst
-
-            var questionnaire = appointment.PreAppointmentQuestionnaire;
-               
-
-            await _appointmentRepository.UpdateAppointmentAsync(appointment);
-
-            return Ok(questionnaire);
+            var questionaire = await _mediator.Send(new GetQuestionaireByAppointmentQuery(appointmentId));
+            if(appointment.IsPreAppointmentQuestionnaireFilled == false)
+            {
+                if (questionaire != null && questionaire.Any())
+                {
+                    var questionnaireString = string.Join(";", questionaire);
+                    return Ok(questionnaireString);
+                }
+                else
+                {
+                    return NotFound($"No questionnaire found for appointment with ID {appointmentId}.");
+                }
+            }
+            return questionaire != null ? Ok(questionaire) : NotFound($"No questionnaire found for appointment with ID {appointmentId}.");
         }
 
-        [HttpPost("{appointmentId}/questionnaire")]
+        [HttpPost("questionnaire")]
         public async Task<IActionResult> SubmitPreAppointmentQuestionnaire([FromBody] QuestionnaireAnsweredCommand command)
         {
-            if (command.AppointmentId != command.AppointmentId)
-                return BadRequest("Appointment ID mismatch.");
-
-            var appointment = await _appointmentRepository.GetAppointmentByIdAsync(command.AppointmentId);
-            if (appointment == null)
-                return NotFound($"Appointment with ID {command.AppointmentId} not found.");
-
-            if (appointment.PreAppointmentQuestionnaire == null)
-                return BadRequest("Questionnaire has not been initialized for this appointment.");
-
-            appointment.PreAppointmentQuestionnaire = command.Answers;
-
-            // Hier gebruik je de bestaande update
-            await _appointmentRepository.UpdateAppointmentAsync(appointment);
-
-            return Ok("Questionnaire submitted successfully.");
+            var appointmentId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
         }
 
 
