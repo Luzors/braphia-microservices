@@ -2,6 +2,7 @@ using Braphia.Laboratory.Events;
 using Braphia.Laboratory.Events.Appointments;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Braphia.Laboratory.Events.Test;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
@@ -11,12 +12,15 @@ namespace Braphia.Laboratory.Consumers
     public class LaboratoryMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
+
+        private readonly ITestRepository _testRepository;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly ILogger<LaboratoryMessageConsumer> _logger;
 
-        public LaboratoryMessageConsumer(IPatientRepository patientRepository, IAppointmentRepository appointmentRepository, ILogger<LaboratoryMessageConsumer> logger)
+        public LaboratoryMessageConsumer(IPatientRepository patientRepository, IAppointmentRepository appointmentRepository, ITestRepository testRepository, ILogger<LaboratoryMessageConsumer> logger)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -83,6 +87,9 @@ namespace Braphia.Laboratory.Consumers
             else if (message.MessageType == "AppointmentModified")
             {
                 await AppointmentModified(message);
+            } else if (message.MessageType == "TestRequested")
+            {
+                await TestRequested(message);
             }
             else
             {
@@ -216,6 +223,38 @@ namespace Braphia.Laboratory.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+            }
+        }
+
+        private async Task<bool> TestRequested(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestRequested event with ID: {MessageId}", message.MessageId);
+                var testEvent = JsonSerializer.Deserialize<TestRequestedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                if (testEvent != null)
+                {
+                    _logger.LogInformation("Deserialized test data: ID={TestId}",
+                        testEvent.Test.Id);
+
+                    await _testRepository.AddTestAsync(testEvent.Test);
+
+                    return true;
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestRequestedEvent from message data: {Data}", message.Data.ToString());
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestRequested event: {MessageId}", message.MessageId);
+                return false;
             }
         }
     }
