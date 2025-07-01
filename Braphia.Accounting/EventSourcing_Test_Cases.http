@@ -1,0 +1,195 @@
+### Event Sourcing Test Cases for Braphia.Accounting
+### Make sure the application is running first: dotnet run
+
+@baseUrl = https://localhost:7001
+# Adjust the port if needed - check the console output when you run dotnet run
+
+### Step 1: First, let's create some test data
+### We need to create a patient and an insurer first
+
+### Step 2: Create an Invoice using Event Sourcing
+POST {{baseUrl}}/api/InvoiceEvent/invoice
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "insurerId": 1,
+  "labTestId": 1,
+  "amount": 150.50,
+  "description": "Blood Test - Complete Blood Count"
+}
+
+###
+
+### Step 3: Process a Partial Payment
+POST {{baseUrl}}/api/InvoiceEvent/{{invoiceAggregateId}}/payment
+Content-Type: application/json
+
+{
+  "insurerId": 1,
+  "paymentAmount": 100.00,
+  "paymentReference": "Payment-001-Partial"
+}
+
+### Replace {{invoiceAggregateId}} with the actual GUID returned from Step 2
+
+###
+
+### Step 4: Process Final Payment (This should trigger InvoiceFullyPaid event)
+POST {{baseUrl}}/api/InvoiceEvent/{{invoiceAggregateId}}/payment
+Content-Type: application/json
+
+{
+  "insurerId": 1,
+  "paymentAmount": 50.50,
+  "paymentReference": "Payment-002-Final"
+}
+
+###
+
+### Step 5: Test Patient-Insurer Event Tracking
+
+### Get all event history for a patient
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/history
+
+###
+
+### Get event history for specific patient-insurer combination
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/history?insurerId=1
+
+###
+
+### Get all invoices for a patient
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/invoices
+
+###
+
+### Get invoices for specific patient-insurer combination
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/invoices?insurerId=1
+
+###
+
+### Get patient-insurer summary
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/insurer/1/summary
+
+###
+
+### Get raw events for a patient
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/events
+
+###
+
+### Get raw events for specific patient-insurer combination
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/events?insurerId=1
+
+###
+
+### Step 6: Test Existing Invoice Event Controller
+
+### Get insurer outstanding balance
+GET {{baseUrl}}/api/InvoiceEvent/insurer/1/outstanding
+
+###
+
+### Get all invoices for an insurer
+GET {{baseUrl}}/api/InvoiceEvent/insurer/1/invoices
+
+###
+
+### Get only outstanding invoices for an insurer
+GET {{baseUrl}}/api/InvoiceEvent/insurer/1/invoices?onlyOutstanding=true
+
+###
+
+### Step 7: Create Multiple Test Scenarios
+
+### Create second invoice for same patient-insurer
+POST {{baseUrl}}/api/InvoiceEvent/invoice
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "insurerId": 1,
+  "labTestId": 2,
+  "amount": 75.25,
+  "description": "Urine Test - Urinalysis"
+}
+
+###
+
+### Create invoice for different insurer
+POST {{baseUrl}}/api/InvoiceEvent/invoice
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "insurerId": 2,
+  "labTestId": 3,
+  "amount": 200.00,
+  "description": "X-Ray - Chest"
+}
+
+###
+
+### Create invoice for different patient
+POST {{baseUrl}}/api/InvoiceEvent/invoice
+Content-Type: application/json
+
+{
+  "patientId": 2,
+  "insurerId": 1,
+  "labTestId": 4,
+  "amount": 120.75,
+  "description": "MRI - Brain Scan"
+}
+
+###
+
+### Step 8: Verify Event Sourcing Works
+### After creating multiple invoices and payments, check:
+
+### 1. Patient 1 should have events from multiple insurers
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/history
+
+###
+
+### 2. Patient 1 with Insurer 1 should show aggregated totals
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/insurer/1/summary
+
+###
+
+### 3. Patient 1 with Insurer 2 should show separate totals
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/insurer/2/summary
+
+###
+
+### 4. Check raw events show proper ordering
+GET {{baseUrl}}/api/PatientInsurerEvent/patient/1/events
+
+###
+
+### Step 9: Error Testing
+
+### Try payment with wrong insurer (should fail)
+POST {{baseUrl}}/api/InvoiceEvent/{{invoiceAggregateId}}/payment
+Content-Type: application/json
+
+{
+  "insurerId": 999,
+  "paymentAmount": 50.00,
+  "paymentReference": "Should-Fail"
+}
+
+###
+
+### Try overpayment (should fail)
+POST {{baseUrl}}/api/InvoiceEvent/{{invoiceAggregateId}}/payment
+Content-Type: application/json
+
+{
+  "insurerId": 1,
+  "paymentAmount": 999999.00,
+  "paymentReference": "Overpayment-Should-Fail"
+}
+
+### 
