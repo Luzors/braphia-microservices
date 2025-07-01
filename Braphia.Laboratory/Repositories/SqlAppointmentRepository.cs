@@ -1,6 +1,7 @@
 ﻿using Braphia.Laboratory.Database;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.Laboratory.Repositories
@@ -19,7 +20,7 @@ namespace Braphia.Laboratory.Repositories
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
             await _context.Appointment.AddAsync(appointment);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesWithIdentityInsertAsync();
             return true;
         }
 
@@ -41,9 +42,8 @@ namespace Braphia.Laboratory.Repositories
             var existing = await _context.Appointment.FindAsync(appointment.Id);
             if (existing == null)
                 throw new ArgumentException($"Appointment with ID {appointment.Id} not found.");
-            existing.AppointmentDate = appointment.AppointmentDate;
-            existing.PatientId = appointment.PatientId;
-            await _context.SaveChangesAsync();
+            _context.Appointment.Update(appointment);
+            await _context.SaveChangesWithIdentityInsertAsync();
             return true;
         }
     }
