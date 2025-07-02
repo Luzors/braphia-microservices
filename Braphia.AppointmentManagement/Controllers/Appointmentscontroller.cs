@@ -25,22 +25,35 @@ namespace Braphia.AppointmentManagement.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ReadDbContext _readDb;
+        private readonly IReferralRepository _referralRepository;
         private readonly IAppointmentRepository _appointmentRepository;
 
 
 
 
-        public AppointmentsController(IMediator mediator, ReadDbContext readDb, IAppointmentRepository appointmentRepository)
+        public AppointmentsController(IMediator mediator, ReadDbContext readDb, IAppointmentRepository appointmentRepository, IReferralRepository referralRepository)
         {
-            _mediator = mediator;
-            _readDb = readDb;
-            _appointmentRepository = appointmentRepository;
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _readDb = readDb ?? throw new ArgumentNullException(nameof(readDb));
+            _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
+            _referralRepository = referralRepository ?? throw new ArgumentNullException(nameof(referralRepository));
         }
 
         // POST: api/appointments
         [HttpPost]
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentScheduledCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest("Command cannot be null.");
+            }
+            var referral = await _referralRepository.GetReferralByIdAsync(command.ReferralId);
+
+            if (command.PatientId != referral.PatientId)
+            {
+                return BadRequest("Patient ID in command does not match the referral's patient ID.");
+            }
+            
             //Mediator will handle the command and publish the event
             //Will send the command to the matching handler
             var appointmentId = await _mediator.Send(command);
