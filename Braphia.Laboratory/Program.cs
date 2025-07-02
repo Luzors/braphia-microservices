@@ -42,7 +42,6 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
-builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 
 

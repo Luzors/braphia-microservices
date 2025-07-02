@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.Laboratory.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250630083106_init")]
-    partial class init
+    [Migration("20250702135743_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,25 +24,6 @@ namespace Braphia.Laboratory.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Braphia.Laboratory.Models.Appointment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Appointment");
-                });
 
             modelBuilder.Entity("Braphia.Laboratory.Models.CentralLaboratory", b =>
                 {
@@ -97,9 +78,6 @@ namespace Braphia.Laboratory.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RootId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Patient");
@@ -135,7 +113,23 @@ namespace Braphia.Laboratory.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PatientId");
+
                     b.ToTable("Test");
+                });
+
+            modelBuilder.Entity("Braphia.Laboratory.Models.Test", b =>
+                {
+                    b.HasOne("Braphia.Laboratory.Models.Patient", null)
+                        .WithMany("Tests")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Braphia.Laboratory.Models.Patient", b =>
+                {
+                    b.Navigation("Tests");
                 });
 #pragma warning restore 612, 618
         }

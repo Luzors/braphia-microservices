@@ -6,25 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Braphia.Laboratory.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Appointment",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PatientId = table.Column<int>(type: "int", nullable: false),
-                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Appointment", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "CentralLaboratory",
                 columns: table => new
@@ -47,7 +33,6 @@ namespace Braphia.Laboratory.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RootId = table.Column<int>(type: "int", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -74,23 +59,31 @@ namespace Braphia.Laboratory.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Test", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Test_Patient_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patient",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Test_PatientId",
+                table: "Test",
+                column: "PatientId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Appointment");
-
-            migrationBuilder.DropTable(
                 name: "CentralLaboratory");
 
             migrationBuilder.DropTable(
-                name: "Patient");
+                name: "Test");
 
             migrationBuilder.DropTable(
-                name: "Test");
+                name: "Patient");
         }
     }
 }

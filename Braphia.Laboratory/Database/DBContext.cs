@@ -6,8 +6,6 @@ namespace Braphia.Laboratory.Database
     public class DBContext : DbContext
     {
         public DBContext(DbContextOptions<DBContext> options) : base(options) { }
-
-        public DbSet<Appointment> Appointment { get; set; }
         public DbSet<CentralLaboratory> CentralLaboratory { get; set; }
         public DbSet<Test> Test { get; set; }
         public DbSet<Patient> Patient { get; set; }
