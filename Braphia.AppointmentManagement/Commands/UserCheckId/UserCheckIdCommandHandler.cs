@@ -12,18 +12,22 @@ namespace Braphia.AppointmentManagement.Commands.UserCheckId
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPatientRepository _patientRepository;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ISendEndpointProvider _sendEndpointProvider;
 
         public UserCheckIdCommandHandler(
             IAppointmentRepository appointmentRepository,
             IPatientRepository patientRepository,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            ISendEndpointProvider sendEndpointProvider)
         {
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository), "Appointment repository cannot be null.");
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository), "Patient repository cannot be null.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint), "Publish endpoint cannot be null.");
+            _sendEndpointProvider = sendEndpointProvider;
         }
         public async Task<int> Handle(UserCheckIdCommand request, CancellationToken cancellationToken)
         {
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("queue:internal-event-queue"));
             Console.WriteLine($"Checking ID for user with ID: {request.UserId}");
             if (request == null)
             {
@@ -42,14 +46,14 @@ namespace Braphia.AppointmentManagement.Commands.UserCheckId
                 throw new InvalidOperationException($"Failed to set ID checked for user with ID {request.UserId}.");
             }
 
-            var @event = new UserCheckIdEvent
+            var @event = new InternalUserCheckIdEvent
             {
                 UserId = request.UserId,
             };
 
             var message = new Message(@event);
 
-            await _publishEndpoint.Publish(message, cancellationToken);
+            await sendEndpoint.Send(message, cancellationToken);
 
             return request.UserId; // Return true to indicate the operation was successful
 

@@ -13,6 +13,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPatientRepository _patientRepository;
         private readonly IPhysicianRepository _physicianRepository;
+        private readonly ISendEndpointProvider _sendEndpoint;
         private readonly IReceptionistRepository _receptionistRepository;
         private readonly IReferralRepository _referralRepository;
         private readonly IPublishEndpoint _publishEndpoint;
@@ -23,7 +24,8 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             IPhysicianRepository physicianRepository,
             IReceptionistRepository receptionistRepository,
             IReferralRepository referralRepository,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            ISendEndpointProvider sendEndpoint)
         {
             _appointmentRepository = appointmentRepository;
             _patientRepository = patientRepository;
@@ -31,10 +33,13 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             _receptionistRepository = receptionistRepository;
             _referralRepository = referralRepository;
             _publishEndpoint = publishEndpoint;
+            _sendEndpoint =  sendEndpoint;
         }
 
         public async Task<int> Handle(AppointmentFollowUpScheduledCommand request, CancellationToken cancellationToken)
         {
+            var SendEndpoint = await _sendEndpoint.GetSendEndpoint(new Uri("queue:internal-event-queue"));
+
             var OriginalAppointment = await _appointmentRepository.GetAppointmentByIdAsync(request.OriginalAppointmentId);
             if (OriginalAppointment == null)
                 throw new ArgumentException($"Original appointment with ID {request.OriginalAppointmentId} not found.");
@@ -67,7 +72,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 throw new ArgumentException($"Referral with ID not found.");
 
 
-            var @event = new ScheduledFollowUpAppointmentEvent
+            var @event = new InternalScheduledFollowUpAppointmentEvent
             {
                 OriginalAppointmentId = request.OriginalAppointmentId,
                 AppointmentId = followUpAppointment.Id,
@@ -93,7 +98,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             };
             
             var mes = new Message(@event);
-            await _publishEndpoint.Publish(mes);
+            await SendEndpoint.Send(mes , cancellationToken);
 
 
             return OriginalAppointment.Id;

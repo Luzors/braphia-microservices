@@ -51,8 +51,9 @@ builder.Services.AddHostedService<AppointmentReminderBackgroundService>();
 // MassTransit
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<AppointmentManagementConsumer>();
     x.AddConsumer<InternalEventConsumer>();
-    x.AddConsumer<MessageConsumer>();
+
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -61,6 +62,11 @@ builder.Services.AddMassTransit(x =>
         cfg.Host(rabbitMqConnection);
 
         cfg.ConfigureEndpoints(context);
+
+        cfg.ReceiveEndpoint("internal-event-queue", e =>
+        {
+            e.ConfigureConsumer<InternalEventConsumer>(context);
+        });
     });
 });
 
