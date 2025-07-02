@@ -45,7 +45,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
 
             await sendEndpoint.Send(message, cancellationToken);
 
-            //send PatientArrivedEvent to the bus
+            //send PatientArrivedEvent to the big bus 
             if (request.NewState == AppointmentStateEnum.STARTED)
             {
                 var patientArrivedEvent = new PatientArrivedEvent

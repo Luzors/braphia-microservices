@@ -46,6 +46,7 @@ builder.Services.AddScoped<IReceptionistRepository, SQLReceptionistRepository>()
 builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
 
 // Services
+//AddHostedService will run the service in the background
 builder.Services.AddHostedService<AppointmentReminderBackgroundService>();
 
 // MassTransit
@@ -63,6 +64,8 @@ builder.Services.AddMassTransit(x =>
 
         cfg.ConfigureEndpoints(context);
 
+        // Configure the AppointmentManagementConsumer to listen to the appointment-management-queue
+        //This queue will be separate from the normal event bus queue
         cfg.ReceiveEndpoint("internal-event-queue", e =>
         {
             e.ConfigureConsumer<InternalEventConsumer>(context);
