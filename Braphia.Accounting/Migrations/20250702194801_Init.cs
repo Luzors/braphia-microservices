@@ -29,7 +29,11 @@ namespace Braphia.Accounting.Migrations
                     PaymentReceivedEvent_InsurerId = table.Column<int>(type: "int", nullable: true),
                     PaymentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     PaymentReference = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AdjustmentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InvoiceAmountAdjustedEvent_InsurerId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

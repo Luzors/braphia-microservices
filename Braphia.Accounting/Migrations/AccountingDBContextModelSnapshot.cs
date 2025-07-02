@@ -193,6 +193,33 @@ namespace Braphia.Accounting.Migrations
                     b.HasDiscriminator().HasValue("PaymentReceived");
                 });
 
+            modelBuilder.Entity("Braphia.Accounting.Events.InvoiceAmountAdjustedEvent", b =>
+                {
+                    b.HasBaseType("Braphia.Accounting.EventSourcing.BaseEvent");
+
+                    b.Property<decimal>("AdjustmentAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("InsurerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Event", t =>
+                        {
+                            t.Property("InsurerId")
+                                .HasColumnName("InvoiceAmountAdjustedEvent_InsurerId");
+                        });
+
+                    b.HasDiscriminator().HasValue("InvoiceAmountAdjusted");
+                });
+
             modelBuilder.Entity("Braphia.Accounting.Models.Invoice", b =>
                 {
                     b.HasOne("Braphia.Accounting.Models.Insurer", null)

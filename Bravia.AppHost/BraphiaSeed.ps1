@@ -362,9 +362,59 @@ try {
             Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($invoice.Id)/payment" -Data $data -Method "POST"
         }
 
-        # 6. Pay one of the partially paid invoices again partially
+        # 6. Adjust invoice amount on one of the partially paid invoices and then make an additional partial payment
         if ($invoicesForPartialPayment.Count -gt 0) {
             $randomPartialInvoice = $invoicesForPartialPayment | Get-Random
+            
+            # First, make a negative invoice amount adjustment to demonstrate reduction functionality
+            $negativeAdjustmentPercentage = Get-Random -Minimum 5 -Maximum 16  # 5-15% of original amount
+            $negativeAdjustmentAmount = -[Math]::Round($randomPartialInvoice.TotalAmount * $negativeAdjustmentPercentage / 100, 2)
+            
+            $negativeAdjustmentReasons = @(
+                "Insurance review reduction", 
+                "Coverage limitation adjustment",
+                "Claim denial - partial",
+                "Network discount application",
+                "Contract rate correction"
+            )
+            $negativeAdjustmentReason = $negativeAdjustmentReasons | Get-Random
+            
+            $negativeAdjustmentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                AdjustmentAmount = $negativeAdjustmentAmount
+                Reason = $negativeAdjustmentReason
+                Reference = "NEG-ADJ-$(Get-Random -Maximum 9999)"
+            }
+            
+            Write-Host "Making negative adjustment of $negativeAdjustmentAmount for invoice $($randomPartialInvoice.Id). Reason: $negativeAdjustmentReason" -ForegroundColor Magenta
+            $negativeAdjustmentJson = $negativeAdjustmentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/adjustment" -Data $negativeAdjustmentJson -Method "POST"
+            
+            # Then make a positive invoice amount adjustment to demonstrate increase functionality
+            $positiveAdjustmentPercentage = Get-Random -Minimum 3 -Maximum 10  # 3-9% of original amount (smaller than negative)
+            $positiveAdjustmentAmount = [Math]::Round($randomPartialInvoice.TotalAmount * $positiveAdjustmentPercentage / 100, 2)
+            
+            $positiveAdjustmentReasons = @(
+                "Additional services discovered",
+                "Billing error correction",
+                "Prior authorization change",
+                "Clinical coding update",
+                "Service upgrade approved"
+            )
+            $positiveAdjustmentReason = $positiveAdjustmentReasons | Get-Random
+            
+            $positiveAdjustmentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                AdjustmentAmount = $positiveAdjustmentAmount
+                Reason = $positiveAdjustmentReason
+                Reference = "POS-ADJ-$(Get-Random -Maximum 9999)"
+            }
+            
+            Write-Host "Making positive adjustment of +$positiveAdjustmentAmount for invoice $($randomPartialInvoice.Id). Reason: $positiveAdjustmentReason" -ForegroundColor Cyan
+            $positiveAdjustmentJson = $positiveAdjustmentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/adjustment" -Data $positiveAdjustmentJson -Method "POST"
+            
+            # Then make an additional partial payment
             $additionalPartialPercentage = Get-Random -Minimum 10 -Maximum 21  # 10-20%
             $additionalPartialAmount = [Math]::Round($randomPartialInvoice.AmountOutstanding * $additionalPartialPercentage / 100, 2)
             

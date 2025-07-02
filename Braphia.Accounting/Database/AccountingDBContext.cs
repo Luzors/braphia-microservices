@@ -1,5 +1,6 @@
 using Braphia.Accounting.EventSourcing;
 using Braphia.Accounting.EventSourcing.Events;
+using Braphia.Accounting.Events;
 using Braphia.Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +35,8 @@ namespace Braphia.Accounting.Database
                 .ToTable("Event")
                 .HasDiscriminator<string>("EventType")
                 .HasValue<InvoiceCreatedEvent>("InvoiceCreated")
-                .HasValue<PaymentReceivedEvent>("PaymentReceived");
+                .HasValue<PaymentReceivedEvent>("PaymentReceived")
+                .HasValue<InvoiceAmountAdjustedEvent>("InvoiceAmountAdjusted");
         }
     }
 }

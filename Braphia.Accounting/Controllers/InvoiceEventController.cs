@@ -2,6 +2,7 @@ using Braphia.Accounting.EventSourcing;
 using Braphia.Accounting.EventSourcing.Aggregates;
 using Braphia.Accounting.EventSourcing.Events;
 using Braphia.Accounting.EventSourcing.Services;
+using Braphia.Accounting.Events;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Braphia.Accounting.Controllers
@@ -22,7 +23,7 @@ namespace Braphia.Accounting.Controllers
         }
         
         [HttpGet("{invoiceId}")]
-        [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(InvoiceEventHistoryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetInvoice(int invoiceId)
         {
@@ -40,11 +41,23 @@ namespace Braphia.Accounting.Controllers
                     return NotFound($"Invoice with ID {invoiceId} not found");
                 }
 
-                // Payments includen bij enkele invoice ophalen
-                var paymentEvents = await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoiceId);
-                var invoiceDto = await MapToDto(invoice, true, paymentEvents);
+                // Get all events for complete history
+                var allEvents = await _invoiceEventService.GetAllEventsByInvoiceIdAsync(invoiceId);
+                
+                var eventHistoryDto = new InvoiceEventHistoryDto
+                {
+                    InvoiceId = invoiceId,
+                    PatientId = invoice.PatientId,
+                    InsurerId = invoice.InsurerId,
+                    TotalAmount = invoice.TotalAmount,
+                    AmountPaid = invoice.AmountPaid,
+                    AmountOutstanding = invoice.AmountOutstanding,
+                    Description = invoice.Description,
+                    CreatedDate = invoice.CreatedDate,
+                    Events = allEvents.OrderBy(e => e.Version).Select(e => MapEventToDto(e)).ToList()
+                };
 
-                return Ok(invoiceDto);
+                return Ok(eventHistoryDto);
             }
             catch (Exception ex)
             {
@@ -91,11 +104,8 @@ namespace Braphia.Accounting.Controllers
                     return NotFound($"Invoice with ID {invoiceId} not found");
                 }
 
-                // Get payment events for this invoice
-                var paymentEvents = await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoiceId);
-                
-                // Create the DTO with payments included
-                var invoiceDto = await MapToDto(updatedInvoice, true, paymentEvents);
+                // Create the DTO without payments - just basic invoice info
+                var invoiceDto = MapToDto(updatedInvoice);
 
                 return Ok(invoiceDto);
             }
@@ -110,6 +120,82 @@ namespace Braphia.Accounting.Controllers
                 return StatusCode(500, "Internal server error while processing payment");
             }
         }
+
+        [HttpPost("{invoiceId}/adjustment")]
+        [ProducesResponseType(typeof(InvoiceEventHistoryDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AdjustInvoiceAmount(int invoiceId, [FromBody] InvoiceAmountAdjustmentRequest request)
+        {
+            if (invoiceId <= 0)
+            {
+                return BadRequest("Valid invoice ID is required");
+            }
+
+            if (request == null || request.AdjustmentAmount == 0)
+            {
+                return BadRequest("Valid adjustment amount is required (cannot be zero)");
+            }
+
+            if (request.InsurerId <= 0)
+            {
+                return BadRequest("Valid insurer ID is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Reason))
+            {
+                return BadRequest("Adjustment reason is required");
+            }
+
+            _logger.LogInformation("Adjusting invoice amount by {Amount:C} from insurer {InsurerId} for invoice {InvoiceId}. Reason: {Reason}",
+                request.AdjustmentAmount, request.InsurerId, invoiceId, request.Reason);
+
+            try
+            {
+                bool success = await _invoiceEventService.AdjustInvoiceAmountAsync(
+                    invoiceId,
+                    request.InsurerId,
+                    request.AdjustmentAmount,
+                    request.Reason,
+                    request.Reference ?? string.Empty);
+
+                var updatedInvoice = await _invoiceEventService.GetInvoiceAsync(invoiceId);
+                if (updatedInvoice == null)
+                {
+                    return NotFound($"Invoice with ID {invoiceId} not found");
+                }
+
+                // Get all events for complete history
+                var allEvents = await _invoiceEventService.GetAllEventsByInvoiceIdAsync(invoiceId);
+                
+                var eventHistoryDto = new InvoiceEventHistoryDto
+                {
+                    InvoiceId = invoiceId,
+                    PatientId = updatedInvoice.PatientId,
+                    InsurerId = updatedInvoice.InsurerId,
+                    TotalAmount = updatedInvoice.TotalAmount,
+                    AmountPaid = updatedInvoice.AmountPaid,
+                    AmountOutstanding = updatedInvoice.AmountOutstanding,
+                    Description = updatedInvoice.Description,
+                    CreatedDate = updatedInvoice.CreatedDate,
+                    Events = allEvents.OrderBy(e => e.Version).Select(e => MapEventToDto(e)).ToList()
+                };
+
+                return Ok(eventHistoryDto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid adjustment operation for invoice {InvoiceId}", invoiceId);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adjusting invoice amount for invoice {InvoiceId}", invoiceId);
+                return StatusCode(500, "Internal server error while adjusting invoice amount");
+            }
+        }
+
+
 
         [HttpGet("insurer/{insurerId}/invoices")]
         [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), StatusCodes.Status200OK)]
@@ -129,7 +215,7 @@ namespace Braphia.Accounting.Controllers
                 var invoiceDtos = new List<InvoiceDto>();
                 foreach (var invoice in invoices)
                 {
-                    invoiceDtos.Add(await MapToDto(invoice, false));
+                    invoiceDtos.Add(MapToDto(invoice));
                 }
                 
                 return Ok(new 
@@ -158,7 +244,7 @@ namespace Braphia.Accounting.Controllers
                 var invoiceDtos = new List<InvoiceDto>();
                 foreach (var invoice in invoices)
                 {
-                    invoiceDtos.Add(await MapToDto(invoice, false));
+                    invoiceDtos.Add(MapToDto(invoice));
                 }
                 
                 return Ok(invoiceDtos);
@@ -187,7 +273,7 @@ namespace Braphia.Accounting.Controllers
                 var invoiceDtos = new List<InvoiceDto>();
                 foreach (var invoice in invoices)
                 {
-                    invoiceDtos.Add(await MapToDto(invoice, false));
+                    invoiceDtos.Add(MapToDto(invoice));
                 }
                 
                 return Ok(invoiceDtos);
@@ -199,14 +285,13 @@ namespace Braphia.Accounting.Controllers
             }
         }
 
-        private async Task<InvoiceDto> MapToDto(InvoiceAggregate invoice, bool includePayments = false, IEnumerable<BaseEvent>? paymentEvents = null)
+        private InvoiceDto MapToDto(InvoiceAggregate invoice)
         {
             var dto = new InvoiceDto
             {
                 Id = invoice.Id,
                 PatientId = invoice.PatientId,
                 InsurerId = invoice.InsurerId,
-                LabTestId = invoice.LabTestId,
                 TotalAmount = invoice.TotalAmount,
                 AmountPaid = invoice.AmountPaid,
                 AmountOutstanding = invoice.AmountOutstanding,
@@ -215,28 +300,46 @@ namespace Braphia.Accounting.Controllers
                 IsFullyPaid = invoice.IsFullyPaid
             };
             
-            // Add payment details only if requested
-            if (includePayments)
-            {
-                // Fetch payment events if not provided
-                var payments = paymentEvents ?? await _invoiceEventService.GetPaymentEventsByInvoiceIdAsync(invoice.Id);
-                
-                foreach (var evt in payments)
-                {
-                    if (evt is PaymentReceivedEvent paymentEvent)
-                    {
-                        dto.Payments.Add(new PaymentDto
-                        {
-                            InsurerId = paymentEvent.InsurerId,
-                            PaymentAmount = paymentEvent.PaymentAmount,
-                            PaymentReference = paymentEvent.PaymentReference,
-                            PaymentDate = paymentEvent.PaymentDate
-                        });
-                    }
-                }
-            }
-            
             return dto;
+        }
+
+        private EventDto MapEventToDto(BaseEvent evt)
+        {
+            return evt switch
+            {
+                InvoiceCreatedEvent created => new EventDto
+                {
+                    EventType = "Invoice Created",
+                    Description = $"Invoice created for {created.Description}",
+                    Amount = created.Amount,
+                    Date = created.OccurredOn,
+                    Version = created.Version
+                },
+                PaymentReceivedEvent payment => new EventDto
+                {
+                    EventType = "Payment Received",
+                    Description = $"Payment from insurer {payment.InsurerId}: {payment.PaymentReference}",
+                    Amount = payment.PaymentAmount,
+                    Date = payment.PaymentDate,
+                    Version = payment.Version
+                },
+                InvoiceAmountAdjustedEvent adjustment => new EventDto
+                {
+                    EventType = "Invoice Amount Adjusted",
+                    Description = $"Amount adjusted by {adjustment.AdjustmentAmount:C}: {adjustment.Reason}",
+                    Amount = adjustment.AdjustmentAmount,
+                    Date = adjustment.OccurredOn,
+                    Version = adjustment.Version
+                },
+                _ => new EventDto
+                {
+                    EventType = "Unknown",
+                    Description = $"Unknown event type: {evt.GetType().Name}",
+                    Amount = 0,
+                    Date = evt.OccurredOn,
+                    Version = evt.Version
+                }
+            };
         }
     }
 
@@ -247,12 +350,45 @@ namespace Braphia.Accounting.Controllers
         public string? PaymentReference { get; set; }
     }
 
+    public class InvoiceAmountAdjustmentRequest
+    {
+        public int InsurerId { get; set; }
+        public decimal AdjustmentAmount { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public string? Reference { get; set; }
+    }
+
     public class PaymentDto
     {
         public int InsurerId { get; set; }
         public decimal PaymentAmount { get; set; }
         public string PaymentReference { get; set; } = string.Empty;
         public DateTime PaymentDate { get; set; }
+        public string EventType { get; set; } = string.Empty;
+        public string? ReversalReason { get; set; }
+        public string? OriginalPaymentReference { get; set; }
+    }
+
+    public class EventDto
+    {
+        public string EventType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public DateTime Date { get; set; }
+        public int Version { get; set; }
+    }
+
+    public class InvoiceEventHistoryDto
+    {
+        public int InvoiceId { get; set; }
+        public int PatientId { get; set; }
+        public int InsurerId { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal AmountPaid { get; set; }
+        public decimal AmountOutstanding { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public DateTime CreatedDate { get; set; }
+        public List<EventDto> Events { get; set; } = new List<EventDto>();
     }
 
     // Removed InvoiceCreationRequest and InvoiceCreationResult classes
@@ -263,7 +399,6 @@ namespace Braphia.Accounting.Controllers
         public int Id { get; set; }
         public int PatientId { get; set; }
         public int InsurerId { get; set; }
-        public int LabTestId { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal AmountPaid { get; set; }
         public decimal AmountOutstanding { get; set; }
@@ -271,5 +406,6 @@ namespace Braphia.Accounting.Controllers
         public DateTime CreatedDate { get; set; }
         public bool IsFullyPaid { get; set; }
         public List<PaymentDto> Payments { get; set; } = new List<PaymentDto>();
+        public List<EventDto> EventHistory { get; set; } = new List<EventDto>();
     }
 }

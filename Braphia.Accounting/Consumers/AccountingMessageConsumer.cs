@@ -104,8 +104,8 @@ namespace Braphia.Accounting.Consumers
 
                     if (labTestEvent != null)
                     {
-                        _logger.LogInformation("Deserialized lab test data: Id={Id} LabTestId={LabTestId}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
-                            labTestEvent.Test.Id, labTestEvent.Test.RootId, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
+                        _logger.LogInformation("Deserialized lab test data: Id={Id}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
+                            labTestEvent.Test.Id, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
 
                         // Find the patient in the accounting database
                         var patient = await _patientRepository.GetPatientByIdAsync(labTestEvent.Test.PatientId);

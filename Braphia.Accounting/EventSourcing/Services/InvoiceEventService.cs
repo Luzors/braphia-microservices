@@ -1,6 +1,7 @@
 using Braphia.Accounting.EventSourcing.Aggregates;
 using Braphia.Accounting.EventSourcing.Events;
 using Braphia.Accounting.EventSourcing.Repositories;
+using Braphia.Accounting.Events;
 
 namespace Braphia.Accounting.EventSourcing.Services
 {
@@ -134,14 +135,68 @@ namespace Braphia.Accounting.EventSourcing.Services
             {
                 var allEvents = await _eventStoreRepository.GetEventsByAggregateIdAsync(invoiceAggregateId);
                 
-                // Filter to get only PaymentReceivedEvent instances
-                var paymentEvents = allEvents.Where(e => e is PaymentReceivedEvent).ToList();
+                // Filter to get only PaymentReceivedEvent and InvoiceAmountAdjustedEvent instances
+                var paymentEvents = allEvents.Where(e => e is PaymentReceivedEvent || e is InvoiceAmountAdjustedEvent).ToList();
                 
                 return paymentEvents;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting payment events for invoice {InvoiceId}", invoiceAggregateId);
+                throw;
+            }
+        }
+
+        public async Task<bool> AdjustInvoiceAmountAsync(int invoiceAggregateId, int insurerId, decimal adjustmentAmount, string reason, string reference)
+        {
+            if (invoiceAggregateId <= 0)
+                throw new ArgumentException("Invoice ID must be positive", nameof(invoiceAggregateId));
+
+            if (insurerId <= 0)
+                throw new ArgumentException("Insurer ID must be positive", nameof(insurerId));
+
+            if (adjustmentAmount == 0)
+                throw new ArgumentException("Adjustment amount cannot be zero", nameof(adjustmentAmount));
+
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ArgumentException("Adjustment reason is required", nameof(reason));
+
+            try
+            {
+                var invoice = await _eventStoreRepository.GetAggregateAsync(invoiceAggregateId);
+                
+                if (invoice == null)
+                    throw new InvalidOperationException($"Invoice with ID {invoiceAggregateId} not found");
+
+                invoice.AdjustInvoiceAmount(insurerId, adjustmentAmount, reason, reference ?? string.Empty);
+                
+                await _eventStoreRepository.SaveEventsAsync(invoice.UncommittedEvents, invoice.Id);
+                invoice.MarkEventsAsCommitted(); // Clear the uncommitted events as they've been saved
+                
+                _logger.LogInformation("Adjusted invoice amount by {Amount:C} for invoice {InvoiceId} from insurer {InsurerId}. Reason: {Reason}",
+                    adjustmentAmount, invoiceAggregateId, insurerId, reason);
+                
+                return true;
+            }
+            catch (Exception ex) when (ex is not InvalidOperationException && ex is not ArgumentException)
+            {
+                _logger.LogError(ex, "Error adjusting invoice amount for invoice {InvoiceId}", invoiceAggregateId);
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<BaseEvent>> GetAllEventsByInvoiceIdAsync(int invoiceAggregateId)
+        {
+            if (invoiceAggregateId <= 0)
+                throw new ArgumentException("Invoice ID must be positive", nameof(invoiceAggregateId));
+
+            try
+            {
+                return await _eventStoreRepository.GetEventsByAggregateIdAsync(invoiceAggregateId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all events for invoice {InvoiceId}", invoiceAggregateId);
                 throw;
             }
         }
