@@ -221,13 +221,16 @@ Write-Host "Creating Laboratory Tests..." -ForegroundColor Yellow
 
 $labTests = @(
     @{ patientId = 1; testType = 0; description = "Complete Blood Count"; cost = 45.00; medicalAnalysisId = 1 },
+    @{ patientId = 1; testType = 1; description = "Urinalysis"; cost = 30.00; medicalAnalysisId = 2 },
+    @{ patientId = 1; testType = 2; description = "Biopsy of the skin"; cost = 25.00; medicalAnalysisId = 3 },
+    @{ patientId = 1; testType = 3; description = "Cultures"; cost = 65.00; medicalAnalysisId = 4 }, 
     @{ patientId = 2; testType = 1; description = "Urinalysis"; cost = 30.00; medicalAnalysisId = 2 },
-    @{ patientId = 3; testType = 2; description = "Chest X-ray"; cost = 120.00; medicalAnalysisId = 3 },
+    @{ patientId = 3; testType = 4; description = "Chest X-ray"; cost = 120.00; medicalAnalysisId = 3 },
     @{ patientId = 4; testType = 3; description = "Blood Glucose Test"; cost = 25.00; medicalAnalysisId = 4 },
-    @{ patientId = 5; testType = 4; description = "Cholesterol Panel"; cost = 55.00; medicalAnalysisId = 5 },
-    @{ patientId = 1; testType = 5; description = "Liver Function Test"; cost = 65.00; medicalAnalysisId = 1 },
-    @{ patientId = 2; testType = 6; description = "Creatinine Test"; cost = 40.00; medicalAnalysisId = 2 },
-    @{ patientId = 3; testType = 7; description = "MRI Scan"; cost = 350.00; medicalAnalysisId = 3 }
+    @{ patientId = 5; testType = 1; description = "Cholesterol Panel"; cost = 55.00; medicalAnalysisId = 5 },
+    @{ patientId = 1; testType = 5; description = "MRI Scan"; cost = 65.00; medicalAnalysisId = 1 },
+    @{ patientId = 2; testType = 6; description = "Ct of the liver"; cost = 40.00; medicalAnalysisId = 2 },
+    @{ patientId = 3; testType = 7; description = "Ultrasound of the heart"; cost = 350.00; medicalAnalysisId = 3 }
 )
 
 foreach ($test in $labTests) {
@@ -357,6 +360,22 @@ try {
             
             $data = $paymentData | ConvertTo-Json -Compress
             Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($invoice.Id)/payment" -Data $data -Method "POST"
+        }
+
+        # 6. Pay one of the partially paid invoices again partially
+        if ($invoicesForPartialPayment.Count -gt 0) {
+            $randomPartialInvoice = $invoicesForPartialPayment | Get-Random
+            $additionalPartialPercentage = Get-Random -Minimum 10 -Maximum 21  # 10-20%
+            $additionalPartialAmount = [Math]::Round($randomPartialInvoice.AmountOutstanding * $additionalPartialPercentage / 100, 2)
+            
+            $paymentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                PaymentAmount = $additionalPartialAmount
+                PaymentReference = "ADDITIONAL-PARTIAL-PAY-$(Get-Random -Maximum 9999)"
+            }
+            
+            $data = $paymentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/payment" -Data $data -Method "POST"
         }
         
         Write-Host "Payment processing completed!" -ForegroundColor Green

@@ -1,4 +1,3 @@
-using Braphia.MedicalManagement.Converters;
 using Braphia.MedicalManagement.Events.Appointments;
 using Braphia.MedicalManagement.Events.Patients;
 using Braphia.MedicalManagement.Events.Physicians;
@@ -513,17 +512,10 @@ namespace Braphia.MedicalManagement.Consumers
             try
             {
                 _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
-
-                var jsonData = message.Data.ToString() ?? string.Empty;
-                _logger.LogInformation("Message data: {Data}", jsonData);
-
-                var serializerOptions = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    Converters = { new DecimalJsonConverter() }
-                };
-
-                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(jsonData, serializerOptions);
+                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
 
                 if (testEvent != null)
                 {
@@ -557,8 +549,8 @@ namespace Braphia.MedicalManagement.Consumers
                 }
                 else
                 {
-                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", jsonData);
-                    throw new JsonException($"Failed to deserialize TestCompletedEvent from message data: {jsonData}");
+                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize TestCompletedEvent from message data.");
                 }
             }
             catch (Exception ex)

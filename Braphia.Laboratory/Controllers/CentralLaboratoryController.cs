@@ -1,6 +1,5 @@
 ﻿using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
-using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Braphia.Laboratory.Controllers

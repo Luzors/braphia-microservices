@@ -5,8 +5,8 @@ using Braphia.Laboratory.Events.Test;
 using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
-using Braphia.Laboratory.Converters;
 using Braphia.Laboratory.Events.Tests;
+using Braphia.Laboratory.Converters;
 
 namespace Braphia.Laboratory.Consumers
 {
@@ -101,20 +101,16 @@ namespace Braphia.Laboratory.Consumers
             try
             {
                 _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
-                // log the cost
-                var jsonData = message.Data.ToString() ?? string.Empty;
-                _logger.LogInformation("Message data: {Data}", jsonData);
-
                 var serializerOptions = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     Converters = { new DecimalJsonConverter() }
                 };
-
+                
                 var testEvent = JsonSerializer.Deserialize<TestRequestedEvent>(
-                        jsonData,
-                        serializerOptions
-                    );
+                    message.Data.ToString() ?? string.Empty,
+                    serializerOptions
+                );
 
                 if (testEvent != null)
                 {
@@ -148,20 +144,16 @@ namespace Braphia.Laboratory.Consumers
             try
             {
                 _logger.LogInformation("Received TestChanged event with ID: {MessageId}", message.MessageId);
-
-                var jsonData = message.Data.ToString() ?? string.Empty;
-                _logger.LogInformation("Message data: {Data}", jsonData);
-
                 var serializerOptions = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     Converters = { new DecimalJsonConverter() }
                 };
-
-                var testEvent = JsonSerializer.Deserialize<TestRequestedEvent>(
-                        jsonData,
-                        serializerOptions
-                    );
+                
+                var testEvent = JsonSerializer.Deserialize<TestChangedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    serializerOptions
+                );
 
                 if (testEvent != null)
                 {
@@ -215,19 +207,16 @@ namespace Braphia.Laboratory.Consumers
             try
             {
                 _logger.LogInformation("Received TestRemoved event with ID: {MessageId}", message.MessageId);
-                var jsonData = message.Data.ToString() ?? string.Empty;
-                _logger.LogInformation("Message data: {Data}", jsonData);
-
                 var serializerOptions = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     Converters = { new DecimalJsonConverter() }
                 };
-
+                
                 var testEvent = JsonSerializer.Deserialize<TestRemovedEvent>(
-                        jsonData,
-                        serializerOptions
-                    );
+                    message.Data.ToString() ?? string.Empty,
+                    serializerOptions
+                );
 
                 if (testEvent != null)
                 {
