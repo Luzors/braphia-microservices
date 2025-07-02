@@ -26,35 +26,35 @@ namespace Braphia.AppointmentManagement.Consumers
 
             switch (type)
             {
-                case "AppointmentScheduled":
+                case "InternalAppointmentScheduled":
 
                     var createdEvent = JsonSerializer.Deserialize<Events.InternalEvents.InternalAppointmentScheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleAppointmentScheduledAsync(createdEvent);
                     break;
 
-                case "AppointmentRescheduled":
+                case "InternalAppointmentRescheduled":
 
                     var rescheduledEvent = JsonSerializer.Deserialize<InternalAppointmentRescheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleAppointmentRescheduledAsync(rescheduledEvent);
                     break;
 
-                case "UserCheckId"
+                case "InternalUserCheckId"
                 :
                     var userCheck = JsonSerializer.Deserialize<InternalUserCheckIdEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleUserCheckId(userCheck);
                     break;
 
-                case "AppointmentStateChanged":
+                case "InternalAppointmentStateChanged":
                     var newState = JsonSerializer.Deserialize<InternalAppointmentStateChangedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleStateChange(newState);
                     break;
 
-                case "ScheduledFollowUpAppointment":
+                case "InternalScheduledFollowUpAppointment":
                     var followUpEvent = JsonSerializer.Deserialize<InternalScheduledFollowUpAppointmentEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleFollowUpAppointment(followUpEvent);
                     break;
 
-                case "PreAppointmentQuestionairFilledIn":
+                case "InternalPreAppointmentQuestionairFilledIn":
                     var preQuestionnaireEvent = JsonSerializer.Deserialize<InternalPreAppointmentQuestionairFilledInEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandlePreQuestionaireFilledIn(preQuestionnaireEvent);
                     break;
