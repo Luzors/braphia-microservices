@@ -69,9 +69,8 @@ public class AppointmentReminderBackgroundService : BackgroundService
             {
                 _logger.LogError(ex, "Error while publishing reminder events.");
             }
-            //check elke minuut
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-            //await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 }
