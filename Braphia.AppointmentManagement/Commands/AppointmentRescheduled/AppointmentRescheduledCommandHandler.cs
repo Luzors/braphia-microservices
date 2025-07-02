@@ -45,7 +45,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentRescheduled
             var mes = new Message(@event);
 
 
-            await _publishEndpoint.Publish(mes, cancellationToken);
+            await _publishEndpoint.Publish(mes);
 
             return appointment.Id;
 

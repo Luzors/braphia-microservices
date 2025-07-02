@@ -25,7 +25,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             await _context.Appointments.AddAsync(appointment);
             var succes = await _context.SaveChangesAsync() > 0;
             if (!succes) return false;
-            await _publishEndpoint.Publish(new Message(new AppointmentScheduledEvent(appointment)));
+            await _publishEndpoint.Publish(new Message(new Events.AppointmentScheduledEvent(appointment)));
             return true;
         }
         public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
@@ -40,19 +40,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingAppointment.ScheduledTime = appointment.ScheduledTime;
             existingAppointment.state = appointment.state;
             existingAppointment.ReferralId = appointment.ReferralId;
-            Console.WriteLine(existingAppointment.PreAppointmentQuestionnaire);
+            existingAppointment.IsPreAppointmentQuestionnaireFilled = appointment.IsPreAppointmentQuestionnaireFilled;
             if (appointment.PreAppointmentQuestionnaire != null)
             {
-                Console.WriteLine("Inside if");
                 existingAppointment.PreAppointmentQuestionnaire = appointment.PreAppointmentQuestionnaire;
             }
-            Console.WriteLine(existingAppointment.PreAppointmentQuestionnaire);
-
-            foreach(var questions in appointment.PreAppointmentQuestionnaire)
-            {
-                Console.WriteLine($"Question: {questions}");
-            }
-
 
             _context.Appointments.Update(existingAppointment);
             var succes = await _context.SaveChangesAsync() > 0;

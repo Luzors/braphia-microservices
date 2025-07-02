@@ -22,7 +22,8 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Models
         public string ReceptionistLastName { get; set; }
         public string ReceptionistEmail { get; set; }
         public int ReferralId { get; set; }
-        public string? PreAppointmentQuestionnaireJson { get; set; }
+        public bool IsPreAppointmentQuestionnaireFilled { get; set; } = false;
+        public string? PreAppointmentQuestionnaire { get; set; }
 
         public DateTime ReferralDate { get; set; } 
         public string ReferralReason { get; set; } 

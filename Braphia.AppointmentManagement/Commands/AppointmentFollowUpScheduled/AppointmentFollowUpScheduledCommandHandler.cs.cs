@@ -93,8 +93,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             };
             
             var mes = new Message(@event);
-            Console.WriteLine($"Publishing ScheduledFollowUpAppointmentEvent for Original Appointment ID: {request.OriginalAppointmentId}");
-            await _publishEndpoint.Publish(mes, cancellationToken);
+            await _publishEndpoint.Publish(mes);
 
 
             return OriginalAppointment.Id;

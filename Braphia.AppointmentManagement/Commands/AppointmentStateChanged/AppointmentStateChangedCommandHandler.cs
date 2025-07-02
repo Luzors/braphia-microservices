@@ -51,7 +51,7 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
                     PhysicianId = appointment.PhysicianId
                 };
                 var patientArrivedMessage = new Message(patientArrivedEvent);
-                await _publishEndpoint.Publish(patientArrivedMessage, cancellationToken);
+                await _publishEndpoint.Publish(patientArrivedMessage);
             }
 
             return request.AppointmentId;

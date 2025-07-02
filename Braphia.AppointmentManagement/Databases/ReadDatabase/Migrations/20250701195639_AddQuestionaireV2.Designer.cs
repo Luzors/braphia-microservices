@@ -4,6 +4,7 @@ using Braphia.AppointmentManagement.Databases.WriteDatabase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Migrations
 {
     [DbContext(typeof(ReadDbContext))]
-    partial class ReadDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250701195639_AddQuestionaireV2")]
+    partial class AddQuestionaireV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,9 +40,6 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("IsIdChecked")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPreAppointmentQuestionnaireFilled")
                         .HasColumnType("bit");
 
                     b.Property<string>("PatientEmail")

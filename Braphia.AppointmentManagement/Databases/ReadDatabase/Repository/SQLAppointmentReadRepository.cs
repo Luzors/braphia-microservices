@@ -108,6 +108,12 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
             existingAppointment.ReferralId = appointment.ReferralId;
             existingAppointment.ReferralDate = appointment.ReferralDate;
             existingAppointment.ReferralReason = appointment.ReferralReason;
+            existingAppointment.IsPreAppointmentQuestionnaireFilled = appointment.IsPreAppointmentQuestionnaireFilled;
+
+            if (appointment.PreAppointmentQuestionnaire != null)
+            {
+                existingAppointment.PreAppointmentQuestionnaire = appointment.PreAppointmentQuestionnaire;
+            }
 
             _context.AppointmentViewQueryModels.Update(existingAppointment);
             return await _context.SaveChangesAsync() > 0;
@@ -130,6 +136,21 @@ namespace Braphia.AppointmentManagement.Databases.ReadDatabase.Repository
             }
             return await _context.SaveChangesAsync() > 0;
 
+        }
+        public async Task<IEnumerable<string>> GetQuestionareAsync(int appointmentId)
+        {
+            var appointment = await GetAppointmentByIdAsync(appointmentId);
+            if (appointment == null)
+            {
+                throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
+            }
+            if (appointment.PreAppointmentQuestionnaire == null || !appointment.PreAppointmentQuestionnaire.Any())
+            {
+                throw new ArgumentException($"No questionnaire found for appointment with ID {appointmentId}.");
+            }
+            // cast string seperate between ; 
+            var questionaire = appointment.PreAppointmentQuestionnaire.Split(';').ToList();
+            return questionaire;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MediatR;
-
+﻿
 namespace Braphia.AppointmentManagement.Events.InternalEvents
 {
     public class AppointmentRescheduledEvent 

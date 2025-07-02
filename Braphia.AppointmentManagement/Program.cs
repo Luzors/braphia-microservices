@@ -1,6 +1,8 @@
 
 using Braphia.AppointmentManagement.Commands.AddAppointment;
 using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
+using Braphia.AppointmentManagement.Commands.AppointmentStateChanged;
+using Braphia.AppointmentManagement.Commands.QuestionnaireAnswered;
 using Braphia.AppointmentManagement.Consumers;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
 using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
@@ -14,8 +16,11 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentCreatedCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentScheduledCommandHandler).Assembly));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentRescheduledCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentFollowUpScheduledCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentStateChangedCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(QuestionnaireAnsweredCommandHandler).Assembly));
 
 
 var connectionStringRead = builder.Configuration.GetConnectionString("AppointmentReadDB")
@@ -46,7 +51,7 @@ builder.Services.AddHostedService<AppointmentReminderBackgroundService>();
 // MassTransit
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<AppointmentCreatedEventConsumer>();
+    x.AddConsumer<InternalEventConsumer>();
     x.AddConsumer<MessageConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>

@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Braphia.AppointmentManagement.Commands.AddAppointment
 {
-    public class AppointmentCreatedCommandHandler : IRequestHandler<AppointmentCreatedCommand, int>
+    public class AppointmentScheduledCommandHandler : IRequestHandler<AppointmentScheduledCommand, int>
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPatientRepository _patientRepository;
@@ -16,7 +16,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
         private readonly IReferralRepository _referralRepository;
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public AppointmentCreatedCommandHandler(
+        public AppointmentScheduledCommandHandler(
             IAppointmentRepository appointmentRepository,
             IPatientRepository patientRepository,
             IPhysicianRepository physicianRepository,
@@ -32,7 +32,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             _publishEndpoint = publishEndpoint;
         }
 
-        public async Task<int> Handle(AppointmentCreatedCommand request, CancellationToken cancellationToken)
+        public async Task<int> Handle(AppointmentScheduledCommand request, CancellationToken cancellationToken)
         {
             var appointment = new Models.Appointment(
                 id: 0,
@@ -45,6 +45,9 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
 
             Console.WriteLine($"Creating appointment for Patient ID: {request.PatientId}, Physician ID: {request.PhysicianId}, Scheduled Time: {request.ScheduledTime}");
             Console.WriteLine($"Appointment State: {appointment.state}");
+
+            //Can be put in a separate method if needed
+            appointment.SetPreAppointmentQuestionnaire();
 
             var success = await _appointmentRepository.AddAppointmentAsync(appointment);
             if (!success)
@@ -64,7 +67,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             if (referral == null)
                 throw new ArgumentException($"Referral with ID {request.ReferralId} not found.");
 
-            var @event = new AppointmentCreatedEvent
+            var @event = new Events.InternalEvents.AppointmentScheduledEvent
             {
                 AppointmentId = appointment.Id,
                 PatientId = patient.Id,
@@ -85,12 +88,12 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
                 ReferralId = referral.Id,
                 ReferralDate = referral.ReferralDate,
                 ReferralReason = referral.Reason,
-                State = appointment.state
+                State = appointment.state,
+                PreAppointmentQuestionnaire = appointment.PreAppointmentQuestionnaire
             };
-            Console.WriteLine($"Publishing AppointmentCreatedEvent for Appointment ID: {appointment.Id}");
-            Console.WriteLine( @event.State );
+            
             var mes = new Message(@event);
-            await _publishEndpoint.Publish(mes, cancellationToken);
+            await _publishEndpoint.Publish(mes);
 
             return appointment.Id;
         }
