@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.Accounting.Migrations
 {
     [DbContext(typeof(AccountingDBContext))]
-    [Migration("20250701084941_EventSourcingTables")]
-    partial class EventSourcingTables
+    [Migration("20250702092156_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,165 +25,21 @@ namespace Braphia.Accounting.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Braphia.Accounting.EventSourcing.Projections.InsurerOutstandingBalance", b =>
+            modelBuilder.Entity("Braphia.Accounting.EventSourcing.BaseEvent", b =>
                 {
-                    b.Property<int>("InsurerId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InsurerId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("InsurerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("OutstandingInvoiceCount")
+                    b.Property<int>("AggregateId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("TotalOutstanding")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("InsurerId");
-
-                    b.ToTable("InsurerOutstandingBalances");
-                });
-
-            modelBuilder.Entity("Braphia.Accounting.EventSourcing.Projections.InvoiceProjection", b =>
-                {
-                    b.Property<Guid>("InvoiceAggregateId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("AmountOutstanding")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("InsurerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("InsurerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsFullyPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LabTestId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastPaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PatientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("InvoiceAggregateId");
-
-                    b.ToTable("InvoiceProjections");
-                });
-
-            modelBuilder.Entity("Braphia.Accounting.EventSourcing.Projections.PatientInsurerEventHistory", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<decimal?>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("EventDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EventOccurredOn")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("EventType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("InsurerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("InsurerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("InvoiceAggregateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("LastActivityDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PaidInvoiceCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PatientName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalInvoiceCount")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalInvoiced")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalOutstanding")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalPaid")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PatientInsurerEventHistory");
-                });
-
-            modelBuilder.Entity("Braphia.Accounting.Models.EventStore", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<Guid>("AggregateId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("EventData")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("OccurredOn")
                         .HasColumnType("datetime2");
@@ -193,7 +49,11 @@ namespace Braphia.Accounting.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EventStore");
+                    b.ToTable("Event", (string)null);
+
+                    b.HasDiscriminator<string>("EventType").HasValue("BaseEvent");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Braphia.Accounting.Models.Insurer", b =>
@@ -280,9 +140,6 @@ namespace Braphia.Accounting.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RootId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("InsurerId");
@@ -327,6 +184,58 @@ namespace Braphia.Accounting.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("Test");
+                });
+
+            modelBuilder.Entity("Braphia.Accounting.EventSourcing.Events.InvoiceCreatedEvent", b =>
+                {
+                    b.HasBaseType("Braphia.Accounting.EventSourcing.BaseEvent");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InsurerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LabTestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.HasDiscriminator().HasValue("InvoiceCreated");
+                });
+
+            modelBuilder.Entity("Braphia.Accounting.EventSourcing.Events.PaymentReceivedEvent", b =>
+                {
+                    b.HasBaseType("Braphia.Accounting.EventSourcing.BaseEvent");
+
+                    b.Property<int>("InsurerId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PaymentAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Event", t =>
+                        {
+                            t.Property("InsurerId")
+                                .HasColumnName("PaymentReceivedEvent_InsurerId");
+                        });
+
+                    b.HasDiscriminator().HasValue("PaymentReceived");
                 });
 
             modelBuilder.Entity("Braphia.Accounting.Models.Invoice", b =>

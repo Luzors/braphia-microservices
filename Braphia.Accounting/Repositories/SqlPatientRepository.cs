@@ -1,6 +1,7 @@
 ﻿using Braphia.Accounting.Database;
 using Braphia.Accounting.Models;
 using Braphia.Accounting.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.Accounting.Repositories
@@ -19,7 +20,7 @@ namespace Braphia.Accounting.Repositories
             try
             {
                 _context.Patient.Add(patient);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesWithIdentityInsertAsync();
                 return true;
             }
             catch
