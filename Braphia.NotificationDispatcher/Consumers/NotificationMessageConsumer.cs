@@ -779,7 +779,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                         _logger.LogError("User with ID {UserId} does not have a GeneralPracticionerId set.", user.Id);
                         throw new InvalidOperationException($"User with ID {user.Id} does not have a GeneralPracticionerId set.");
                     }
-                    var gp = await _userRepository.GetUserByIdAsync(user.GeneralPracticionerId.Value, UserTypeEnum.GeneralPractitioner) ??
+                    var gp = await _userRepository.GetUserByIdAsync(user.GeneralPracticionerId.Value) ??
                         throw new KeyNotFoundException($"Gp with ID {user.GeneralPracticionerId} not found in notification database");
                     var gpNotification = new Notification(title: "Test Completed for Patient",
                         message: $"Test {testEvent.Test.Id} for patient {user.FirstName} {user.LastName} has been completed with Result: {testEvent.Test.Result}.",
