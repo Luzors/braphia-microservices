@@ -62,7 +62,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
                     {
                         _logger.LogInformation($"[ReminderEvent already sent] Appointment #{appointment.AppointmentId}");
                     }
-
+                    
                 }
             }
             catch (Exception ex)

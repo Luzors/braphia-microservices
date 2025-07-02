@@ -14,23 +14,13 @@ namespace Braphia.AppointmentManagement.Controllers
         {
             _physicianRepository = physicianRepository;
         }
-        [HttpPost("physician")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreatePhysician([FromBody] Physician physician)
+        
+        [HttpGet("physicians")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPhysicians()
         {
-            try
-            {
-                var records = await _physicianRepository.AddPhysicianAsync(physician);
-                return Ok(records);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error while adding physician");
-            }
+            var records = await _physicianRepository.GetAllPhysiciansAsync();
+            return Ok(records);
         }
     }
 }

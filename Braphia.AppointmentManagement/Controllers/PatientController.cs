@@ -15,27 +15,7 @@ namespace Braphia.AppointmentManagement.Controllers
             _patientRepository = patientRepository;
         }
 
-        [HttpPost("patient")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreatePatient([FromBody] Patient patient)
-        {
-            try
-            {
-                var records = await _patientRepository.AddPatientAsync(patient);
-                return Ok(records);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (ex) here if needed
-                return StatusCode(500, "Internal server error while adding patient, "+ ex);
-            }
-        }
-
-        [HttpGet("patient")]
+        [HttpGet("patients")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> GetPatients()
         {
