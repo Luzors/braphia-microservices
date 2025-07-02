@@ -221,13 +221,16 @@ Write-Host "Creating Laboratory Tests..." -ForegroundColor Yellow
 
 $labTests = @(
     @{ patientId = 1; testType = 0; description = "Complete Blood Count"; cost = 45.00; medicalAnalysisId = 1 },
+    @{ patientId = 1; testType = 1; description = "Urinalysis"; cost = 30.00; medicalAnalysisId = 2 },
+    @{ patientId = 1; testType = 2; description = "Biopsy of the skin"; cost = 25.00; medicalAnalysisId = 3 },
+    @{ patientId = 1; testType = 3; description = "Cultures"; cost = 65.00; medicalAnalysisId = 4 }, 
     @{ patientId = 2; testType = 1; description = "Urinalysis"; cost = 30.00; medicalAnalysisId = 2 },
-    @{ patientId = 3; testType = 2; description = "Chest X-ray"; cost = 120.00; medicalAnalysisId = 3 },
+    @{ patientId = 3; testType = 4; description = "Chest X-ray"; cost = 120.00; medicalAnalysisId = 3 },
     @{ patientId = 4; testType = 3; description = "Blood Glucose Test"; cost = 25.00; medicalAnalysisId = 4 },
-    @{ patientId = 5; testType = 4; description = "Cholesterol Panel"; cost = 55.00; medicalAnalysisId = 5 },
-    @{ patientId = 1; testType = 5; description = "Liver Function Test"; cost = 65.00; medicalAnalysisId = 1 },
-    @{ patientId = 2; testType = 6; description = "Creatinine Test"; cost = 40.00; medicalAnalysisId = 2 },
-    @{ patientId = 3; testType = 7; description = "MRI Scan"; cost = 350.00; medicalAnalysisId = 3 }
+    @{ patientId = 5; testType = 1; description = "Cholesterol Panel"; cost = 55.00; medicalAnalysisId = 5 },
+    @{ patientId = 1; testType = 5; description = "MRI Scan"; cost = 65.00; medicalAnalysisId = 1 },
+    @{ patientId = 2; testType = 6; description = "Ct of the liver"; cost = 40.00; medicalAnalysisId = 2 },
+    @{ patientId = 3; testType = 7; description = "Ultrasound of the heart"; cost = 350.00; medicalAnalysisId = 3 }
 )
 
 foreach ($test in $labTests) {
@@ -357,6 +360,72 @@ try {
             
             $data = $paymentData | ConvertTo-Json -Compress
             Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($invoice.Id)/payment" -Data $data -Method "POST"
+        }
+
+        # 6. Adjust invoice amount on one of the partially paid invoices and then make an additional partial payment
+        if ($invoicesForPartialPayment.Count -gt 0) {
+            $randomPartialInvoice = $invoicesForPartialPayment | Get-Random
+            
+            # First, make a negative invoice amount adjustment to demonstrate reduction functionality
+            $negativeAdjustmentPercentage = Get-Random -Minimum 5 -Maximum 16  # 5-15% of original amount
+            $negativeAdjustmentAmount = -[Math]::Round($randomPartialInvoice.TotalAmount * $negativeAdjustmentPercentage / 100, 2)
+            
+            $negativeAdjustmentReasons = @(
+                "Insurance review reduction", 
+                "Coverage limitation adjustment",
+                "Claim denial - partial",
+                "Network discount application",
+                "Contract rate correction"
+            )
+            $negativeAdjustmentReason = $negativeAdjustmentReasons | Get-Random
+            
+            $negativeAdjustmentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                AdjustmentAmount = $negativeAdjustmentAmount
+                Reason = $negativeAdjustmentReason
+                Reference = "NEG-ADJ-$(Get-Random -Maximum 9999)"
+            }
+            
+            Write-Host "Making negative adjustment of $negativeAdjustmentAmount for invoice $($randomPartialInvoice.Id). Reason: $negativeAdjustmentReason" -ForegroundColor Magenta
+            $negativeAdjustmentJson = $negativeAdjustmentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/adjustment" -Data $negativeAdjustmentJson -Method "POST"
+            
+            # Then make a positive invoice amount adjustment to demonstrate increase functionality
+            $positiveAdjustmentPercentage = Get-Random -Minimum 3 -Maximum 10  # 3-9% of original amount (smaller than negative)
+            $positiveAdjustmentAmount = [Math]::Round($randomPartialInvoice.TotalAmount * $positiveAdjustmentPercentage / 100, 2)
+            
+            $positiveAdjustmentReasons = @(
+                "Additional services discovered",
+                "Billing error correction",
+                "Prior authorization change",
+                "Clinical coding update",
+                "Service upgrade approved"
+            )
+            $positiveAdjustmentReason = $positiveAdjustmentReasons | Get-Random
+            
+            $positiveAdjustmentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                AdjustmentAmount = $positiveAdjustmentAmount
+                Reason = $positiveAdjustmentReason
+                Reference = "POS-ADJ-$(Get-Random -Maximum 9999)"
+            }
+            
+            Write-Host "Making positive adjustment of +$positiveAdjustmentAmount for invoice $($randomPartialInvoice.Id). Reason: $positiveAdjustmentReason" -ForegroundColor Cyan
+            $positiveAdjustmentJson = $positiveAdjustmentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/adjustment" -Data $positiveAdjustmentJson -Method "POST"
+            
+            # Then make an additional partial payment
+            $additionalPartialPercentage = Get-Random -Minimum 10 -Maximum 21  # 10-20%
+            $additionalPartialAmount = [Math]::Round($randomPartialInvoice.AmountOutstanding * $additionalPartialPercentage / 100, 2)
+            
+            $paymentData = @{
+                InsurerId = $randomPartialInvoice.InsurerId
+                PaymentAmount = $additionalPartialAmount
+                PaymentReference = "ADDITIONAL-PARTIAL-PAY-$(Get-Random -Maximum 9999)"
+            }
+            
+            $data = $paymentData | ConvertTo-Json -Compress
+            Invoke-CurlRequest -Url "$AccountingBaseUrl/Invoice/$($randomPartialInvoice.Id)/payment" -Data $data -Method "POST"
         }
         
         Write-Host "Payment processing completed!" -ForegroundColor Green

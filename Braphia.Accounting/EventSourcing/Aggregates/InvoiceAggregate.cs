@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Braphia.Accounting.EventSourcing.Events;
+using Braphia.Accounting.Events;
 
 namespace Braphia.Accounting.EventSourcing.Aggregates
 {
@@ -9,7 +10,6 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
         public int Id { get; private set; }
         public int PatientId { get; private set; }
         public int InsurerId { get; private set; }
-        public int LabTestId { get; private set; }
         public decimal TotalAmount { get; private set; }
         public decimal AmountPaid { get; private set; }
         public decimal AmountOutstanding => TotalAmount - AmountPaid;
@@ -57,6 +57,9 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
             
             if (paymentAmount <= 0)
                 throw new ArgumentException("Payment amount must be positive");
+
+            if (IsFullyPaid)
+                throw new InvalidOperationException("Cannot process payment for a fully paid invoice");
             
             if (paymentAmount > AmountOutstanding)
                 throw new InvalidOperationException($"Payment amount {paymentAmount:C} exceeds outstanding amount {AmountOutstanding:C}");
@@ -65,6 +68,30 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
             var paymentEvent = new PaymentReceivedEvent(Id, nextVersion, insurerId, paymentAmount, paymentReference);
             Apply(paymentEvent);
             _uncommittedEvents.Add(paymentEvent);
+        }
+
+        public void AdjustInvoiceAmount(int insurerId, decimal adjustmentAmount, string reason, string reference)
+        {
+            if (insurerId != InsurerId)
+                throw new InvalidOperationException($"Amount adjustment from insurer {insurerId} not allowed for invoice belonging to insurer {InsurerId}");
+            
+            if (adjustmentAmount == 0)
+                throw new ArgumentException("Adjustment amount cannot be zero");
+            
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ArgumentException("Adjustment reason is required");
+
+            if (IsFullyPaid)
+                throw new InvalidOperationException("Cannot adjust amount for a fully paid invoice");
+
+            // Prevent negative total amounts
+            if (TotalAmount + adjustmentAmount < 0)
+                throw new InvalidOperationException($"Adjustment amount {adjustmentAmount:C} would result in negative total amount");
+
+            var nextVersion = Version + 1;
+            var adjustmentEvent = new InvoiceAmountAdjustedEvent(Id, nextVersion, adjustmentAmount, reason, reference, insurerId);
+            Apply(adjustmentEvent);
+            _uncommittedEvents.Add(adjustmentEvent);
         }
 
         public void MarkEventsAsCommitted()
@@ -96,6 +123,11 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
                 case PaymentReceivedEvent payment:
                     AmountPaid += payment.PaymentAmount;
                     Version = payment.Version;
+                    break;
+
+                case InvoiceAmountAdjustedEvent adjustment:
+                    TotalAmount += adjustment.AdjustmentAmount;
+                    Version = adjustment.Version;
                     break;
 
                 default:

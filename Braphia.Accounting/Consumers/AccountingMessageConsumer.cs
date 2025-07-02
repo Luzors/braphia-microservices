@@ -91,52 +91,21 @@ namespace Braphia.Accounting.Consumers
                 try
                 {
                     _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
-                    // log the cost
-                    var jsonData = message.Data.ToString() ?? string.Empty;
-                    _logger.LogInformation("Message data: {Data}", jsonData);
-
                     var serializerOptions = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
                         Converters = { new DecimalJsonConverter() }
                     };
-
+                    
                     var labTestEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
-                        jsonData,
+                        message.Data.ToString() ?? string.Empty,
                         serializerOptions
                     );
 
                     if (labTestEvent != null)
                     {
-                        // First parse the original cost string to see what it should be
-                        try
-                        {
-                            // Try to extract the cost directly from the JSON to verify the original value
-                            using (JsonDocument doc = JsonDocument.Parse(jsonData))
-                            {
-                                if (doc.RootElement.TryGetProperty("test", out var testElement) &&
-                                    testElement.TryGetProperty("cost", out var costElement))
-                                {
-                                    string rawCost = costElement.ToString();
-                                    _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
-
-                                    if (decimal.TryParse(rawCost,
-                                        System.Globalization.NumberStyles.Any,
-                                        System.Globalization.CultureInfo.InvariantCulture,
-                                        out decimal parsedCost))
-                                    {
-                                        _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Error parsing raw cost value from JSON");
-                        }
-
-                        _logger.LogInformation("Deserialized lab test data: Id={Id} LabTestId={LabTestId}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
-                            labTestEvent.Test.Id, labTestEvent.Test.RootId, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
+                        _logger.LogInformation("Deserialized lab test data: Id={Id}, PatientId={PatientId}, TestType={TestType}, Cost={Cost}",
+                            labTestEvent.Test.Id, labTestEvent.Test.PatientId, labTestEvent.Test.TestType, labTestEvent.Test.Cost);
 
                         // Find the patient in the accounting database
                         var patient = await _patientRepository.GetPatientByIdAsync(labTestEvent.Test.PatientId);
@@ -152,7 +121,7 @@ namespace Braphia.Accounting.Consumers
                             _logger.LogWarning("Patient {PatientId} does not have an associated insurer. Cannot create invoice.", labTestEvent.Test.PatientId);
                             throw new InvalidOperationException($"Patient {labTestEvent.Test.PatientId} does not have an associated insurer. Cannot create invoice.");
                         }
-                       
+
                         // Create invoice through event sourcing service
                         string description = $"Lab Test: {labTestEvent.Test.TestType} - {labTestEvent.Test.Description}".Trim(' ', '-');
 

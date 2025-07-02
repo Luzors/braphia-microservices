@@ -55,7 +55,7 @@ namespace Braphia.AppointmentManagement.Commands.UserCheckId
 
             await sendEndpoint.Send(message, cancellationToken);
 
-            return request.UserId; // Return true to indicate the operation was successful
+            return request.UserId;
 
         }
     }

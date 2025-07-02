@@ -23,8 +23,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Run the service every hour
-        // While stoppingToken is not cancelled, we will check for appointments
+       
         _logger.LogInformation("CheckAppointmentTime");
         while (!stoppingToken.IsCancellationRequested)
         {

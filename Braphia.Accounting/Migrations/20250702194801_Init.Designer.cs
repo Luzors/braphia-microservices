@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.Accounting.Migrations
 {
     [DbContext(typeof(AccountingDBContext))]
-    [Migration("20250702132251_Init")]
+    [Migration("20250702194801_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -194,6 +194,33 @@ namespace Braphia.Accounting.Migrations
                         });
 
                     b.HasDiscriminator().HasValue("PaymentReceived");
+                });
+
+            modelBuilder.Entity("Braphia.Accounting.Events.InvoiceAmountAdjustedEvent", b =>
+                {
+                    b.HasBaseType("Braphia.Accounting.EventSourcing.BaseEvent");
+
+                    b.Property<decimal>("AdjustmentAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("InsurerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Event", t =>
+                        {
+                            t.Property("InsurerId")
+                                .HasColumnName("InvoiceAmountAdjustedEvent_InsurerId");
+                        });
+
+                    b.HasDiscriminator().HasValue("InvoiceAmountAdjusted");
                 });
 
             modelBuilder.Entity("Braphia.Accounting.Models.Invoice", b =>

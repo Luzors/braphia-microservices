@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,7 +11,6 @@ namespace Braphia.Laboratory.Converters
             {
                 string? stringValue = reader.GetString();
                 
-                // Use InvariantCulture to ensure consistent decimal parsing
                 if (stringValue != null && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Any, 
                     System.Globalization.CultureInfo.InvariantCulture, out var value))
                 {
