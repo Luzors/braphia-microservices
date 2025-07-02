@@ -14,23 +14,13 @@ namespace Braphia.AppointmentManagement.Controllers
         {
             _receptionistRepository = receptionistRepository;
         }
-        [HttpPost("receptionist")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateReceptionist([FromBody] Receptionist receptionist)
+        
+        [HttpGet("receptionist")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetReceptionists()
         {
-            try
-            {
-                var records = await _receptionistRepository.AddReceptionistAsync(receptionist);
-                return Ok(records);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error while adding receptionist");
-            }
+            var records = await _receptionistRepository.GetAllReceptionistsAsync();
+            return Ok(records);
         }
 
     }

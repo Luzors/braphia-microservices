@@ -15,23 +15,12 @@ namespace Braphia.AppointmentManagement.Controllers
             _referralRepository = referralRepository;
         }
 
-        [HttpPost("referral")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateReferral([FromBody] Referral referral)
+        [HttpGet("referrals")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetReferrals()
         {
-            try
-            {
-                var records = await _referralRepository.AddReferralAsync(referral);
-                return Ok(records);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest($"Invalid request: {ex.Message}");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error while adding referral");
-            }
+            var records = await _referralRepository.GetAllReferralsAsync();
+            return Ok(records);
         }
     }
 }
