@@ -9,7 +9,7 @@ $AccountingBaseUrl = "https://localhost:7076/api"
 $LaboratoryBaseUrl = "https://localhost:7014/api"
 $PharmacyBaseUrl = "https://localhost:7042/api"
 $UserManagementBaseUrl = "https://localhost:7260/api"
-$MedicalManagementBaseUrl = "https://localhost:7060"
+$MedicalManagementBaseUrl = "https://localhost:7060/api"
 
 # Function to make curl requests with error handling
 function Invoke-CurlRequest {

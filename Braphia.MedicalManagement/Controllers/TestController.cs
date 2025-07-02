@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Braphia.MedicalManagement.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TestController : Controller
     {
         private readonly ITestRepository _testRepository;
