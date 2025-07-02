@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.NotificationDispatcher.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250628134958_Init")]
-    partial class Init
+    [Migration("20250702101555_AddGpToPatient")]
+    partial class AddGpToPatient
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -131,6 +131,9 @@ namespace Braphia.NotificationDispatcher.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("GeneralPracticionerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -142,6 +145,8 @@ namespace Braphia.NotificationDispatcher.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GeneralPracticionerId");
 
                     b.ToTable("User");
                 });
@@ -165,6 +170,16 @@ namespace Braphia.NotificationDispatcher.Migrations
                     b.Navigation("Pharmacy");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Braphia.NotificationDispatcher.Models.User", b =>
+                {
+                    b.HasOne("Braphia.NotificationDispatcher.Models.User", "GeneralPracticioner")
+                        .WithMany()
+                        .HasForeignKey("GeneralPracticionerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("GeneralPracticioner");
                 });
 #pragma warning restore 612, 618
         }

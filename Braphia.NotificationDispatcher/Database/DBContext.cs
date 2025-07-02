@@ -18,6 +18,12 @@ namespace Braphia.NotificationDispatcher.Database
             modelBuilder.Entity<Notification>().ToTable(t =>
                 t.HasCheckConstraint("CK_Notification_AtLeastOneId",
                     "(UserId IS NOT NULL OR PharmacyId IS NOT NULL OR LaboratoryId IS NOT NULL)"));
+            // Prevent multiple cascade paths for Patient -> GeneralPracticioner
+            modelBuilder.Entity<User>()
+                .HasOne(p => p.GeneralPracticioner)
+                .WithMany()
+                .HasForeignKey(p => p.GeneralPracticionerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

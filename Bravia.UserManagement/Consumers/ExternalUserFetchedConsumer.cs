@@ -18,11 +18,26 @@ namespace Braphia.UserManagement.Consumers
     {
         private readonly ILogger<ExternalUserFetchedConsumer> _logger;
         private readonly IPatientRepository _patientRepository;
+        private readonly IGeneralPracticionerRepository _generalPracticionerRepository;
+        private readonly GeneralPracticioner gp;
 
-        public ExternalUserFetchedConsumer(ILogger<ExternalUserFetchedConsumer> logger, IPatientRepository patientRepository)
+        public ExternalUserFetchedConsumer(ILogger<ExternalUserFetchedConsumer> logger, IPatientRepository patientRepository, IGeneralPracticionerRepository generalPracticionerRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger cannot be null.");
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository), "Patient Repository cannot be null.");
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository), "Patient repository cannot be null.");
+            _generalPracticionerRepository = generalPracticionerRepository ?? throw new ArgumentNullException(nameof(generalPracticionerRepository), "General Practicioner repository cannot be null.");
+            var gpList = _generalPracticionerRepository.GetAllGeneralPracticionersAsync().Result;
+            if (gpList == null || !gpList.Any()) 
+            { 
+                _generalPracticionerRepository.AddGeneralPracticionerAsync(new GeneralPracticioner(
+                    "Default",
+                    Guid.NewGuid().ToString(),
+                    "default.gp@example.com",
+                    "000-000-0000"
+                )).Wait();
+                gpList = _generalPracticionerRepository.GetAllGeneralPracticionersAsync().Result;
+            }
+            gp = gpList.FirstOrDefault();
         }
 
         public async Task Consume(ConsumeContext<ExternalUserFetchedEvent> context)
@@ -31,7 +46,7 @@ namespace Braphia.UserManagement.Consumers
             {
                 // Convert object into patient
                 var result = JsonSerializer.Deserialize<JsonElement>(context.Message.ExternalUserData);
-                var emailBuilder = new StringBuilder();
+                    var emailBuilder = new StringBuilder();
                 var patient = new Patient()
                 {
                     FirstName = result.GetProperty("First Name").GetString() ?? throw new ArgumentNullException("First Name is Missing"),
@@ -40,7 +55,9 @@ namespace Braphia.UserManagement.Consumers
                                 .Append('.')
                                 .Append(result.GetProperty("Last Name").GetString()!.ToLower())
                                 .Append("@example.com").ToString(),
-                    PhoneNumber = result.GetProperty("Phone Number").GetString() ?? throw new ArgumentNullException("Last Name is Missing")
+                    PhoneNumber = result.GetProperty("Phone Number").GetString() ?? throw new ArgumentNullException("Last Name is Missing"),
+                    GeneralPracticioner = gp,
+                    GeneralPracticionerId = gp.Id
                 };
                 // Check if the patient exists in the database
                 var existingPatient = await _patientRepository.GetPatientByFullNameAsync(patient.FirstName, patient.LastName);

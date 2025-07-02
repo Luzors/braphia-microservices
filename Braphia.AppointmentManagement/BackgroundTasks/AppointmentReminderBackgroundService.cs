@@ -1,5 +1,7 @@
-﻿using Braphia.AppointmentManagement.Events;
+﻿using Braphia.AppointmentManagement.Databases.ReadDatabase.Models;
+using Braphia.AppointmentManagement.Events;
 using Braphia.AppointmentManagement.Query.GetAppointmentsWithin24Hours;
+using Infrastructure.Messaging;
 using MassTransit;
 using MediatR;
 
@@ -8,6 +10,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
     private readonly ILogger<AppointmentReminderBackgroundService> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMediator _mediator;
+    private IList<AppointmentViewQueryModel> _sendAppointments;
 
     public AppointmentReminderBackgroundService(
         ILogger<AppointmentReminderBackgroundService> logger,
@@ -15,6 +18,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
     {
         _logger = logger;
         _serviceScopeFactory = serviceScopeFactory;
+        _sendAppointments = [];
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,6 +30,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
         {
             try
             {
+                _sendAppointments = [.. _sendAppointments.Where(a => a.ScheduledTime > DateTime.UtcNow)];
                 // Create a scope to resolve dependencies
                 // This ensures that we can use scoped services like repositories
                 // Scope is a way to manage the lifetime of services in ASP.NET Core
@@ -34,18 +39,10 @@ public class AppointmentReminderBackgroundService : BackgroundService
                 var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                var notificationsSend = new List<int>();
-
-
                 var results = await mediator.Send(new GetAppointmentsWithin24HoursQuery());
-     
-
-                _logger.LogInformation("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-                _logger.LogInformation(results.ToString());
-
                 foreach (var appointment in results)
                 {
-                    var match = notificationsSend.FirstOrDefault(x => x == appointment.AppointmentId);
+                    var match = _sendAppointments.FirstOrDefault(x => x.AppointmentId == appointment.AppointmentId);
                     if (match == null)
                     {
                         var reminderEvent = new AppointmentReminderEvent
@@ -56,12 +53,10 @@ public class AppointmentReminderBackgroundService : BackgroundService
                             ScheduledTime = appointment.ScheduledTime
                         };
 
-                        notificationsSend.Add(appointment.AppointmentId);
+                        _sendAppointments.Add(appointment);
 
-                        await publishEndpoint.Publish(reminderEvent, stoppingToken);
-                        _logger.LogInformation($"[ReminderEvent published] Appointment #{appointment.AppointmentId}");
-                        _logger.LogInformation($"[ReminderEvent published] Patient #{appointment.PatientId}");
-                        _logger.LogInformation($"[ReminderEvent published] ScheduledTime {appointment.ScheduledTime}");
+                        await publishEndpoint.Publish(new Message(reminderEvent), stoppingToken);
+                        _logger.LogInformation($"[ReminderEvent sent] Appointment #{appointment.AppointmentId} for patient {appointment.PatientFirstName} {appointment.PatientLastName} at {appointment.ScheduledTime}");
                     }
                     else
                     {

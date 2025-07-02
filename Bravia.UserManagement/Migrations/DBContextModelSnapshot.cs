@@ -101,6 +101,9 @@ namespace Braphia.UserManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int?>("GeneralPracticionerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -110,6 +113,8 @@ namespace Braphia.UserManagement.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GeneralPracticionerId");
 
                     b.HasIndex(new[] { "FirstName", "LastName" }, "IX_User_FirstName_LastName")
                         .IsUnique();
@@ -225,6 +230,16 @@ namespace Braphia.UserManagement.Migrations
                     b.HasOne("Braphia.UserManagement.Models.Patient", null)
                         .WithMany("MedicalRecords")
                         .HasForeignKey("PatientId");
+                });
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.Patient", b =>
+                {
+                    b.HasOne("Braphia.UserManagement.Models.GeneralPracticioner", "GeneralPracticioner")
+                        .WithMany()
+                        .HasForeignKey("GeneralPracticionerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GeneralPracticioner");
                 });
 
             modelBuilder.Entity("Braphia.UserManagement.Models.Referral", b =>

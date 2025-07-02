@@ -16,5 +16,15 @@ namespace Braphia.UserManagement.Database
         public DbSet<GeneralPracticioner> GeneralPracticioner { get; set; }
 
         public DbSet<Referral> Referral { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Set Patient.GeneralPracticionerId to null when GP is deleted
+            modelBuilder.Entity<Patient>()
+                .HasOne(p => p.GeneralPracticioner)
+                .WithMany()
+                .HasForeignKey(p => p.GeneralPracticionerId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
     }
 }

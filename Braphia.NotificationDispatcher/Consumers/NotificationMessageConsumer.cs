@@ -76,6 +76,22 @@ namespace Braphia.NotificationDispatcher.Consumers
                         Email = patientEvent.Patient.Email
                     };
 
+                    if (patientEvent.Patient.GeneralPracticionerId != null)
+                    {
+                        if (patientEvent.Patient.GeneralPracticioner?.Id == null)
+                        {
+                            _logger.LogError("Couldn't attach gp to patient");
+                            throw new InvalidOperationException("Couldn't attach gp to patient");
+                        }
+                        var gp = await _userRepository.GetUserByIdAsync(patientEvent.Patient.GeneralPracticioner.Id, UserTypeEnum.GeneralPractitioner);
+                        if (gp == null)
+                        {
+                            _logger.LogError("Couldn't attach gp to patient, gp is null");
+                            throw new InvalidOperationException("Couldn't attach gp to patient, gp is null");
+                        }
+                        user.GeneralPracticioner = gp;
+                        user.GeneralPracticionerId = gp.RootId;
+                    }
                     var success = await _userRepository.AddUserAsync(user);
 
                     if (success)
@@ -757,6 +773,20 @@ namespace Braphia.NotificationDispatcher.Consumers
                     await _notificationRepository.AddNotificationAsync(notification);
                     _logger.LogWarning(notification.SendNotification());
                     _logger.LogInformation("Successfully created notification for completed test {TestId}", testEvent.Test.Id);
+
+                    if (user.GeneralPracticionerId == null)
+                    {
+                        _logger.LogError("User with ID {UserId} does not have a GeneralPracticionerId set.", user.Id);
+                        throw new InvalidOperationException($"User with ID {user.Id} does not have a GeneralPracticionerId set.");
+                    }
+                    var gp = await _userRepository.GetUserByIdAsync(user.GeneralPracticionerId.Value, UserTypeEnum.GeneralPractitioner) ??
+                        throw new KeyNotFoundException($"Gp with ID {user.GeneralPracticionerId} not found in notification database");
+                    var gpNotification = new Notification(title: "Test Completed for Patient",
+                        message: $"Test {testEvent.Test.Id} for patient {user.FirstName} {user.LastName} has been completed with Result: {testEvent.Test.Result}.",
+                        userId: gp.Id);
+                    await _notificationRepository.AddNotificationAsync(gpNotification);
+                    _logger.LogWarning(gpNotification.SendNotification());
+                    _logger.LogInformation("Successfully created gp notification for completed test {TestId}", testEvent.Test.Id);
                 }
                 else
                 {
