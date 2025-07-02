@@ -160,19 +160,6 @@ namespace Braphia.MedicalManagement.Controllers
                 return BadRequest("Test data cannot be null");
             }
 
-            if (id != test.Id)
-            {
-                _logger.LogWarning($"Route ID {id} does not match test ID {test.Id}");
-                return BadRequest("Route ID must match test ID");
-            }
-
-            // Basic validation
-            if (test.PatientId <= 0)
-            {
-                _logger.LogWarning($"Invalid patient ID: {test.PatientId}");
-                return BadRequest("Valid patient ID is required");
-            }
-
             try
             {
                 bool result = await _testRepository.UpdateTestAsync(test);
