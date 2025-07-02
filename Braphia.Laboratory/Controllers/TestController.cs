@@ -100,6 +100,16 @@ namespace Braphia.Laboratory.Controllers
                     _logger.LogWarning("Test with ID {Id} not found", id);
                     return NotFound($"Test with ID {id} not found");
                 }
+                if (test.CompletedDate.HasValue)
+                {
+                    _logger.LogWarning("Test with ID {Id} is already completed", id);
+                    return Conflict("Test is already completed");
+                }
+                if (test.Result != null)
+                {
+                    _logger.LogWarning("Test with ID {Id} already has a result", id);
+                    return Conflict("Test already has a result");
+                }
 
                 // Update test with completion data
                 test.CompletedDate = DateTime.UtcNow;
