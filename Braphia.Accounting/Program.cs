@@ -35,7 +35,6 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 builder.Services.AddScoped<IInsurerRepository, SqlInsurerRepository>();
 builder.Services.AddScoped<IInvoiceRepository, SqlInvoiceRepository>();
-builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<IEventStoreRepository, SqlEventStoreRepository>();
 builder.Services.AddScoped<IInvoiceEventService, InvoiceEventService>();
 

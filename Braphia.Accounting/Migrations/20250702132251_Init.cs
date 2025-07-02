@@ -23,7 +23,6 @@ namespace Braphia.Accounting.Migrations
                     EventType = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     PatientId = table.Column<int>(type: "int", nullable: true),
                     InsurerId = table.Column<int>(type: "int", nullable: true),
-                    LabTestId = table.Column<int>(type: "int", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -98,31 +97,6 @@ namespace Braphia.Accounting.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Test",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RootId = table.Column<int>(type: "int", nullable: false),
-                    PatientId = table.Column<int>(type: "int", nullable: false),
-                    TestType = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Result = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Cost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    CompletedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Test", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Test_Patient_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "Patient",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Invoice_InsurerId",
                 table: "Invoice",
@@ -132,11 +106,6 @@ namespace Braphia.Accounting.Migrations
                 name: "IX_Patient_InsurerId",
                 table: "Patient",
                 column: "InsurerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Test_PatientId",
-                table: "Test",
-                column: "PatientId");
         }
 
         /// <inheritdoc />
@@ -147,9 +116,6 @@ namespace Braphia.Accounting.Migrations
 
             migrationBuilder.DropTable(
                 name: "Invoice");
-
-            migrationBuilder.DropTable(
-                name: "Test");
 
             migrationBuilder.DropTable(
                 name: "Patient");

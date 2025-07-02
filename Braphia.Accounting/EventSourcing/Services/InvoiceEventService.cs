@@ -17,7 +17,7 @@ namespace Braphia.Accounting.EventSourcing.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<int> CreateInvoiceAsync(int patientId, int insurerId, int labTestId, decimal amount, string description)
+        public async Task<int> CreateInvoiceAsync(int patientId, int insurerId, decimal amount, string description)
         {
             if (patientId <= 0)
                 throw new ArgumentException("Patient ID must be positive", nameof(patientId));
@@ -33,7 +33,7 @@ namespace Braphia.Accounting.EventSourcing.Services
 
             try
             {
-                var invoice = InvoiceAggregate.CreateNew(patientId, insurerId, labTestId, amount, description);
+                var invoice = InvoiceAggregate.CreateNew(patientId, insurerId, amount, description);
                 
                 var aggregateId = await _eventStoreRepository.SaveEventsAsync(invoice.UncommittedEvents, invoice.Id);
                 

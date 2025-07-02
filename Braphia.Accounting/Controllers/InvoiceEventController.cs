@@ -132,7 +132,12 @@ namespace Braphia.Accounting.Controllers
                     invoiceDtos.Add(await MapToDto(invoice, false));
                 }
                 
-                return Ok(invoiceDtos);
+                return Ok(new 
+                {
+                    totalAmountOutstanding = invoiceDtos.Sum(i => i.AmountOutstanding),
+                    invoices = invoiceDtos
+
+                });
             }
             catch (Exception ex)
             {

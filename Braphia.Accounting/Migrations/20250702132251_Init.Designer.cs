@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.Accounting.Migrations
 {
     [DbContext(typeof(AccountingDBContext))]
-    [Migration("20250702092156_Init")]
+    [Migration("20250702132251_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -147,45 +147,6 @@ namespace Braphia.Accounting.Migrations
                     b.ToTable("Patient");
                 });
 
-            modelBuilder.Entity("Braphia.Accounting.Models.Test", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CompletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Cost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Result")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RootId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TestType")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("Test");
-                });
-
             modelBuilder.Entity("Braphia.Accounting.EventSourcing.Events.InvoiceCreatedEvent", b =>
                 {
                     b.HasBaseType("Braphia.Accounting.EventSourcing.BaseEvent");
@@ -201,9 +162,6 @@ namespace Braphia.Accounting.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("InsurerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LabTestId")
                         .HasColumnType("int");
 
                     b.Property<int>("PatientId")
@@ -255,17 +213,6 @@ namespace Braphia.Accounting.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Insurer");
-                });
-
-            modelBuilder.Entity("Braphia.Accounting.Models.Test", b =>
-                {
-                    b.HasOne("Braphia.Accounting.Models.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Braphia.Accounting.Models.Insurer", b =>
