@@ -1,4 +1,6 @@
-﻿namespace Braphia.Accounting.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Braphia.Accounting.Models
 {
     public class Invoice
     {
@@ -11,9 +13,12 @@
             Description = description;
         }
 
+        [Key]
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public decimal Amount { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public int PatientId { get; set; }
+        public int InsurerId { get; set; }
     }
 }

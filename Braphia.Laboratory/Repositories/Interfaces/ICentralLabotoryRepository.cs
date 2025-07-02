@@ -6,8 +6,8 @@ namespace Braphia.Laboratory.Repositories.Interfaces
     {
         Task<bool> AddCentralLaboratoryAsync(CentralLaboratory centralLaboratory);
         Task<bool> UpdateCentralLaboratoryAsync(CentralLaboratory centralLaboratory);
-        Task<bool> DeleteCentralLaboratoryAsync(Guid centralLaboratoryId);
-        Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(Guid centralLaboratoryId);
+        Task<bool> DeleteCentralLaboratoryAsync(int id);
+        Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(int id);
         Task<IEnumerable<CentralLaboratory>> GetAllCentralLaboratoriesAsync();
         
     }

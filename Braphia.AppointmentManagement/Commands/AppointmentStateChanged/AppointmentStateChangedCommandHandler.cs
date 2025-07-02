@@ -27,6 +27,8 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
             {
                 throw new ArgumentNullException(nameof(request.NewState), "New state cannot be null.");
             }
+            var appointment = await _appointmentRepository.GetAppointmentByIdAsync(request.AppointmentId);
+            if (appointment == null) throw new InvalidOperationException($"Appointment with ID {request.AppointmentId} not found.");
             bool result = await _appointmentRepository.UpdateAppointmentStateAsync(request.AppointmentId, request.NewState);
             if (!result)
             {
@@ -48,7 +50,8 @@ namespace Braphia.AppointmentManagement.Commands.AppointmentStateChanged
             {
                 var patientArrivedEvent = new PatientArrivedEvent
                 {
-                    AppointmentId = request.AppointmentId
+                    AppointmentId = request.AppointmentId,
+                    PhysicianId = appointment.PhysicianId
                 };
                 var patientArrivedMessage = new Message(patientArrivedEvent);
                 await _publishEndpoint.Publish(patientArrivedMessage);

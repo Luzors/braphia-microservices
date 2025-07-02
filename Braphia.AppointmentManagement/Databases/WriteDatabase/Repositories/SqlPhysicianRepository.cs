@@ -1,6 +1,7 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Models;
 using Braphia.UserManagement.Enums;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,14 +16,18 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context must be of type WriteDbContext.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
-        public async Task<bool> AddPhysicianAsync(Physician physician)
+        public async Task<bool> AddPhysicianAsync(Physician physician, bool ignoreIdentity = false)
         {
             if (physician == null)
                 throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
             await _context.Physicians.AddAsync(physician);
-            return await _context.SaveChangesAsync() > 0;
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
+            return true;
         }
-        public async Task<bool> UpdatePhysicianAsync(Physician physician)
+        public async Task<bool> UpdatePhysicianAsync(Physician physician, bool ignoreIdentity = false)
         {
             if (physician == null)
                 throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
@@ -32,7 +37,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingPhysician.LastName = physician.LastName;
             existingPhysician.Specialization = physician.Specialization;
             _context.Physicians.Update(existingPhysician);
-            return await _context.SaveChangesAsync() > 0;
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
+            return true;
         }
         public async Task<bool> DeletePhysicianAsync(int physicianId)
         {

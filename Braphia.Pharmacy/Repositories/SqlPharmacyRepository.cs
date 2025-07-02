@@ -1,5 +1,6 @@
 ﻿using Braphia.Pharmacy.Database;
 using Braphia.Pharmacy.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,12 +19,16 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddPharmacyAsync(Models.Pharmacy pharmacy)
+        public async Task<bool> AddPharmacyAsync(Models.Pharmacy pharmacy, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Pharmacy.Add(pharmacy);
-                await _context.SaveChangesAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
+                await _publishEndpoint.Publish(new Message(new Events.PharmacyRegisteredEvent(pharmacy)));
                 return true;
             }
             catch (Exception ex)
@@ -45,6 +50,7 @@ namespace Braphia.Pharmacy.Repositories
                 }
                 _context.Pharmacy.Remove(pharmacy);
                 await _context.SaveChangesAsync();
+                await _publishEndpoint.Publish(new Message(new Events.PharmacyRemovedEvent(pharmacy)));
                 return true;
             }
             catch (Exception ex)
@@ -80,6 +86,7 @@ namespace Braphia.Pharmacy.Repositories
                 existingPharmacy.Email = pharmacy.Email;
                 _context.Pharmacy.Update(existingPharmacy);
                 await _context.SaveChangesAsync();
+                await _publishEndpoint.Publish(new Message(new Events.PharmacyModifiedEvent(pharmacyId, existingPharmacy)));
                 return true;
             }
             catch (Exception ex)

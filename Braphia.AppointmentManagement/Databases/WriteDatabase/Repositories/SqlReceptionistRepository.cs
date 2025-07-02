@@ -1,5 +1,6 @@
 ﻿using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using Braphia.AppointmentManagement.Models;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,14 +16,18 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context), "Context must be of type WriteDbContext.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
-        public async Task<bool> AddReceptionistAsync(Receptionist receptionist)
+        public async Task<bool> AddReceptionistAsync(Receptionist receptionist, bool ignoreIdentity = false)
         {
             if (receptionist == null)
                 throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
             await _context.Receptionists.AddAsync(receptionist);
-            return await _context.SaveChangesAsync() > 0;
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
+            return true;
         }
-        public async Task<bool> UpdateReceptionistAsync(Receptionist receptionist)
+        public async Task<bool> UpdateReceptionistAsync(Receptionist receptionist, bool ignoreIdentity = false)
         {
             if (receptionist == null)
                 throw new ArgumentNullException(nameof(receptionist), "Receptionist cannot be null.");
@@ -33,7 +38,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingReceptionist.Email = receptionist.Email;
 
             _context.Receptionists.Update(existingReceptionist);
-            return await _context.SaveChangesAsync() > 0;
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
+            return true;
         }
         public async Task<bool> DeleteReceptionistAsync(int receptionistId)
         {

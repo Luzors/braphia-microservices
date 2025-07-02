@@ -9,13 +9,13 @@ namespace Braphia.Laboratory.Controllers
     [ApiController]
     public class CentralLaboratoryController : ControllerBase
     {
-        private readonly ICentralLabotoryRepository _centralLabotory;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ICentralLabotoryRepository _centralLaboratory;
+        private readonly ILogger<CentralLaboratoryController> _logger;
 
-        public CentralLaboratoryController(ICentralLabotoryRepository centralLabotory, IPublishEndpoint publishEndpoint)
+        public CentralLaboratoryController(ICentralLabotoryRepository centralLabotory, ILogger<CentralLaboratoryController> logger)
         {
-            _centralLabotory = centralLabotory ?? throw new ArgumentNullException(nameof(centralLabotory));
-            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
+            _centralLaboratory = centralLabotory ?? throw new ArgumentNullException(nameof(centralLabotory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet(Name = "CentralLaboratory")]
@@ -24,7 +24,7 @@ namespace Braphia.Laboratory.Controllers
         {
             try
             {
-                var records = await _centralLabotory.GetAllCentralLaboratoriesAsync();
+                var records = await _centralLaboratory.GetAllCentralLaboratoriesAsync();
                 if (records == null || !records.Any())
                 {
                     return NotFound("No patients found");
@@ -37,17 +37,18 @@ namespace Braphia.Laboratory.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching central laboratories");
                 return StatusCode(500, "Internal server error while fetching patients");
             }
         }
 
-        [HttpGet(Name = "centralLaboratoryById")]
+        [HttpGet("{id}", Name = "GetCentralLaboratoryById")]
         [ProducesResponseType(typeof(IEnumerable<CentralLaboratory>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get(Guid id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
-                var record = await _centralLabotory.GetCentralLaboratoryByIdAsync(id);
+                var record = await _centralLaboratory.GetCentralLaboratoryByIdAsync(id);
                 if (record == null)
                 {
                     return NotFound($"No central laboratory found with ID {id}");
@@ -60,6 +61,7 @@ namespace Braphia.Laboratory.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching central laboratory with ID {Id}", id);
                 return StatusCode(500, "Internal server error while fetching central laboratory");
             }
 
@@ -71,8 +73,8 @@ namespace Braphia.Laboratory.Controllers
         {
             try
             {
-                var records = await _centralLabotory.AddCentralLaboratoryAsync(centralLaboratory);
-                return CreatedAtRoute("centralLaboratoryById", new { id = centralLaboratory.Id }, centralLaboratory);
+                var records = await _centralLaboratory.AddCentralLaboratoryAsync(centralLaboratory);
+                return CreatedAtRoute("GetCentralLaboratoryById", new { id = centralLaboratory.Id }, centralLaboratory);
             }
             catch (ArgumentException ex)
             {
@@ -80,6 +82,7 @@ namespace Braphia.Laboratory.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error adding central laboratory");
                 return StatusCode(500, "Internal server error while adding patient");
             }
         }

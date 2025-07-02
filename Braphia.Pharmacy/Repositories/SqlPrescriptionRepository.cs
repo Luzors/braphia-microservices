@@ -1,6 +1,7 @@
 ﻿using Braphia.Pharmacy.Database;
 using Braphia.Pharmacy.Models.ExternalObjects;
 using Braphia.Pharmacy.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,12 +20,15 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddPrescriptionAsync(Prescription prescription)
+        public async Task<bool> AddPrescriptionAsync(Prescription prescription, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Prescription.Add(prescription);
-                await _context.SaveChangesAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -82,7 +86,6 @@ namespace Braphia.Pharmacy.Repositories
                     _logger.LogWarning("Prescription with ID {PrescriptionId} not found to update", prescriptionId);
                     return false;
                 }
-                existingPrescription.RootId = prescription.RootId;
                 existingPrescription.PatientId = prescription.PatientId;
                 _context.Prescription.Update(existingPrescription);
                 await _context.SaveChangesAsync();

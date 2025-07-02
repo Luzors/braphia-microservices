@@ -1,17 +1,22 @@
-﻿namespace Braphia.Laboratory.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Braphia.Laboratory.Models
 {
     public class Appointment
     {
-        public Guid Id { get; set; }
-        
-        public DateTime AppointmentDate { get; set; }
-
         public Appointment() { }
 
-        public Appointment(DateTime appointmentDate)
+        public Appointment(int id, DateTime dateTime)
         {
-            Id = Guid.NewGuid();
-            AppointmentDate = appointmentDate;
+            Id = id;
+            ScheduledTime = dateTime;
         }
+
+        [Key]
+        public int Id { get; set; }
+        public int PatientId { get; set; }
+        public int PhysicianId { get; set; }
+        public DateTime ScheduledTime { get; set; }
+        public int? FollowUpAppointmentId { get; set; }
     }
 }

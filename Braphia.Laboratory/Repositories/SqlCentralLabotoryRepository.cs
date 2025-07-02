@@ -16,32 +16,32 @@ namespace Braphia.Laboratory.Repositories
         {
             if (centralLaboratory == null)
                 throw new ArgumentNullException(nameof(centralLaboratory), "Central Laboratory cannot be null.");
-            await _context.CentralLaboratories.AddAsync(centralLaboratory);
+            await _context.CentralLaboratory.AddAsync(centralLaboratory);
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteCentralLaboratoryAsync(Guid laboratoryId)
+        public async Task<bool> DeleteCentralLaboratoryAsync(int id)
         {
-            var laboratory = await _context.CentralLaboratories.FindAsync(laboratoryId);
+            var laboratory = await _context.CentralLaboratory.FindAsync(id);
             if (laboratory == null)
-                throw new ArgumentException($"Central Laboratory with ID {laboratoryId} not found.");
-            _context.CentralLaboratories.Remove(laboratory);
+                throw new ArgumentException($"Central Laboratory with ID {id} not found.");
+            _context.CentralLaboratory.Remove(laboratory);
             await _context.SaveChangesAsync();
             return true;
         }
         public async Task<IEnumerable<CentralLaboratory>> GetAllCentralLaboratoriesAsync()
         {
-            return await _context.CentralLaboratories.ToListAsync();
+            return await _context.CentralLaboratory.ToListAsync();
         }
-        public async Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(Guid laboratoryId)
+        public async Task<CentralLaboratory?> GetCentralLaboratoryByIdAsync(int id)
         {
-            return await _context.CentralLaboratories.FirstOrDefaultAsync(l => l.Id == laboratoryId);
+            return await _context.CentralLaboratory.FirstOrDefaultAsync(l => l.Id == id);
         }
         public async Task<bool> UpdateCentralLaboratoryAsync(CentralLaboratory centralLaboratory)
         {
             if (centralLaboratory == null)
                 throw new ArgumentNullException(nameof(centralLaboratory), "Central Laboratory cannot be null.");
-            var existing = await _context.CentralLaboratories.FindAsync(centralLaboratory.Id);
+            var existing = await _context.CentralLaboratory.FindAsync(centralLaboratory.Id);
             if (existing == null)
                 throw new ArgumentException($"Central Laboratory with ID {centralLaboratory.Id} not found.");
             existing.LaboratoryName = centralLaboratory.LaboratoryName;

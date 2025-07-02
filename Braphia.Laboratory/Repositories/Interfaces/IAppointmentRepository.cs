@@ -4,10 +4,9 @@ namespace Braphia.Laboratory.Repositories.Interfaces
 {
     public interface IAppointmentRepository
     {
-        Task<bool> AddAppointmentAsync(Appointment appointment);
-        Task<bool> UpdateAppointmentAsync(Appointment appointment);
-        Task<bool> DeleteAppointmentAsync(Guid appointmentId);
-        Task<Appointment?> GetAppointmentByIdAsync(Guid appointmentId);
+        Task<bool> AddAppointmentAsync(Appointment appointment, bool ignoreIdentity = false);
+        Task<bool> UpdateAppointmentAsync(Appointment appointment, bool ignoreIdentity = false);
+        Task<Appointment?> GetAppointmentByIdAsync(int id);
         Task<IEnumerable<Appointment>> GetAllAppointmentsAsync();
     }
 }

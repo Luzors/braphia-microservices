@@ -1,6 +1,8 @@
 ﻿using Braphia.UserManagement.Database;
+using Braphia.UserManagement.Events.GeneralPracticioners;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +24,7 @@ namespace Braphia.UserManagement.Repositories
                 throw new ArgumentNullException(nameof(generalPracticioner), "GeneralPracticioner cannot be null.");
             await _context.GeneralPracticioner.AddAsync(generalPracticioner);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new GeneralPracticionerRegisteredEvent(generalPracticioner)));
 
             return true;
         }
@@ -31,6 +34,7 @@ namespace Braphia.UserManagement.Repositories
             var generalPracticioner = await _context.GeneralPracticioner.FirstOrDefaultAsync(gp => gp.Id == generalPracticionerId) ?? throw new ArgumentException($"GeneralPracticioner with ID {generalPracticionerId} not found.");
             _context.GeneralPracticioner.Remove(generalPracticioner);
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new GeneralPracticionerRemovedEvent(generalPracticioner)));
             return true;
         }
 
@@ -54,6 +58,7 @@ namespace Braphia.UserManagement.Repositories
             existingGeneralPracticioner.Email = generalPracticioner.Email;
             existingGeneralPracticioner.PhoneNumber = generalPracticioner.PhoneNumber;
             await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new GeneralPracticionerModifiedEvent(existingGeneralPracticioner.Id, existingGeneralPracticioner)));
             return true;
         }
     }

@@ -16,20 +16,19 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
-        public async Task<bool> AddReferralAsync(Referral referral)
+        public async Task<bool> AddReferralAsync(Referral referral, bool ignoreIdentity = false)
         {
             if (referral == null)
                 throw new ArgumentNullException(nameof(referral), "Patient cannot be null.");
             await _context.Referral.AddAsync(referral);
-            await _context.SaveChangesAsync();
-
-            // Patient created event
-            //await _publishEndpoint.Publish(new Message(new PatientRegisteredEvent(patient)));
-
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> UpdateReferralAsync(Referral referral)
+        public async Task<bool> UpdateReferralAsync(Referral referral, bool ignoreIdentity = false)
         {
             if (referral == null)
                 throw new ArgumentNullException(nameof(referral), "Referral cannot be null.");
@@ -39,7 +38,11 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             existingReferral.Reason = referral.Reason;
             existingReferral.ReferralDate = referral.ReferralDate;
 
-            await _context.SaveChangesAsync();
+            _context.Referral.Update(existingReferral);
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 

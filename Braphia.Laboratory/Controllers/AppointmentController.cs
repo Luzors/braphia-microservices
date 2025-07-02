@@ -10,12 +10,12 @@ namespace Braphia.Laboratory.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentRepository appointmentRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger<AppointmentController> _logger;
 
-        public AppointmentController(IAppointmentRepository appointmentRepository, IPublishEndpoint publishEndpoint)
+        public AppointmentController(IAppointmentRepository appointmentRepository, ILogger<AppointmentController> logger)
         {
             this.appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
-            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet(Name = "Appointments")]
@@ -37,13 +37,14 @@ namespace Braphia.Laboratory.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching appointments");
                 return StatusCode(500, "Internal server error while fetching appointments");
             }
         }
 
         [HttpGet("{id}", Name = "AppointmentById")]
         [ProducesResponseType(typeof(Appointment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get(Guid id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
@@ -60,31 +61,8 @@ namespace Braphia.Laboratory.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching appointment with ID {Id}", id);
                 return StatusCode(500, "Internal server error while fetching appointment");
-            }
-        }
-
-        [HttpPost(Name = "Appointment")]
-        [ProducesResponseType(typeof(Appointment), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Post([FromBody] Appointment appointment)
-        {
-            if (appointment == null)
-            {
-                return BadRequest("Appointment data is required");
-            }
-            try
-            {
-                var createdAppointment = await appointmentRepository.AddAppointmentAsync(appointment);
-                if (createdAppointment == false)
-                {
-                    return BadRequest("Failed to create appointment");
-                }
-
-                return CreatedAtAction("AppointmentById", new { id = appointment.Id }, appointment);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error while creating appointment: {ex.Message}");
             }
         }
     }
