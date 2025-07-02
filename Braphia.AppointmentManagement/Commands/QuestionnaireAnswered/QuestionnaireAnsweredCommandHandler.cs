@@ -10,14 +10,17 @@ namespace Braphia.AppointmentManagement.Commands.QuestionnaireAnswered
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly  ISendEndpointProvider _sendEndpointProvider;
 
-        public QuestionnaireAnsweredCommandHandler(IAppointmentRepository appointmentRepository, IPublishEndpoint publishEndpoint)
+        public QuestionnaireAnsweredCommandHandler(IAppointmentRepository appointmentRepository, IPublishEndpoint publishEndpoint, ISendEndpointProvider sendEndpointProvider)
         {
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository), "Appointment repository cannot be null.");
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint), "Publish endpoint cannot be null.");
+            _sendEndpointProvider = sendEndpointProvider;
         }
         public async Task<int> Handle(QuestionnaireAnsweredCommand request, CancellationToken cancellationToken)
         {
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("queue:internal-event-queue"));
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request), "Request cannot be null.");
@@ -39,14 +42,14 @@ namespace Braphia.AppointmentManagement.Commands.QuestionnaireAnswered
 
             }
 
-            var @event = new PreAppointmentQuestionairFilledInEvent
+            var @event = new InternalPreAppointmentQuestionairFilledInEvent
             {
                 AppointmentId = request.AppointmentId,
                 answers = request.Answers,
             };
             var message = new Message(@event);
 
-            await _publishEndpoint.Publish(message);
+            await sendEndpoint.Send(message,cancellationToken);
 
             return request.AppointmentId; 
 

@@ -12,16 +12,16 @@ using System.Text.Json;
 
 namespace Braphia.AppointmentManagement.Consumers
 {
-    public class MessageConsumer : IConsumer<Message>
+    public class AppointmentManagementConsumer : IConsumer<Message>
     {
-        private readonly ILogger<MessageConsumer> _logger;
+        private readonly ILogger<AppointmentManagementConsumer> _logger;
         private readonly IPatientRepository _patientRepository;
         private readonly IPhysicianRepository _physicianRepository;
         private readonly IReceptionistRepository _receptionistRepository;
         private readonly IReferralRepository _referralRepository;
 
-        public MessageConsumer(
-            ILogger<MessageConsumer> logger,
+        public AppointmentManagementConsumer(
+            ILogger<AppointmentManagementConsumer> logger,
             IPatientRepository patientRepository,
             IPhysicianRepository physicianRepository,
             IReceptionistRepository receptionistRepository,
