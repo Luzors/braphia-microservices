@@ -28,34 +28,34 @@ namespace Braphia.AppointmentManagement.Consumers
             {
                 case "AppointmentScheduled":
 
-                    var createdEvent = JsonSerializer.Deserialize<Events.InternalEvents.AppointmentScheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var createdEvent = JsonSerializer.Deserialize<Events.InternalEvents.InternalAppointmentScheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleAppointmentScheduledAsync(createdEvent);
                     break;
 
                 case "AppointmentRescheduled":
 
-                    var rescheduledEvent = JsonSerializer.Deserialize<AppointmentRescheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var rescheduledEvent = JsonSerializer.Deserialize<InternalAppointmentRescheduledEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleAppointmentRescheduledAsync(rescheduledEvent);
                     break;
 
                 case "UserCheckId"
                 :
-                    var userCheck = JsonSerializer.Deserialize<UserCheckIdEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var userCheck = JsonSerializer.Deserialize<InternalUserCheckIdEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleUserCheckId(userCheck);
                     break;
 
                 case "AppointmentStateChanged":
-                    var newState = JsonSerializer.Deserialize<AppointmentStateChangedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var newState = JsonSerializer.Deserialize<InternalAppointmentStateChangedEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleStateChange(newState);
                     break;
 
                 case "ScheduledFollowUpAppointment":
-                    var followUpEvent = JsonSerializer.Deserialize<ScheduledFollowUpAppointmentEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var followUpEvent = JsonSerializer.Deserialize<InternalScheduledFollowUpAppointmentEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandleFollowUpAppointment(followUpEvent);
                     break;
 
                 case "PreAppointmentQuestionairFilledIn":
-                    var preQuestionnaireEvent = JsonSerializer.Deserialize<PreAppointmentQuestionairFilledInEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var preQuestionnaireEvent = JsonSerializer.Deserialize<InternalPreAppointmentQuestionairFilledInEvent>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     await HandlePreQuestionaireFilledIn(preQuestionnaireEvent);
                     break;
                 default:
@@ -63,7 +63,7 @@ namespace Braphia.AppointmentManagement.Consumers
                     break;
             }
         }
-        private async Task HandleAppointmentScheduledAsync(AppointmentScheduledEvent evt)
+        private async Task HandleAppointmentScheduledAsync(InternalAppointmentScheduledEvent evt)
         {
             if (evt == null)
             {
@@ -101,7 +101,7 @@ namespace Braphia.AppointmentManagement.Consumers
             await _readRepo.AddAppointmentAsync(viewModel);
         }
 
-        private async Task HandleAppointmentRescheduledAsync(AppointmentRescheduledEvent? evt)
+        private async Task HandleAppointmentRescheduledAsync(InternalAppointmentRescheduledEvent? evt)
         {
             _logger.LogInformation("HandleResc");
             if (evt == null)
@@ -118,7 +118,7 @@ namespace Braphia.AppointmentManagement.Consumers
             _logger.LogInformation("Processed AppointmentRescheduledEvent for ID {AppointmentId}", evt.AppointmentId);
         }
 
-        private async Task HandleUserCheckId(UserCheckIdEvent? evt)
+        private async Task HandleUserCheckId(InternalUserCheckIdEvent? evt)
         {
             if (evt == null)
             {
@@ -137,7 +137,7 @@ namespace Braphia.AppointmentManagement.Consumers
             }
         }
 
-        private async Task HandleStateChange(AppointmentStateChangedEvent? evt)
+        private async Task HandleStateChange(InternalAppointmentStateChangedEvent? evt)
         {
             if (evt == null)
             {
@@ -151,7 +151,7 @@ namespace Braphia.AppointmentManagement.Consumers
             _logger.LogInformation("Updated state for Appointment ID {AppointmentId} to {NewState}", evt.AppointmentId, evt.NewState);
         }
 
-        private async Task HandleFollowUpAppointment(ScheduledFollowUpAppointmentEvent? evt)
+        private async Task HandleFollowUpAppointment(InternalScheduledFollowUpAppointmentEvent? evt)
         {
             if (evt == null)
             {
@@ -186,7 +186,7 @@ namespace Braphia.AppointmentManagement.Consumers
             await _readRepo.AddFollowUpAppointment(viewModel, evt.OriginalAppointmentId);
         }
 
-        private async Task HandlePreQuestionaireFilledIn(PreAppointmentQuestionairFilledInEvent? evt)
+        private async Task HandlePreQuestionaireFilledIn(InternalPreAppointmentQuestionairFilledInEvent? evt)
         {
             if (evt == null)
             {

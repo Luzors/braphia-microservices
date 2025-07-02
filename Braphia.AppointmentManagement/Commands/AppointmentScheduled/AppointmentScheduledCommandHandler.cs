@@ -15,6 +15,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
         private readonly IReceptionistRepository _receptionistRepository;
         private readonly IReferralRepository _referralRepository;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ISendEndpointProvider _sendEndpointProvider;
 
         public AppointmentScheduledCommandHandler(
             IAppointmentRepository appointmentRepository,
@@ -22,7 +23,8 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             IPhysicianRepository physicianRepository,
             IReceptionistRepository receptionistRepository,
             IReferralRepository referralRepository,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint,
+            ISendEndpointProvider sendEndpointProvider)
         {
             _appointmentRepository = appointmentRepository;
             _patientRepository = patientRepository;
@@ -30,10 +32,12 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             _receptionistRepository = receptionistRepository;
             _referralRepository = referralRepository;
             _publishEndpoint = publishEndpoint;
+            _sendEndpointProvider = sendEndpointProvider;
         }
 
         public async Task<int> Handle(AppointmentScheduledCommand request, CancellationToken cancellationToken)
         {
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("queue:internal-event-queue"));
             var appointment = new Models.Appointment(
                 id: 0,
                 patientId: request.PatientId,
@@ -67,7 +71,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             if (referral == null)
                 throw new ArgumentException($"Referral with ID {request.ReferralId} not found.");
 
-            var @event = new Events.InternalEvents.AppointmentScheduledEvent
+            var @event = new Events.InternalEvents.InternalAppointmentScheduledEvent
             {
                 AppointmentId = appointment.Id,
                 PatientId = patient.Id,
@@ -93,7 +97,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             };
             
             var mes = new Message(@event);
-            await _publishEndpoint.Publish(mes);
+            await sendEndpoint.Send(mes, cancellationToken);
 
             return appointment.Id;
         }

@@ -116,7 +116,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             _context.Appointments.Update(appointment);
             var succes = await _context.SaveChangesAsync() > 0;
             if (!succes) return false;
-            await _publishEndpoint.Publish(new Message(new AppointmentStateChangedEvent() { AppointmentId = appointment.Id, NewState = state}));
+            await _publishEndpoint.Publish(new Message(new InternalAppointmentStateChangedEvent() { AppointmentId = appointment.Id, NewState = state}));
             return true;
         }
 
