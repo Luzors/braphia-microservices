@@ -24,13 +24,13 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
         private InvoiceAggregate() { }
 
         // For creating new invoice
-        public static InvoiceAggregate CreateNew(int patientId, int insurerId, int labTestId, decimal amount, string description)
+        public static InvoiceAggregate CreateNew(int patientId, int insurerId, decimal amount, string description)
         {
             // Use a temporary ID for the aggregate, will be replaced with actual DB ID
             int tempAggregateId = -1;
             var aggregate = new InvoiceAggregate();
             
-            var createEvent = new InvoiceCreatedEvent(tempAggregateId, 1, patientId, insurerId, labTestId, amount, description);
+            var createEvent = new InvoiceCreatedEvent(tempAggregateId, 1, patientId, insurerId, amount, description);
             aggregate.Apply(createEvent);
             aggregate._uncommittedEvents.Add(createEvent);
 
@@ -86,7 +86,6 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
                     Id = created.AggregateId;
                     PatientId = created.PatientId;
                     InsurerId = created.InsurerId;
-                    LabTestId = created.LabTestId;
                     TotalAmount = created.Amount;
                     Description = created.Description;
                     CreatedDate = created.Date;

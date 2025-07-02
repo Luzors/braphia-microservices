@@ -14,20 +14,17 @@ namespace Braphia.Accounting.Consumers
     public class AccountingMessageConsumer : IConsumer<Message>
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ITestRepository _testRepository;
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IInvoiceEventService _invoiceEventService;
         private readonly ILogger<AccountingMessageConsumer> _logger;
 
         public AccountingMessageConsumer(
             IPatientRepository patientRepository,
-            ITestRepository testRepository,
             IInvoiceRepository invoiceRepository,
             IInvoiceEventService invoiceEventService,
             ILogger<AccountingMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
-            _testRepository = testRepository;
             _invoiceRepository = invoiceRepository;
             _invoiceEventService = invoiceEventService;
             _logger = logger;
@@ -155,31 +152,7 @@ namespace Braphia.Accounting.Consumers
                             _logger.LogWarning("Patient {PatientId} does not have an associated insurer. Cannot create invoice.", labTestEvent.Test.PatientId);
                             throw new InvalidOperationException($"Patient {labTestEvent.Test.PatientId} does not have an associated insurer. Cannot create invoice.");
                         }
-
-                        // Save the test in the TestRepository
-                        var test = new Test
-                        {
-                            RootId = labTestEvent.Test.Id,
-                            PatientId = labTestEvent.Test.PatientId,
-                            TestType = labTestEvent.Test.TestType,
-                            Description = labTestEvent.Test.Description,
-                            Result = labTestEvent.Test.Result,
-                            Cost = labTestEvent.Test.Cost,
-                            CompletedDate = labTestEvent.Test.CompletedDate
-                        };
-
-                        var testAdded = await _testRepository.AddTestAsync(test);
-
-                        if (testAdded)
-                        {
-                            _logger.LogInformation("Successfully added test {RootId} to accounting database", test.RootId);
-                        }
-                        else
-                        {
-                            _logger.LogError("Failed to add test {RootId} to accounting database", test.RootId);
-                            throw new InvalidOperationException($"Failed to add test {test.RootId} to accounting database");
-                        }
-
+                       
                         // Create invoice through event sourcing service
                         string description = $"Lab Test: {labTestEvent.Test.TestType} - {labTestEvent.Test.Description}".Trim(' ', '-');
 
@@ -188,18 +161,17 @@ namespace Braphia.Accounting.Consumers
                             int invoiceId = await _invoiceEventService.CreateInvoiceAsync(
                                 patient.Id,
                                 patient.InsurerId.Value,
-                                test.Id,
                                 labTestEvent.Test.Cost,
                                 description);
 
-                            _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for lab test {LabTestId} for patient {PatientId} and insurer {InsurerId}",
-                                invoiceId, test.Id, patient.Id, patient.InsurerId.Value);
+                            _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for lab test for patient {PatientId} and insurer {InsurerId}",
+                                invoiceId, patient.Id, patient.InsurerId.Value);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Failed to create invoice through event sourcing for lab test {LabTestId} for patient {PatientId}",
-                                test.Id, patient.Id);
-                            throw new InvalidOperationException($"Failed to create invoice through event sourcing for lab test {test.Id} for patient {patient.Id}", ex);
+                            _logger.LogError(ex, "Failed to create invoice through event sourcing for lab test for patient {PatientId}",
+                                patient.Id);
+                            throw new InvalidOperationException($"Failed to create invoice through event sourcing for lab test for patient {patient.Id}", ex);
                         }
                     }
                     else
@@ -254,7 +226,6 @@ namespace Braphia.Accounting.Consumers
                             int invoiceId = await _invoiceEventService.CreateInvoiceAsync(
                                 patient.Id,
                                 patient.InsurerId.Value,
-                                medicationOrderEvent.MedicationOrder.Id,
                                 medicationOrderEvent.MedicationOrder.CalculateTotalPrice(),
                                 description);
                             _logger.LogInformation("Successfully created invoice {InvoiceId} through event sourcing for medication order {MedicationOrderId} for patient {PatientId} and insurer {InsurerId}",
