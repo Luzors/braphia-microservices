@@ -22,25 +22,6 @@ namespace Braphia.Laboratory.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Braphia.Laboratory.Models.Appointment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Appointment");
-                });
-
             modelBuilder.Entity("Braphia.Laboratory.Models.CentralLaboratory", b =>
                 {
                     b.Property<int>("Id")
@@ -93,9 +74,6 @@ namespace Braphia.Laboratory.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RootId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

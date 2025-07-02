@@ -30,7 +30,16 @@ namespace Braphia.MedicalManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DateTime")
+                    b.Property<int?>("FollowUpAppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PhysicianId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ScheduledTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");

@@ -9,11 +9,14 @@ namespace Braphia.MedicalManagement.Models
         public Appointment(int id, DateTime dateTime)
         {
             Id = id;
-            DateTime = dateTime;
+            ScheduledTime = dateTime;
         }
 
         [Key]
         public int Id { get; set; }
-        public DateTime DateTime { get; set; }
+        public int PatientId { get; set; }
+        public int PhysicianId { get; set; }
+        public DateTime ScheduledTime { get; set; }
+        public int? FollowUpAppointmentId { get; set; }
     }
 }

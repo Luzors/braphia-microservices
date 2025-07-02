@@ -74,7 +74,7 @@ namespace Braphia.Laboratory.Controllers
             try
             {
                 var records = await _centralLaboratory.AddCentralLaboratoryAsync(centralLaboratory);
-                return CreatedAtRoute("centralLaboratoryById", new { id = centralLaboratory.Id }, centralLaboratory);
+                return CreatedAtRoute("GetCentralLaboratoryById", new { id = centralLaboratory.Id }, centralLaboratory);
             }
             catch (ArgumentException ex)
             {

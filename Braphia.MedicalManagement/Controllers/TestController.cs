@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Braphia.MedicalManagement.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TestController : Controller
     {
         private readonly ITestRepository _testRepository;
@@ -158,19 +158,6 @@ namespace Braphia.MedicalManagement.Controllers
             {
                 _logger.LogWarning("Test data is null");
                 return BadRequest("Test data cannot be null");
-            }
-
-            if (id != test.Id)
-            {
-                _logger.LogWarning($"Route ID {id} does not match test ID {test.Id}");
-                return BadRequest("Route ID must match test ID");
-            }
-
-            // Basic validation
-            if (test.PatientId <= 0)
-            {
-                _logger.LogWarning($"Invalid patient ID: {test.PatientId}");
-                return BadRequest("Valid patient ID is required");
             }
 
             try

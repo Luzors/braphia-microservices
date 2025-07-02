@@ -138,6 +138,10 @@ namespace Braphia.Pharmacy.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PharmacyId");
+
+                    b.HasIndex("PrescriptionId");
+
                     b.ToTable("MedicationOrder");
                 });
 
@@ -194,6 +198,25 @@ namespace Braphia.Pharmacy.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Pharmacy");
+                });
+
+            modelBuilder.Entity("Braphia.Pharmacy.Models.MedicationOrder", b =>
+                {
+                    b.HasOne("Braphia.Pharmacy.Models.Pharmacy", "Pharmacy")
+                        .WithMany()
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.Pharmacy.Models.ExternalObjects.Prescription", "Prescription")
+                        .WithMany()
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pharmacy");
+
+                    b.Navigation("Prescription");
                 });
 
             modelBuilder.Entity("Braphia.Pharmacy.Models.MedicationOrderItem", b =>

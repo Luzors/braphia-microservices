@@ -20,14 +20,16 @@ namespace Braphia.Laboratory.Repositories
             _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
-        public async Task<bool> AddTestAsync(Test test)
+        public async Task<bool> AddTestAsync(Test test, bool ignoreIdentity = false)
         {
             if (test == null)
                 throw new ArgumentNullException(nameof(test), "Test cannot be null.");
             await _context.Test.AddAsync(test);
-            await _context.SaveChangesAsync();
-
-           return true;
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<Test?> GetTestByIdAsync(int id)
@@ -42,8 +44,13 @@ namespace Braphia.Laboratory.Repositories
 
         public async Task<bool> UpdateTestAsync(Test test)
         {
+            if (test == null)
+            {
+                throw new ArgumentNullException(nameof(test), "Test cannot be null.");
+            }
             _context.Test.Update(test);
-            await _context.SaveChangesAsync();
+            if (await _context.SaveChangesAsync() <= 0)
+                throw new InvalidOperationException("Failed to update test.");
             return true;
         }
 

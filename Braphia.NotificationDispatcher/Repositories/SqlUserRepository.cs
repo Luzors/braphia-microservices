@@ -91,8 +91,14 @@ namespace Braphia.NotificationDispatcher.Repositories
                 .FirstOrDefaultAsync(u => u.RootId == rootId && u.UserType == userType);
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<User>> GetAllUsersAsync(UserTypeEnum? userType = null)
         {
+            if (userType.HasValue)
+            {
+                return await _context.User
+                    .Where(u => u.UserType == userType.Value)
+                    .ToListAsync();
+            }
             return await _context.User.ToListAsync();
         }
     }

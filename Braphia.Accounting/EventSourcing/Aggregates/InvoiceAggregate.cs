@@ -1,10 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using Braphia.Accounting.EventSourcing.Events;
 
 namespace Braphia.Accounting.EventSourcing.Aggregates
 {
     public class InvoiceAggregate
     {
-        public Guid Id { get; private set; }
+        [Key]
+        public int Id { get; private set; }
         public int PatientId { get; private set; }
         public int InsurerId { get; private set; }
         public int LabTestId { get; private set; }
@@ -14,28 +16,33 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
         public string Description { get; private set; } = string.Empty;
         public DateTime CreatedDate { get; private set; }
         public bool IsFullyPaid => AmountOutstanding <= 0;
+        public int Version { get; private set; }
 
-        private readonly List<IEvent> _events = new();
-        public IReadOnlyList<IEvent> Events => _events.AsReadOnly();
+        private readonly List<BaseEvent> _uncommittedEvents = new();
+        public IReadOnlyList<BaseEvent> UncommittedEvents => _uncommittedEvents.AsReadOnly();
+
+        private InvoiceAggregate() { }
 
         // For creating new invoice
-        public static InvoiceAggregate CreateFromLabTest(int patientId, int insurerId, int labTestId, decimal amount, string description)
+        public static InvoiceAggregate CreateNew(int patientId, int insurerId, decimal amount, string description)
         {
+            // Use a temporary ID for the aggregate, will be replaced with actual DB ID
+            int tempAggregateId = -1;
             var aggregate = new InvoiceAggregate();
-            var createEvent = new InvoiceCreatedEvent(Guid.NewGuid(), patientId, insurerId, labTestId, amount, description);
             
+            var createEvent = new InvoiceCreatedEvent(tempAggregateId, 1, patientId, insurerId, amount, description);
             aggregate.Apply(createEvent);
-            aggregate._events.Add(createEvent);
-            
+            aggregate._uncommittedEvents.Add(createEvent);
+
             return aggregate;
         }
 
         // For reconstructing from events
-        public static InvoiceAggregate LoadFromEvents(IEnumerable<IEvent> events)
+        public static InvoiceAggregate LoadFromHistory(IEnumerable<BaseEvent> events)
         {
             var aggregate = new InvoiceAggregate();
             
-            foreach (var @event in events)
+            foreach (var @event in events.OrderBy(e => e.Version))
             {
                 aggregate.Apply(@event);
             }
@@ -54,45 +61,41 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
             if (paymentAmount > AmountOutstanding)
                 throw new InvalidOperationException($"Payment amount {paymentAmount:C} exceeds outstanding amount {AmountOutstanding:C}");
 
-            var paymentEvent = new PaymentReceivedEvent(Id, insurerId, paymentAmount, paymentReference);
+            var nextVersion = Version + 1;
+            var paymentEvent = new PaymentReceivedEvent(Id, nextVersion, insurerId, paymentAmount, paymentReference);
             Apply(paymentEvent);
-            _events.Add(paymentEvent);
-
-            // Check if fully paid after this payment
-            if (IsFullyPaid)
-            {
-                var fullyPaidEvent = new InvoiceFullyPaidEvent(Id);
-                Apply(fullyPaidEvent);
-                _events.Add(fullyPaidEvent);
-            }
+            _uncommittedEvents.Add(paymentEvent);
         }
 
-        public void ClearEvents()
+        public void MarkEventsAsCommitted()
         {
-            _events.Clear();
+            _uncommittedEvents.Clear();
         }
 
-        private void Apply(IEvent @event)
+        // Method to update the ID when a new aggregate has been saved
+        public void SetId(int id)
+        {
+            Id = id;
+        }
+
+        private void Apply(BaseEvent @event)
         {
             switch (@event)
             {
                 case InvoiceCreatedEvent created:
-                    Id = created.InvoiceAggregateId;
+                    Id = created.AggregateId;
                     PatientId = created.PatientId;
                     InsurerId = created.InsurerId;
-                    LabTestId = created.LabTestId;
                     TotalAmount = created.Amount;
                     Description = created.Description;
-                    CreatedDate = created.InvoiceDate;
+                    CreatedDate = created.Date;
                     AmountPaid = 0;
+                    Version = created.Version;
                     break;
 
                 case PaymentReceivedEvent payment:
                     AmountPaid += payment.PaymentAmount;
-                    break;
-
-                case InvoiceFullyPaidEvent fullyPaid:
-                    // Already handled by AmountPaid logic
+                    Version = payment.Version;
                     break;
 
                 default:
@@ -100,6 +103,13 @@ namespace Braphia.Accounting.EventSourcing.Aggregates
             }
         }
 
-        private InvoiceAggregate() { }
+        public static IEnumerable<InvoiceAggregate> GetInvoicesForInsurer(IEnumerable<BaseEvent> events, int insurerId)
+        {
+            return events
+                .Where(e => e is InvoiceCreatedEvent created && created.InsurerId == insurerId)
+                .GroupBy(e => e.AggregateId)
+                .Select(group => LoadFromHistory(events.Where(e => e.AggregateId == group.Key)))
+                .Where(invoice => !invoice.IsFullyPaid); // Only return unpaid invoices
+        }
     }
 }

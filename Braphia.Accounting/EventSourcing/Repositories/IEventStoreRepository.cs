@@ -4,8 +4,11 @@ namespace Braphia.Accounting.EventSourcing.Repositories
 {
     public interface IEventStoreRepository
     {
-        Task SaveEventsAsync(Guid aggregateId, IEnumerable<IEvent> events, int expectedVersion);
-        Task<IEnumerable<IEvent>> GetEventsAsync(Guid aggregateId);
-        Task<InvoiceAggregate?> GetAggregateAsync(Guid aggregateId);
+        Task<int> SaveEventAsync(BaseEvent eventItem);
+        Task<IEnumerable<BaseEvent>> GetEventsAsync();
+        Task<IEnumerable<BaseEvent>> GetEventsByAggregateIdAsync(int aggregateId);
+        Task<InvoiceAggregate?> GetAggregateAsync(int aggregateId);
+        Task<int> SaveEventsAsync(IEnumerable<BaseEvent> events, int aggregateId);
+        Task<IEnumerable<BaseEvent>> GetEventsByInsurerIdAsync(int insurerId);
     }
 }

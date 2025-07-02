@@ -1,31 +1,31 @@
+using System.ComponentModel.DataAnnotations;
 using Braphia.Accounting.EventSourcing;
 
 namespace Braphia.Accounting.EventSourcing.Events
 {
     public class InvoiceCreatedEvent : BaseEvent
     {
-        public override string EventType => "InvoiceCreated";
-        
-        public Guid InvoiceAggregateId { get; private set; }
-        public int PatientId { get; private set; }
-        public int InsurerId { get; private set; }
-        public int LabTestId { get; private set; }
-        public decimal Amount { get; private set; }
-        public string Description { get; private set; }
-        public DateTime InvoiceDate { get; private set; }
+        public int PatientId { get; set; }
+        public int InsurerId { get; set; }
+        public decimal Amount { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
 
-        public InvoiceCreatedEvent(Guid invoiceAggregateId, int patientId, int insurerId, int labTestId, decimal amount, string description)
+        public InvoiceCreatedEvent(int aggregateId, int version, int patientId, int insurerId, decimal amount, string description)
+            : base(aggregateId, version)
         {
-            InvoiceAggregateId = invoiceAggregateId;
+            EventType = "InvoiceCreated";
             PatientId = patientId;
             InsurerId = insurerId;
-            LabTestId = labTestId;
             Amount = amount;
             Description = description;
-            InvoiceDate = DateTime.UtcNow;
+            Date = DateTime.UtcNow;
         }
 
-        // For serialization
-        private InvoiceCreatedEvent() { }
+        // For serialization/EF
+        public InvoiceCreatedEvent() : base()
+        {
+            EventType = "InvoiceCreated";
+        }
     }
 }

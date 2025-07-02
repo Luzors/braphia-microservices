@@ -14,11 +14,14 @@ namespace Braphia.MedicalManagement.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<bool> AddPhysicianAsync(Physician physician)
+        public async Task<bool> AddPhysicianAsync(Physician physician, bool ignoreIdentity = false)
         {
             if (physician == null) throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
             await _context.Physician.AddAsync(physician);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 

@@ -1,5 +1,8 @@
+using Braphia.MedicalManagement.Converters;
+using Braphia.MedicalManagement.Events.Appointments;
 using Braphia.MedicalManagement.Events.Patients;
 using Braphia.MedicalManagement.Events.Physicians;
+using Braphia.MedicalManagement.Events.Tests;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
@@ -12,17 +15,21 @@ namespace Braphia.MedicalManagement.Consumers
     {
         private readonly IPatientRepository _patientRepository;
         private readonly IPhysicianRepository _physicianRepository;
+
+        private readonly ITestRepository _testRepository;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly ILogger<MedicalManagementMessageConsumer> _logger;
 
         public MedicalManagementMessageConsumer(IPatientRepository patientRepository,
                                                 IPhysicianRepository physicianRepository,
                                                 IAppointmentRepository appointmentRepository,
+                                                ITestRepository testRepository,
                                                 ILogger<MedicalManagementMessageConsumer> logger)
         {
             _patientRepository = patientRepository;
             _physicianRepository = physicianRepository;
             _appointmentRepository = appointmentRepository;
+            _testRepository = testRepository;
             _logger = logger;
         }
 
@@ -68,7 +75,7 @@ namespace Braphia.MedicalManagement.Consumers
                         PhoneNumber = patientEvent.Patient.PhoneNumber
                     };
 
-                    var success = await _patientRepository.AddPatientAsync(patient);
+                    var success = await _patientRepository.AddPatientAsync(patient, true);
 
                     if (success)
                     {
@@ -78,16 +85,19 @@ namespace Braphia.MedicalManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
+                        throw new InvalidOperationException($"Failed to add patient with ID {patientEvent.Patient.Id} to accounting database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -124,21 +134,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update patient with UserManagement ID {PatientId}", patientEvent.PatientId);
+                            throw new InvalidOperationException($"Failed to update patient with ID {patientEvent.PatientId} in medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.PatientId);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.PatientId} not found in medical database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -170,24 +184,27 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove patient with UserManagement ID {PatientId} from medical database", patientEvent.Patient.Id);
+                            throw new InvalidOperationException($"Failed to remove patient with ID {patientEvent.Patient.Id} from medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Patient with UserManagement ID {PatientId} not found in medical database", patientEvent.Patient.Id);
+                        throw new KeyNotFoundException($"Patient with ID {patientEvent.Patient.Id} not found in medical database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
-
 
         private async Task PhysicianRegistered(Message message)
         {
@@ -212,7 +229,7 @@ namespace Braphia.MedicalManagement.Consumers
                         PhoneNumber = physicianEvent.Physician.PhoneNumber
                     };
 
-                    var success = await _physicianRepository.AddPhysicianAsync(physician);
+                    var success = await _physicianRepository.AddPhysicianAsync(physician, true);
                     if (success)
                     {
                         _logger.LogInformation("Successfully added physician from UserManagement ID {OriginalPhysicianId} to accounting database with new ID {NewPhysicianId}",
@@ -221,12 +238,19 @@ namespace Braphia.MedicalManagement.Consumers
                     else
                     {
                         _logger.LogError("Failed to add physician from UserManagement ID {OriginalPhysicianId} to accounting database", physicianEvent.Physician.Id);
+                        throw new InvalidOperationException($"Failed to add physician with ID {physicianEvent.Physician.Id} to medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRegistered from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -258,17 +282,25 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to update physician with UserManagement ID {PhysicianId}", physicianEvent.PhysicianId);
+                            throw new InvalidOperationException($"Failed to update physician with ID {physicianEvent.PhysicianId} in medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.PhysicianId);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.PhysicianId} not found in medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -295,20 +327,245 @@ namespace Braphia.MedicalManagement.Consumers
                         else
                         {
                             _logger.LogError("Failed to remove physician with UserManagement ID {PhysicianId} from medical database", physicianEvent.Physician.Id);
+                            throw new InvalidOperationException($"Failed to remove physician with ID {physicianEvent.Physician.Id} from medical database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("Physician with UserManagement ID {PhysicianId} not found in medical database", physicianEvent.Physician.Id);
+                        throw new KeyNotFoundException($"Physician with ID {physicianEvent.Physician.Id} not found in medical database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
-        //TODO: events for appointment
+        private async Task AppointmentScheduled(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentScheduled event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentScheduledEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized appointment data: ID={Id}, PatientId={PatientId}, PhysicianId={PhysicianId}, ScheduledTime={ScheduledTime}",
+                        appointmentEvent.Appointment.Id, appointmentEvent.Appointment.PatientId, appointmentEvent.Appointment.PhysicianId, appointmentEvent.Appointment.ScheduledTime);
+                    var appointment = new Appointment
+                    {
+                        Id = appointmentEvent.Appointment.Id,
+                        PatientId = appointmentEvent.Appointment.PatientId,
+                        PhysicianId = appointmentEvent.Appointment.PhysicianId,
+                        ScheduledTime = appointmentEvent.Appointment.ScheduledTime,
+                        FollowUpAppointmentId = null
+                    };
+                    var success = await _appointmentRepository.AddAppointmentAsync(appointment, true);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully added appointment with ID {AppointmentId} to medical database", appointment.Id);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add appointment with ID {AppointmentId} to medical database", appointment.Id);
+                        throw new InvalidOperationException($"Failed to add appointment with ID {appointment.Id} to medical database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduled from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentScheduledEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentScheduled event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task AppointmentScheduledFollowUp(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentScheduledFollowUp event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentScheduledFollowUpEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized follow-up appointment data: original ID={OriginalAppointmentId}, FollowUpId={FollowUpAppointmentId}",
+                        appointmentEvent.AppointmentId, appointmentEvent.FollowUpAppointment.Id);
+
+                    var followUpAppointment = new Appointment()
+                    {
+                        Id = appointmentEvent.FollowUpAppointment.Id,
+                        PatientId = appointmentEvent.FollowUpAppointment.PatientId,
+                        PhysicianId = appointmentEvent.FollowUpAppointment.PhysicianId,
+                        ScheduledTime = appointmentEvent.FollowUpAppointment.ScheduledTime,
+                        FollowUpAppointmentId = null
+                    };
+
+                    var success = await _appointmentRepository.AddAppointmentAsync(followUpAppointment, true);
+                    if (success)
+                    {
+                        _logger.LogInformation("Successfully added follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                        // Update the original appointment with the follow-up appointment ID
+                        var originalAppointment = await _appointmentRepository.GetAppointmentAsync(appointmentEvent.AppointmentId);
+                        if (originalAppointment != null)
+                        {
+                            originalAppointment.FollowUpAppointmentId = followUpAppointment.Id;
+                            var succes2 = await _appointmentRepository.UpdateAppointmentAsync(originalAppointment, true);
+                            if (succes2)
+                            {
+                                _logger.LogInformation("Successfully updated original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
+                                    appointmentEvent.AppointmentId, followUpAppointment.Id);
+                            }
+                            else
+                            {
+                                _logger.LogError("Failed to update original appointment with ID {OriginalAppointmentId} to include follow-up appointment ID {FollowUpAppointmentId}",
+                                    appointmentEvent.AppointmentId, followUpAppointment.Id);
+                                throw new InvalidOperationException($"Failed to update original appointment with ID {appointmentEvent.AppointmentId} to include follow-up appointment ID {followUpAppointment.Id}.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to add follow-up appointment with ID {FollowUpAppointmentId} to medical database", followUpAppointment.Id);
+                        throw new InvalidOperationException($"Failed to add follow-up appointment with ID {followUpAppointment.Id} to medical database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentScheduledFollowUp from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentScheduledFollowUpEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentScheduledFollowUp event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task AppointmentModified(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentModified event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentModifiedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Updating appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                    var existingAppointment = await _appointmentRepository.GetAppointmentAsync(appointmentEvent.AppointmentId);
+                    if (existingAppointment != null)
+                    {
+                        existingAppointment.PatientId = appointmentEvent.NewAppointment.PatientId;
+                        existingAppointment.PhysicianId = appointmentEvent.NewAppointment.PhysicianId;
+                        existingAppointment.ScheduledTime = appointmentEvent.NewAppointment.ScheduledTime;
+                        existingAppointment.FollowUpAppointmentId = appointmentEvent.NewAppointment.FollowUpAppointmentId;
+                        var success = await _appointmentRepository.UpdateAppointmentAsync(existingAppointment, true);
+                        if (success)
+                        {
+                            _logger.LogInformation("Successfully updated appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to update appointment with ID {AppointmentId}", appointmentEvent.AppointmentId);
+                            throw new InvalidOperationException($"Failed to update appointment with ID {appointmentEvent.AppointmentId} in medical database.");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Appointment with ID {AppointmentId} not found in medical database", appointmentEvent.AppointmentId);
+                        throw new KeyNotFoundException($"Appointment with ID {appointmentEvent.AppointmentId} not found in medical database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentModifiedEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentModified event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task TestCompleted(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+
+                var jsonData = message.Data.ToString() ?? string.Empty;
+                _logger.LogInformation("Message data: {Data}", jsonData);
+
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new DecimalJsonConverter() }
+                };
+
+                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(jsonData, serializerOptions);
+
+                if (testEvent != null)
+                {
+                    // Get the existing test from Medical Management database
+                    var existingTest = await _testRepository.GetTestAsync(testEvent.Test.Id);
+
+                    if (existingTest != null)
+                    {
+                        // Only update the fields that should be updated from the lab
+                        existingTest.Result = testEvent.Test.Result;
+                        existingTest.CompletedDate = testEvent.Test.CompletedDate;
+                        existingTest.Cost = testEvent.Test.Cost; // If this field exists
+
+                        // DON'T update foreign keys like MedicalAnalysisId, PatientId, etc.
+                        // Keep the existing relationships from Medical Management
+
+                        var succes = await _testRepository.UpdateTestAsync(existingTest);
+                        if (!succes)
+                        {
+                            _logger.LogError("Failed to update test with ID {TestId} in Medical Management database", existingTest.Id);
+                            throw new InvalidOperationException($"Failed to update test with ID {existingTest.Id} in Medical Management database.");
+                        }
+
+                        _logger.LogInformation("Successfully updated test with ID {TestId} with completion data", existingTest.Id);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Test with ID {TestId} not found in Medical Management database", testEvent.Test.Id);
+                        throw new KeyNotFoundException($"Test with ID {testEvent.Test.Id} not found in Medical Management database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", jsonData);
+                    throw new JsonException($"Failed to deserialize TestCompletedEvent from message data: {jsonData}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
     }
 }

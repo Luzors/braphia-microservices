@@ -16,6 +16,11 @@ var connectionString = builder.Configuration.GetConnectionString("MedicalDB") ??
 builder.Services
     .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new Braphia.MedicalManagement.Converters.DecimalJsonConverter());
+});
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<MedicalManagementMessageConsumer>();
@@ -25,7 +30,11 @@ builder.Services.AddMassTransit(x =>
         var configuration = context.GetRequiredService<IConfiguration>();
         var rabbitMqConnection = configuration.GetConnectionString("eventbus");
         cfg.Host(rabbitMqConnection);
-
+        cfg.ConfigureJsonSerializerOptions(options =>
+        {
+            options.Converters.Add(new Braphia.MedicalManagement.Converters.DecimalJsonConverter());
+            return options;
+        });
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -36,6 +45,7 @@ builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
 builder.Services.AddScoped<IMedicalAnalysisRepository, SqlMedicalAnalysisRepository>();
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

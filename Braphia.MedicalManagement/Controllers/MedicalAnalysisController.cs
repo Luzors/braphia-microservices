@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Braphia.MedicalManagement.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class MedicalAnalysisController : Controller
     {
         private readonly IMedicalAnalysisRepository _medicalAnalysisRepository;

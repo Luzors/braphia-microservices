@@ -6,6 +6,7 @@ using Infrastructure.Messaging;
 using k8s.KubeConfigModels;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Braphia.Pharmacy.Repositories
 {
@@ -22,7 +23,7 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddMedicationToMedicationOrderAsync(int medicationOrderId, Medication medication, int amount)
+        public async Task<bool> AddMedicationToMedicationOrderAsync(int medicationOrderId, Medication medication, int amount, bool ignoreIdentity = false)
         {
             try
             {
@@ -34,7 +35,10 @@ namespace Braphia.Pharmacy.Repositories
                 }
                 medicationOrder.AddItem(medication, amount);
                 _context.MedicationOrder.Update(medicationOrder);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -48,7 +52,10 @@ namespace Braphia.Pharmacy.Repositories
         {
             try
             {
-                var medicationOrder = await _context.MedicationOrder.FindAsync(medicationOrderId);
+                var medicationOrder = await _context.MedicationOrder
+                    .Include(mo => mo.Prescription)
+                    .Include(mo => mo.Items).ThenInclude(mi => mi.Medication)
+                    .FirstOrDefaultAsync(mo => mo.Id == medicationOrderId); 
                 if (medicationOrder == null)
                 {
                     _logger.LogWarning("Medication order with ID {MedicationOrderId} not found.", medicationOrderId);
@@ -68,12 +75,15 @@ namespace Braphia.Pharmacy.Repositories
             }
         }
 
-        public async Task<bool> CreateMedicationOrderAsync(MedicationOrder medicationOrder)
+        public async Task<bool> CreateMedicationOrderAsync(MedicationOrder medicationOrder, bool ignoreIdentity = false)
         {
             try
             {
                 await _context.MedicationOrder.AddAsync(medicationOrder);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)

@@ -1,6 +1,7 @@
 using Braphia.Laboratory.Database;
 using Braphia.Laboratory.Models;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.Laboratory.Repositories
@@ -14,12 +15,15 @@ namespace Braphia.Laboratory.Repositories
             _context = context;
         }
 
-        public async Task<bool> AddPatientAsync(Patient patient)
+        public async Task<bool> AddPatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Patient.Add(patient);
-                await _context.SaveChangesAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch
@@ -28,12 +32,15 @@ namespace Braphia.Laboratory.Repositories
             }
         }
 
-        public async Task<bool> UpdatePatientAsync(Patient patient)
+        public async Task<bool> UpdatePatientAsync(Patient patient, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Patient.Update(patient);
-                await _context.SaveChangesAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 return true;
             }
             catch
@@ -64,13 +71,6 @@ namespace Braphia.Laboratory.Repositories
             return await _context.Patient
                 .Include(p => p.Tests)
                 .FirstOrDefaultAsync(p => p.Id == patientId);               
-        }
-
-        public async Task<Patient?> GetPatientByRootIdAsync(int rootId)
-        {
-            return await _context.Patient
-                .Include(p => p.Tests)
-                .FirstOrDefaultAsync(p => p.RootId == rootId);
         }
 
         public async Task<IEnumerable<Patient>> GetAllPatientsAsync()

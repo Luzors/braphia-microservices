@@ -10,12 +10,15 @@ namespace Braphia.Accounting.Converters
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                if (decimal.TryParse(reader.GetString(), out var value))
+                string? stringValue = reader.GetString();
+                
+                if (stringValue != null && decimal.TryParse(stringValue, System.Globalization.NumberStyles.Any, 
+                    System.Globalization.CultureInfo.InvariantCulture, out var value))
                 {
                     return value;
                 }
 
-                throw new JsonException("Invalid decimal value in JSON.");
+                throw new JsonException($"Invalid decimal value in JSON: '{stringValue}'");
             }
 
             return reader.GetDecimal();
@@ -23,7 +26,7 @@ namespace Braphia.Accounting.Converters
 
         public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options)
         {
-            writer.WriteNumberValue(value);
+            writer.WriteStringValue(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
     }
 }

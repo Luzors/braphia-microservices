@@ -1,3 +1,5 @@
+using Braphia.Accounting.EventSourcing;
+using Braphia.Accounting.EventSourcing.Events;
 using Braphia.Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +12,7 @@ namespace Braphia.Accounting.Database
         public DbSet<Patient> Patient { get; set; }
         public DbSet<Invoice> Invoice { get; set; }
         public DbSet<Insurer> Insurer { get; set; }
-        public DbSet<Test> Test { get; set; }
+        public DbSet<BaseEvent> Event { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,16 +28,13 @@ namespace Braphia.Accounting.Database
                 .WithMany()
                 .HasForeignKey(p => p.InsurerId)
                 .OnDelete(DeleteBehavior.SetNull);
-            // Test - Patient relationship (many tests to one patient)
-            modelBuilder.Entity<Test>()
-                .HasOne(t => t.Patient)
-                .WithMany()
-                .HasForeignKey(t => t.PatientId)
-                .OnDelete(DeleteBehavior.Cascade);
-            // Decimal precision for Test Cost
-            modelBuilder.Entity<Test>()
-                .Property(t => t.Cost)
-                .HasPrecision(18, 2);
+
+            // Configure TPH mapping for BaseEvent
+            modelBuilder.Entity<BaseEvent>()
+                .ToTable("Event")
+                .HasDiscriminator<string>("EventType")
+                .HasValue<InvoiceCreatedEvent>("InvoiceCreated")
+                .HasValue<PaymentReceivedEvent>("PaymentReceived");
         }
     }
 }

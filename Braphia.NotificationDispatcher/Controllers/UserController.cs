@@ -19,11 +19,11 @@ namespace Braphia.NotificationDispatcher.Controllers
 
         [HttpGet(Name = "Users")]
         [ProducesResponseType(typeof(IEnumerable<User>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(UserTypeEnum? userType = null)
         {
             try
             {
-                var records = await _userRepository.GetAllUsersAsync();
+                var records = await _userRepository.GetAllUsersAsync(userType);
                 if (records == null || !records.Any())
                 {
                     _logger.LogWarning("No users found in the database.");

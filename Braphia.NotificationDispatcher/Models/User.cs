@@ -11,6 +11,8 @@ namespace Braphia.NotificationDispatcher.Models
         public string LastName { get; set; }
         public UserTypeEnum UserType { get; set; }
         public string Email { get; set; }
+        public int? GeneralPracticionerId { get; set; }
+        public User? GeneralPracticioner { get; set; }
 
         public User() { }
 

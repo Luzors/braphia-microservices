@@ -19,12 +19,15 @@ namespace Braphia.Pharmacy.Repositories
             _logger = logger;
         }
 
-        public async Task<bool> AddPharmacyAsync(Models.Pharmacy pharmacy)
+        public async Task<bool> AddPharmacyAsync(Models.Pharmacy pharmacy, bool ignoreIdentity = false)
         {
             try
             {
                 _context.Pharmacy.Add(pharmacy);
-                await _context.SaveChangesWithIdentityInsertAsync();
+                if (ignoreIdentity)
+                    await _context.SaveChangesWithIdentityInsertAsync();
+                else
+                    await _context.SaveChangesAsync();
                 await _publishEndpoint.Publish(new Message(new Events.PharmacyRegisteredEvent(pharmacy)));
                 return true;
             }

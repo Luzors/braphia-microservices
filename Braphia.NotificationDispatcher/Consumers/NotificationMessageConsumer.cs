@@ -1,3 +1,4 @@
+using Braphia.AppointmentManagement.Events;
 using Braphia.NotificationDispatcher.Events.ExternalEvents;
 using Braphia.NotificationDispatcher.Events.ExternalEvents.GeneralPracticioners;
 using Braphia.NotificationDispatcher.Events.ExternalEvents.Patients;
@@ -75,6 +76,22 @@ namespace Braphia.NotificationDispatcher.Consumers
                         Email = patientEvent.Patient.Email
                     };
 
+                    if (patientEvent.Patient.GeneralPracticionerId != null)
+                    {
+                        if (patientEvent.Patient.GeneralPracticioner?.Id == null)
+                        {
+                            _logger.LogError("Couldn't attach gp to patient");
+                            throw new InvalidOperationException("Couldn't attach gp to patient");
+                        }
+                        var gp = await _userRepository.GetUserByIdAsync(patientEvent.Patient.GeneralPracticioner.Id, UserTypeEnum.GeneralPractitioner);
+                        if (gp == null)
+                        {
+                            _logger.LogError("Couldn't attach gp to patient, gp is null");
+                            throw new InvalidOperationException("Couldn't attach gp to patient, gp is null");
+                        }
+                        user.GeneralPracticioner = gp;
+                        user.GeneralPracticionerId = gp.RootId;
+                    }
                     var success = await _userRepository.AddUserAsync(user);
 
                     if (success)
@@ -85,16 +102,19 @@ namespace Braphia.NotificationDispatcher.Consumers
                     else
                     {
                         _logger.LogError("Failed to add user from UserManagement ID {OriginalPatientId} to notification database", patientEvent.Patient.RootId);
+                        throw new InvalidOperationException($"Failed to add user with ID {patientEvent.Patient.Id} to notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientCreatedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientCreatedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientCreated event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -127,18 +147,26 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to update user from UserManagement ID {OriginalPatientId} in notification database", patientEvent.NewPatient.RootId);
+                            throw new InvalidOperationException($"Failed to update user with ID {patientEvent.NewPatient.Id} in notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for PatientModified event with ID: {PatientId}", patientEvent.NewPatient.Id);
+                        throw new KeyNotFoundException($"User with ID {patientEvent.NewPatient.Id} not found in notification database.");
                     }
 
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PatientModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -166,21 +194,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to delete user from UserManagement ID {OriginalPatientId} in notification database", patientEvent.Patient.RootId);
+                            throw new InvalidOperationException($"Failed to delete user with ID {patientEvent.Patient.Id} from notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for PatientRemoved event with ID: {PatientId}", patientEvent.Patient.Id);
+                        throw new KeyNotFoundException($"User with ID {patientEvent.Patient.Id} not found in notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PatientRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PatientRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -214,16 +246,19 @@ namespace Braphia.NotificationDispatcher.Consumers
                     else
                     {
                         _logger.LogError("Failed to add GP from UserManagement ID {OriginalGPId} to notification database", gpEvent.GeneralPracticioner.RootId);
+                        throw new InvalidOperationException($"Failed to add GP with ID {gpEvent.GeneralPracticioner.Id} to notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize GeneralPracticionerRegisteredEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize GeneralPracticionerRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing GeneralPracticionerRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -255,17 +290,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to update GP from UserManagement ID {OriginalGPId} in notification database", gpEvent.GeneralPracticioner.RootId);
+                            throw new InvalidOperationException($"Failed to update GP with ID {gpEvent.GeneralPracticioner.Id} in notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for GeneralPracticionerModified event with ID: {GPId}", gpEvent.GeneralPracticioner.Id);
+                        throw new KeyNotFoundException($"User with ID {gpEvent.GeneralPracticioner.Id} not found in notification database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize GeneralPracticionerModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize GeneralPracticionerModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing GeneralPracticionerModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -293,21 +336,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to delete GP from UserManagement ID {OriginalGPId} in notification database", gpEvent.GeneralPracticioner.RootId);
+                            throw new InvalidOperationException($"Failed to delete GP with ID {gpEvent.GeneralPracticioner.Id} from notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for GeneralPracticionerRemoved event with ID: {GPId}", gpEvent.GeneralPracticioner.Id);
+                        throw new KeyNotFoundException($"User with ID {gpEvent.GeneralPracticioner.Id} not found in notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize GeneralPracticionerRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize GeneralPracticionerRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing GeneralPracticionerRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -341,16 +388,19 @@ namespace Braphia.NotificationDispatcher.Consumers
                     else
                     {
                         _logger.LogError("Failed to add Physician from UserManagement ID {OriginalPhysicianId} to notification database", physicianEvent.Physician.RootId);
+                        throw new InvalidOperationException($"Failed to add Physician with ID {physicianEvent.Physician.Id} to notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PhysicianRegisteredEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -382,17 +432,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to update Physician from UserManagement ID {OriginalPhysicianId} in notification database", physicianEvent.Physician.RootId);
+                            throw new InvalidOperationException($"Failed to update Physician with ID {physicianEvent.Physician.Id} in notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for PhysicianModified event with ID: {PhysicianId}", physicianEvent.Physician.Id);
+                        throw new KeyNotFoundException($"User with ID {physicianEvent.Physician.Id} not found in notification database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PhysicianModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -420,21 +478,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to delete Physician from UserManagement ID {OriginalPhysicianId} in notification database", physicianEvent.Physician.RootId);
+                            throw new InvalidOperationException($"Failed to delete Physician with ID {physicianEvent.Physician.Id} from notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No user found for PhysicianRemoved event with ID: {PhysicianId}", physicianEvent.Physician.Id);
+                        throw new KeyNotFoundException($"User with ID {physicianEvent.Physician.Id} not found in notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PhysicianRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PhysicianRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PhysicianRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -466,16 +528,19 @@ namespace Braphia.NotificationDispatcher.Consumers
                     else
                     {
                         _logger.LogError("Failed to add Pharmacy from UserManagement ID {OriginalPharmacyId} to notification database", pharmacyEvent.Pharmacy.RootId);
+                        throw new InvalidOperationException($"Failed to add Pharmacy with ID {pharmacyEvent.Pharmacy.Id} to notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PharmacyRegisteredEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PharmacyRegisteredEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PharmacyRegistered event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -506,17 +571,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to update Pharmacy from UserManagement ID {OriginalPharmacyId} in notification database", pharmacyEvent.Pharmacy.RootId);
+                            throw new InvalidOperationException($"Failed to update Pharmacy with ID {pharmacyEvent.Pharmacy.Id} in notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No pharmacy found for PharmacyModified event with ID: {PharmacyId}", pharmacyEvent.Pharmacy.Id);
+                        throw new KeyNotFoundException($"Pharmacy with ID {pharmacyEvent.Pharmacy.Id} not found in notification database.");
                     }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PharmacyModifiedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PharmacyModifiedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PharmacyModified event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -544,21 +617,25 @@ namespace Braphia.NotificationDispatcher.Consumers
                         else
                         {
                             _logger.LogError("Failed to delete Pharmacy from UserManagement ID {OriginalPharmacyId} in notification database", pharmacyEvent.Pharmacy.RootId);
+                            throw new InvalidOperationException($"Failed to delete Pharmacy with ID {pharmacyEvent.Pharmacy.Id} from notification database.");
                         }
                     }
                     else
                     {
                         _logger.LogWarning("No pharmacy found for PharmacyRemoved event with ID: {PharmacyId}", pharmacyEvent.Pharmacy.Id);
+                        throw new KeyNotFoundException($"Pharmacy with ID {pharmacyEvent.Pharmacy.Id} not found in notification database.");
                     }
                 }
                 else
                 {
                     _logger.LogError("Failed to deserialize PharmacyRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PharmacyRemovedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing PharmacyRemoved event: {MessageId}", message.MessageId);
+                throw;
             }
         }
 
@@ -577,7 +654,7 @@ namespace Braphia.NotificationDispatcher.Consumers
                         medicationEvent.MedicationOrder.Id, medicationEvent.MedicationOrder.PatientId, medicationEvent.MedicationOrder.PharmacyId);
 
                     var user = await _userRepository.GetUserByIdAsync(medicationEvent.MedicationOrder.PatientId, UserTypeEnum.Patient) ??
-                        throw new Exception($"User with ID {medicationEvent.MedicationOrder.PatientId} not found in notification database.");
+                        throw new KeyNotFoundException($"User with ID {medicationEvent.MedicationOrder.PatientId} not found in notification database.");
 
                     Console.WriteLine(JsonSerializer.Serialize(user));
                     var notification = new Notification(title: "Medication Order Completed",
@@ -593,11 +670,177 @@ namespace Braphia.NotificationDispatcher.Consumers
                 else
                 {
                     _logger.LogError("Failed to deserialize MedicationOrderCompletedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize MedicationOrderCompletedEvent from message data: {message.Data.ToString()}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing MedicationOrderCompleted event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task AppointmentReminder(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received AppointmentReminder event with ID: {MessageId}", message.MessageId);
+                var appointmentEvent = JsonSerializer.Deserialize<AppointmentReminderEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (appointmentEvent != null)
+                {
+                    _logger.LogInformation("Deserialized appointment reminder data: AppointmentId={AppointmentId}, PatientId={PatientId}, ScheduledTime={ScheduledTime}",
+                        appointmentEvent.AppointmentId, appointmentEvent.PatientId, appointmentEvent.ScheduledTime);
+                    var user = await _userRepository.GetUserByIdAsync(appointmentEvent.PatientId, UserTypeEnum.Patient) ??
+                        throw new KeyNotFoundException($"User with ID {appointmentEvent.PatientId} not found in notification database.");
+                    var notification = new Notification(title: "Appointment Reminder",
+                        message: $"You have an upcoming appointment scheduled for {appointmentEvent.ScheduledTime}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    //Makt it warning to make it more visible in logs
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for appointment reminder for AppointmentId {AppointmentId}", appointmentEvent.AppointmentId);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize AppointmentReminderEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize AppointmentReminderEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing AppointmentReminder event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task PatientArrived(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PatientArrived event with ID: {MessageId}", message.MessageId);
+                var patientEvent = JsonSerializer.Deserialize<PatientArrivedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (patientEvent != null)
+                {
+                    _logger.LogInformation("Deserialized patientarrived data: AppointmentId: {AID}, PhysicianId: {PID}",
+                        patientEvent.AppointmentId, patientEvent.PhysicianId);
+
+                    var user = await _userRepository.GetUserByIdAsync(patientEvent.PhysicianId, UserTypeEnum.Physician) ??
+                        throw new KeyNotFoundException($"User with ID {patientEvent.PhysicianId} not found in notification database.");
+                    var notification = new Notification(title: "Patient Arrived",
+                        message: $"Patient has arrived for appointment {patientEvent.AppointmentId}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for patient arrival for AppointmentId {AppointmentId}", patientEvent.AppointmentId);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PatientArrivedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PatientArrivedEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PatientArrived event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task TestCompleted(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestCompleted event with ID: {MessageId}", message.MessageId);
+                var testEvent = JsonSerializer.Deserialize<TestCompletedEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (testEvent != null)
+                {
+                    _logger.LogInformation("Deserialized test data: TestId={TestId}, PatientId={PatientId}",
+                        testEvent.Test.Id, testEvent.Test.PatientId);
+                    var user = await _userRepository.GetUserByIdAsync(testEvent.Test.PatientId, UserTypeEnum.Patient) ??
+                        throw new KeyNotFoundException($"User with ID {testEvent.Test.PatientId} not found in notification database.");
+                    var notification = new Notification(title: "Test Completed",
+                        message: $"Your test {testEvent.Test.Id} has been completed with Result: {testEvent.Test.Result}.",
+                        userId: user.Id);
+                    await _notificationRepository.AddNotificationAsync(notification);
+                    _logger.LogWarning(notification.SendNotification());
+                    _logger.LogInformation("Successfully created notification for completed test {TestId}", testEvent.Test.Id);
+
+                    if (user.GeneralPracticionerId == null)
+                    {
+                        _logger.LogError("User with ID {UserId} does not have a GeneralPracticionerId set.", user.Id);
+                        throw new InvalidOperationException($"User with ID {user.Id} does not have a GeneralPracticionerId set.");
+                    }
+                    var gp = await _userRepository.GetUserByIdAsync(user.GeneralPracticionerId.Value) ??
+                        throw new KeyNotFoundException($"Gp with ID {user.GeneralPracticionerId} not found in notification database");
+                    var gpNotification = new Notification(title: "Test Completed for Patient",
+                        message: $"Test {testEvent.Test.Id} for patient {user.FirstName} {user.LastName} has been completed with Result: {testEvent.Test.Result}.",
+                        userId: gp.Id);
+                    await _notificationRepository.AddNotificationAsync(gpNotification);
+                    _logger.LogWarning(gpNotification.SendNotification());
+                    _logger.LogInformation("Successfully created gp notification for completed test {TestId}", testEvent.Test.Id);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestCompletedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize TestCompletedEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestCompleted event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task PrescriptionWritten(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received PrescriptionWritten event with ID: {MessageId}", message.MessageId);
+                var prescriptionEvent = JsonSerializer.Deserialize<PrescriptionWrittenEvent>(
+                    message.Data.ToString() ?? string.Empty,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+                if (prescriptionEvent != null)
+                {
+                    _logger.LogInformation("Deserialized prescription data: PrescriptionId={PrescriptionId}, PatientId={PatientId}",
+                        prescriptionEvent.Prescription.Id, prescriptionEvent.Prescription.PatientId);
+                    var pharmacies = await _pharmacyRepository.GetAllPharmaciesAsync();
+                    if (pharmacies == null || !pharmacies.Any())
+                    {
+                        _logger.LogWarning("No pharmacies found in the database for PrescriptionWritten event.");
+                        return;
+                    }
+                    foreach (var pharmacy in pharmacies)
+                    {
+                        _logger.LogInformation("Processing pharmacy: {PharmacyName} (ID: {PharmacyId})", pharmacy.Name, pharmacy.Id);
+                        var notification = new Notification(title: "Prescription Written",
+                            message: $"A new prescription {prescriptionEvent.Prescription.Id} has been written, please fulfill the order.",
+                            pharmacyId: pharmacy.Id);
+                        await _notificationRepository.AddNotificationAsync(notification);
+                        _logger.LogWarning(notification.SendNotification());
+                    }
+                    _logger.LogInformation("Successfully created notifications for prescription {PrescriptionId} for all pharmacies", prescriptionEvent.Prescription.Id);
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize PrescriptionWrittenEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException($"Failed to deserialize PrescriptionWrittenEvent from message data: {message.Data.ToString()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing PrescriptionWritten event: {MessageId}", message.MessageId);
+                throw;
             }
         }
     }

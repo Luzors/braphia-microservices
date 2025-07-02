@@ -33,13 +33,16 @@ namespace Braphia.MedicalManagement.Repositories
             return await _context.Appointment.ToListAsync();
         }
 
-        public async Task<bool> AddAppointmentAsync(Appointment appointment)
+        public async Task<bool> AddAppointmentAsync(Appointment appointment, bool ignoreIdentity = false)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
 
             await _context.Appointment.AddAsync(appointment);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
 
@@ -55,13 +58,16 @@ namespace Braphia.MedicalManagement.Repositories
             return true;
         }
 
-        public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
+        public async Task<bool> UpdateAppointmentAsync(Appointment appointment, bool ignoreIdentity = false)
         {
             if (appointment == null)
                 throw new ArgumentNullException(nameof(appointment), "Appointment cannot be null.");
 
             _context.Appointment.Update(appointment);
-            await _context.SaveChangesWithIdentityInsertAsync();
+            if (ignoreIdentity)
+                await _context.SaveChangesWithIdentityInsertAsync();
+            else
+                await _context.SaveChangesAsync();
             return true;
         }
     }

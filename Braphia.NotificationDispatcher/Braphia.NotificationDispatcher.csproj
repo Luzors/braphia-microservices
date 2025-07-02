@@ -23,4 +23,8 @@
 		<ProjectReference Include="..\Infrastructure.Messaging\Infrastructure.Messaging.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
+
 </Project>
