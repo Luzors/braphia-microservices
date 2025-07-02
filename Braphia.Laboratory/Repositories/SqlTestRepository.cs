@@ -46,29 +46,12 @@ namespace Braphia.Laboratory.Repositories
         {
             if (test == null)
             {
-            Console.WriteLine("UpdateTestAsync: Provided test is null.");
-            throw new ArgumentNullException(nameof(test), "Test cannot be null.");
+                throw new ArgumentNullException(nameof(test), "Test cannot be null.");
             }
-
-            try
-            {
-                Console.WriteLine("UpdateTestAsync: Provided test is null." + test);
             _context.Test.Update(test);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update test.");
-            Console.WriteLine($"UpdateTestAsync: Test with Id {test.Id} updated successfully.");
             return true;
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-            Console.WriteLine($"UpdateTestAsync: Concurrency exception for Test Id {test.Id}: {ex.Message}");
-            throw;
-            }
-            catch (Exception ex)
-            {
-            Console.WriteLine($"UpdateTestAsync: Error updating Test Id {test.Id}: {ex.Message}");
-            throw;
-            }
         }
 
         public async Task<bool> DeleteTestAsync(int testId)
