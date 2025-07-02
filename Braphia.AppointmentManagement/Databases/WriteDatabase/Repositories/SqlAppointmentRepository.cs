@@ -25,7 +25,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories
             await _context.Appointments.AddAsync(appointment);
             var succes = await _context.SaveChangesAsync() > 0;
             if (!succes) return false;
-            await _publishEndpoint.Publish(new Message(new Events.AppointmentScheduledEvent(appointment)));
+            await _publishEndpoint.Publish(new Message(new AppointmentScheduledEvent(appointment)));
             return true;
         }
         public async Task<bool> UpdateAppointmentAsync(Appointment appointment)
