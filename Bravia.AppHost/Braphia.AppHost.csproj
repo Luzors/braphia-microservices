@@ -13,13 +13,18 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
+    <PackageReference Include="Aspire.Hosting.MongoDB" Version="9.3.1" />
     <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.3.1" />
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.3.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Braphia.Accounting\Braphia.Accounting.csproj" />
     <ProjectReference Include="..\Braphia.AppointmentManagement\Braphia.AppointmentManagement.csproj" />
+    <ProjectReference Include="..\Braphia.NotificationDispatcher\Braphia.NotificationDispatcher.csproj" />
+    <ProjectReference Include="..\Braphia.Pharmacy\Braphia.Pharmacy.csproj" />
     <ProjectReference Include="..\Braphia.Laboratory\Braphia.Laboratory.csproj" />
+    <ProjectReference Include="..\Braphia.MedicalManagement\Braphia.MedicalManagement.csproj" />
     <ProjectReference Include="..\Bravia.UserManagement\Braphia.UserManagement.csproj" />
   </ItemGroup>
 

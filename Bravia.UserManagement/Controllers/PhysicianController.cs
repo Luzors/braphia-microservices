@@ -102,5 +102,32 @@ namespace Braphia.UserManagement.Controllers
                 return StatusCode(500, "Internal server error while adding physician");
             }
         }
+
+        [HttpDelete("{id}", Name = "DeletePhysician")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            _logger.LogInformation("Deleting physician with ID: {id} from the database.", id);
+            try
+            {
+                var result = await _physicianRepository.DeletePhysicianAsync(id);
+                if (!result)
+                {
+                    _logger.LogInformation("Physician with ID {id} not found for deletion.", id);
+                    return NotFound($"Physician with ID {id} not found.");
+                }
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error deleting physician with ID {id} from the database.", id);
+                return BadRequest("Invalid request while deleting physician");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting physician with ID {id} from the database.", id);
+                return StatusCode(500, "Internal server error while deleting physician");
+            }
+        }
     }
 }

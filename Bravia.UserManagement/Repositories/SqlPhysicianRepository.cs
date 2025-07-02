@@ -1,6 +1,9 @@
 ﻿using Braphia.UserManagement.Database;
+using Braphia.UserManagement.Events.Physicians;
 using Braphia.UserManagement.Models;
 using Braphia.UserManagement.Repositories.Interfaces;
+using Infrastructure.Messaging;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Braphia.UserManagement.Repositories
@@ -8,24 +11,29 @@ namespace Braphia.UserManagement.Repositories
     public class SqlPhysicianRepository : IPhysicianRepository
     {
         private DBContext _context;
-        public SqlPhysicianRepository(DBContext context)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public SqlPhysicianRepository(DBContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
 
         public async Task<bool> AddPhysicianAsync(Physician physician)
         {
             if (physician == null) throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
             await _context.Physician.AddAsync(physician);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new PhysicianRegisteredEvent(physician)));
+            return true;
         }
 
         public async Task<bool> DeletePhysicianAsync(int physicianId)
         {
-            var physician = await _context.Physician.FindAsync(physicianId);
-            if (physician == null) throw new InvalidOperationException($"Physician with ID {physicianId} not found.");
+            var physician = await _context.Physician.FindAsync(physicianId) ?? throw new InvalidOperationException($"Physician with ID {physicianId} not found.");
             _context.Physician.Remove(physician);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new PhysicianRemovedEvent(physician)));
+            return true;
         }
 
         public async Task<IEnumerable<Physician>> GetAllPhysiciansAsync()
@@ -41,11 +49,11 @@ namespace Braphia.UserManagement.Repositories
         public async Task<bool> UpdatePhysicianAsync(Physician physician)
         {
             if (physician == null) throw new ArgumentNullException(nameof(physician), "Physician cannot be null.");
-            var existing = await _context.Physician.FindAsync(physician.Id);
-            if (existing == null) throw new InvalidOperationException($"Physician with ID {physician.Id} not found.");
-
+            var existing = await _context.Physician.FindAsync(physician.Id) ?? throw new InvalidOperationException($"Physician with ID {physician.Id} not found.");
             _context.Entry(existing).CurrentValues.SetValues(physician);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+            await _publishEndpoint.Publish(new Message(new PhysicianModifiedEvent(physician.Id, physician)));
+            return true;
         }
     }
 }

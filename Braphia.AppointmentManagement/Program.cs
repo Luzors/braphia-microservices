@@ -1,12 +1,57 @@
+
+using Braphia.AppointmentManagement.Commands.AddAppointment;
+using Braphia.AppointmentManagement.Commands.AppointmentRescheduled;
+using Braphia.AppointmentManagement.Commands.AppointmentStateChanged;
+using Braphia.AppointmentManagement.Commands.QuestionnaireAnswered;
 using Braphia.AppointmentManagement.Consumers;
+using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository;
+using Braphia.AppointmentManagement.Databases.ReadDatabase.Repository.Interface;
+using Braphia.AppointmentManagement.Databases.WriteDatabase;
+using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories;
+using Braphia.AppointmentManagement.Databases.WriteDatabase.Repositories.Interfaces;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentScheduledCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentRescheduledCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentFollowUpScheduledCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AppointmentStateChangedCommandHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(QuestionnaireAnsweredCommandHandler).Assembly));
+
+
+var connectionStringRead = builder.Configuration.GetConnectionString("AppointmentReadDB")
+    ?? throw new InvalidOperationException("No connection string configured for AppointmentReadDB");
+
+var connectionStringWrite = builder.Configuration.GetConnectionString("AppointmentWriteDB") ??
+                       throw new InvalidOperationException("No connection string configured");
+
+builder.Services
+    .AddDbContext<DBContext>(options => options.UseSqlServer(connectionStringWrite));
+
+builder.Services
+    .AddDbContext<ReadDbContext>(options => options.UseSqlServer(connectionStringRead));
+
+
+// Repositories
+builder.Services.AddScoped<SQLAppointmentReadRepository>();
+builder.Services.AddScoped<IAppointmentReadRepository, SQLAppointmentReadRepository>();
+builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
+builder.Services.AddScoped<IPhysicianRepository, SqlPhysicianRepository>();
+builder.Services.AddScoped<IReceptionistRepository, SQLReceptionistRepository>();
+builder.Services.AddScoped<IReferralRepository, SqlReferralRepository>();
+
+// Services
+builder.Services.AddHostedService<AppointmentReminderBackgroundService>();
+
+// MassTransit
 builder.Services.AddMassTransit(x =>
 {
-    //TODO: Actually create consumers :)
+    x.AddConsumer<InternalEventConsumer>();
     x.AddConsumer<MessageConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
@@ -20,13 +65,23 @@ builder.Services.AddMassTransit(x =>
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DBContext>();
+    await db.Database.MigrateAsync();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ReadDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -34,9 +89,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

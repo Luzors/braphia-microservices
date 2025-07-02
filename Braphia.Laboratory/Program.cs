@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Braphia.Laboratory.Database;
 using Braphia.Laboratory.Repositories;
 using Braphia.Laboratory.Repositories.Interfaces;
+using Braphia.Laboratory.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,14 +15,27 @@ var connectionString = builder.Configuration.GetConnectionString("LaboratoryDb")
 builder.Services
     .AddDbContext<DBContext>(options => options.UseSqlServer(connectionString));
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new Braphia.Laboratory.Converters.DecimalJsonConverter());
+});
+
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<LaboratoryMessageConsumer>();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         var configuration = context.GetRequiredService<IConfiguration>();
         var rabbitMqConnection = configuration.GetConnectionString("eventbus");
         cfg.Host(rabbitMqConnection);
-
+        
+        cfg.ConfigureJsonSerializerOptions(options =>
+        {
+            options.Converters.Add(new Braphia.Laboratory.Converters.DecimalJsonConverter());
+            return options;
+        });
+        
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -29,6 +43,7 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<ICentralLabotoryRepository, SqlCentralLabotoryRepository>();
 builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
+builder.Services.AddScoped<IPatientRepository, SqlPatientRepository>();
 
 
 builder.Services.AddControllers();

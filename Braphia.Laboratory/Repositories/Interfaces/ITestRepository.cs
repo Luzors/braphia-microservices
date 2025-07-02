@@ -5,13 +5,10 @@ namespace Braphia.Laboratory.Repositories.Interfaces
 {
     public interface ITestRepository
     {
-        Task<bool> AddTestAsync(Test test);
+        Task<bool> AddTestAsync(Test test, bool ignoreIdentity = false);
         Task<bool> UpdateTestAsync(Test test);
-        Task<bool> DeleteTestAsync(Guid testId);
-        Task<Test?> GetTestByIdAsync(Guid testId);
-        Task<IEnumerable<Test>> GetAllTestsAsync();
-        Task<bool> UpdateTestStatus(Guid testId, TestStatus status);
-
-
+        Task<bool> DeleteTestAsync(int testId);
+        Task<Test?> GetTestByIdAsync(int testId);
+        Task<IEnumerable<Test>> GetAllAsync();
     }
 }

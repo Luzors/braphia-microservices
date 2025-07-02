@@ -5,8 +5,11 @@
         BloodTest,
         UrineTest,
         Biopsy,
-        CultureSensitivity
-       
+        CultureSensitivity,
+        XRay,
+        MRI,
+        CTScan,
+        Ultrasound
     }
    
 }

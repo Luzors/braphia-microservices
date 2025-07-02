@@ -1,5 +1,5 @@
 ﻿using Braphia.MedicalManagement.Database;
-using Braphia.MedicalManagement.Events.Tests;
+using Braphia.MedicalManagement.Events.Test;
 using Braphia.MedicalManagement.Models;
 using Braphia.MedicalManagement.Repositories.Interfaces;
 using Infrastructure.Messaging;
@@ -74,8 +74,6 @@ namespace Braphia.MedicalManagement.Repositories
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to delete test.");
 
-            await _publishEndpoint.Publish(new Message(new TestRemovedEvent(test)));
-
             return true;
         }
 
@@ -87,8 +85,6 @@ namespace Braphia.MedicalManagement.Repositories
             _context.Test.Update(test);
             if (await _context.SaveChangesAsync() <= 0)
                 throw new InvalidOperationException("Failed to update test.");
-
-            await _publishEndpoint.Publish(new Message(new TestChangedEvent(test)));
 
             return true;
         }
