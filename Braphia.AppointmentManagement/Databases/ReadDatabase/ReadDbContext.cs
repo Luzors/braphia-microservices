@@ -7,7 +7,7 @@ namespace Braphia.AppointmentManagement.Databases.WriteDatabase
 {
     public class ReadDbContext : DbContext
     {
-       public ReadDbContext(DbContextOptions<ReadDbContext> options) : base(options) { }
+        public ReadDbContext(DbContextOptions<ReadDbContext> options) : base(options) { }
         public DbSet<AppointmentViewQueryModel> AppointmentViewQueryModels { get; set; }
        
     }

@@ -59,13 +59,7 @@ namespace Braphia.AppointmentManagement.Controllers
             var appointmentId = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
         }
-        [HttpPost("GetAllFromWrite")]
-        public async Task<IActionResult> GetAllFromWriteDb()
-        {
-            var results = await _appointmentRepository.GetAllAppointmentsAsync();
-            return results != null ? Ok(results) : NotFound("No appointments found in write database.");
-        }
-
+        // POST: api/appointments/reschedule
         [HttpPost("Reschedule")]
         public async Task<IActionResult> RescheduleAppointment([FromBody] AppointmentRescheduledCommand command)
         {
@@ -162,6 +156,14 @@ namespace Braphia.AppointmentManagement.Controllers
             return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
         }
 
+        // POST: api/appointments/questionnaire
+        [HttpPost("questionnaire")]
+        public async Task<IActionResult> SubmitPreAppointmentQuestionnaire([FromBody] QuestionnaireAnsweredCommand command)
+        {
+            var appointmentId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
+        }
+
         // GET: api/appointments
         [HttpGet]
         public async Task<IActionResult> GetAllAppointments()
@@ -251,12 +253,7 @@ namespace Braphia.AppointmentManagement.Controllers
             return questionaire != null ? Ok(questionaire) : NotFound($"No questionnaire found for appointment with ID {appointmentId}.");
         }
 
-        [HttpPost("questionnaire")]
-        public async Task<IActionResult> SubmitPreAppointmentQuestionnaire([FromBody] QuestionnaireAnsweredCommand command)
-        {
-            var appointmentId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id = appointmentId }, new { appointmentId });
-        }
+        
 
 
 

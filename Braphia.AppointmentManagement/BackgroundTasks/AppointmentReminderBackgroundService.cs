@@ -23,8 +23,7 @@ public class AppointmentReminderBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Run the service every hour
-        // While stoppingToken is not cancelled, we will check for appointments
+       
         _logger.LogInformation("CheckAppointmentTime");
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -69,9 +68,8 @@ public class AppointmentReminderBackgroundService : BackgroundService
             {
                 _logger.LogError(ex, "Error while publishing reminder events.");
             }
-            //check elke minuut
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-            //await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 }

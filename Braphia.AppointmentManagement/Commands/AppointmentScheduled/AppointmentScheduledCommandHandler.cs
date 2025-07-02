@@ -51,6 +51,7 @@ namespace Braphia.AppointmentManagement.Commands.AddAppointment
             Console.WriteLine($"Appointment State: {appointment.state}");
 
             //Can be put in a separate method if needed
+            // Sets the Pre-Appointment Questionnaire for the appointment to preset values
             appointment.SetPreAppointmentQuestionnaire();
 
             var success = await _appointmentRepository.AddAppointmentAsync(appointment);
