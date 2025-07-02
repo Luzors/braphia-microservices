@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Braphia.UserManagement.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250618091223_AbstractUser")]
-    partial class AbstractUser
+    [Migration("20250702101113_AddGpToPatient")]
+    partial class AddGpToPatient
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,41 @@ namespace Braphia.UserManagement.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.GeneralPracticioner", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "FirstName", "LastName" }, "IX_User_FirstName_LastName")
+                        .IsUnique();
+
+                    b.ToTable("GeneralPracticioner");
+                });
 
             modelBuilder.Entity("Braphia.UserManagement.Models.MedicalRecord", b =>
                 {
@@ -58,23 +93,34 @@ namespace Braphia.UserManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("GeneralPracticionerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GeneralPracticionerId");
+
+                    b.HasIndex(new[] { "FirstName", "LastName" }, "IX_User_FirstName_LastName")
+                        .IsUnique();
 
                     b.ToTable("Patient");
                 });
@@ -87,17 +133,20 @@ namespace Braphia.UserManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -107,6 +156,9 @@ namespace Braphia.UserManagement.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "FirstName", "LastName" }, "IX_User_FirstName_LastName")
+                        .IsUnique();
 
                     b.ToTable("Physician");
                 });
@@ -119,17 +171,20 @@ namespace Braphia.UserManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -137,7 +192,40 @@ namespace Braphia.UserManagement.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex(new[] { "FirstName", "LastName" }, "IX_User_FirstName_LastName")
+                        .IsUnique();
+
                     b.ToTable("Receptionist");
+                });
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.Referral", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GeneralPracticionerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ReferralDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GeneralPracticionerId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Referral");
                 });
 
             modelBuilder.Entity("Braphia.UserManagement.Models.MedicalRecord", b =>
@@ -149,7 +237,39 @@ namespace Braphia.UserManagement.Migrations
 
             modelBuilder.Entity("Braphia.UserManagement.Models.Patient", b =>
                 {
+                    b.HasOne("Braphia.UserManagement.Models.GeneralPracticioner", "GeneralPracticioner")
+                        .WithMany()
+                        .HasForeignKey("GeneralPracticionerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GeneralPracticioner");
+                });
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.Referral", b =>
+                {
+                    b.HasOne("Braphia.UserManagement.Models.GeneralPracticioner", null)
+                        .WithMany("Referrals")
+                        .HasForeignKey("GeneralPracticionerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Braphia.UserManagement.Models.Patient", null)
+                        .WithMany("Referrals")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.GeneralPracticioner", b =>
+                {
+                    b.Navigation("Referrals");
+                });
+
+            modelBuilder.Entity("Braphia.UserManagement.Models.Patient", b =>
+                {
                     b.Navigation("MedicalRecords");
+
+                    b.Navigation("Referrals");
                 });
 #pragma warning restore 612, 618
         }
