@@ -46,6 +46,7 @@ builder.Services.AddScoped<IMedicalAnalysisRepository, SqlMedicalAnalysisReposit
 builder.Services.AddScoped<ITestRepository, SqlTestRepository>();
 builder.Services.AddScoped<IAppointmentRepository, SqlAppointmentRepository>();
 
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

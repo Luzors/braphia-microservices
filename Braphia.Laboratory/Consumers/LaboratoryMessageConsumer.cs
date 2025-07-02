@@ -7,6 +7,7 @@ using Infrastructure.Messaging;
 using MassTransit;
 using System.Text.Json;
 using Braphia.Laboratory.Converters;
+using Braphia.Laboratory.Events.Tests;
 
 namespace Braphia.Laboratory.Consumers
 {
@@ -95,6 +96,14 @@ namespace Braphia.Laboratory.Consumers
             else if (message.MessageType == "TestRequested")
             {
                 await TestRequested(message);
+            }
+            else if (message.MessageType == "TestChanged")
+            {
+                await TestChanged(message);
+            }
+            else if (message.MessageType == "TestRemoved")
+            {
+                await TestRemoved(message);
             }
             else
             {
@@ -275,23 +284,6 @@ namespace Braphia.Laboratory.Consumers
 
                 if (testEvent != null)
                 {
-                    using (JsonDocument doc = JsonDocument.Parse(jsonData))
-                    {
-                        if (doc.RootElement.TryGetProperty("test", out var testElement) &&
-                            testElement.TryGetProperty("cost", out var costElement))
-                        {
-                            string rawCost = costElement.ToString();
-                            _logger.LogInformation("Raw cost value from JSON: '{RawCost}'", rawCost);
-
-                            if (decimal.TryParse(rawCost,
-                                System.Globalization.NumberStyles.Any,
-                                System.Globalization.CultureInfo.InvariantCulture,
-                                out decimal parsedCost))
-                            {
-                                _logger.LogInformation("Parsed cost directly from JSON: {ParsedCost}", parsedCost);
-                            }
-                        }
-                    }
 
                     var succes = await _testRepository.AddTestAsync(testEvent.Test, true);
                     if (succes)
@@ -313,6 +305,128 @@ namespace Braphia.Laboratory.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing TestRequested event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task TestChanged(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestChanged event with ID: {MessageId}", message.MessageId);
+
+                var jsonData = message.Data.ToString() ?? string.Empty;
+                _logger.LogInformation("Message data: {Data}", jsonData);
+
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new DecimalJsonConverter() }
+                };
+
+                var testEvent = JsonSerializer.Deserialize<TestRequestedEvent>(
+                        jsonData,
+                        serializerOptions
+                    );
+
+                if (testEvent != null)
+                {
+                    _logger.LogInformation("Updating test with ID {TestId}", testEvent.Test.Id);
+                    var existingTest = await _testRepository.GetTestByIdAsync(testEvent.Test.Id);
+
+                    if (existingTest != null)
+                    {
+                        // Update the properties of the existing tracked entity
+                        existingTest.TestType = testEvent.Test.TestType;
+                        existingTest.Description = testEvent.Test.Description;
+                        existingTest.Cost = testEvent.Test.Cost;
+                        existingTest.PatientId = testEvent.Test.PatientId;
+                        existingTest.Result = testEvent.Test.Result;
+                        existingTest.CompletedDate = testEvent.Test.CompletedDate;
+
+                        // Update the existing entity (not the deserialized one)
+                        var success = await _testRepository.UpdateTestAsync(existingTest);
+
+                        if (success)
+                        {
+                            _logger.LogInformation("Successfully updated test with ID {TestId}", existingTest.Id);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to update test with ID {TestId}", existingTest.Id);
+                            throw new InvalidOperationException($"Failed to update test with ID {existingTest.Id} in the database.");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Test with ID {TestId} not found in laboratory database", testEvent.Test.Id);
+                        throw new KeyNotFoundException($"Test with ID {testEvent.Test.Id} not found in the database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestChangedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize TestChangedEvent from message data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestChanged event: {MessageId}", message.MessageId);
+                throw;
+            }
+        }
+
+        private async Task TestRemoved(Message message)
+        {
+            try
+            {
+                _logger.LogInformation("Received TestRemoved event with ID: {MessageId}", message.MessageId);
+                var jsonData = message.Data.ToString() ?? string.Empty;
+                _logger.LogInformation("Message data: {Data}", jsonData);
+
+                var serializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new DecimalJsonConverter() }
+                };
+
+                var testEvent = JsonSerializer.Deserialize<TestRemovedEvent>(
+                        jsonData,
+                        serializerOptions
+                    );
+
+                if (testEvent != null)
+                {
+                    _logger.LogInformation("Removing test with ID {TestId}", testEvent.Test.Id);
+                    var existingTest = await _testRepository.GetTestByIdAsync(testEvent.Test.Id);
+                    if (existingTest != null)
+                    {
+                        var success = await _testRepository.DeleteTestAsync(existingTest.Id);
+                        if (success)
+                        {
+                            _logger.LogInformation("Successfully removed test with ID {TestId}", testEvent.Test.Id);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to remove test with ID {TestId}", testEvent.Test.Id);
+                            throw new InvalidOperationException($"Failed to remove test with ID {testEvent.Test.Id} from the database.");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Test with ID {TestId} not found in medical database", testEvent.Test.Id);
+                        throw new KeyNotFoundException($"Test with ID {testEvent.Test.Id} not found in the database.");
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Failed to deserialize TestRemovedEvent from message data: {Data}", message.Data.ToString());
+                    throw new JsonException("Failed to deserialize TestRemovedEvent from message data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing TestRemoved event: {MessageId}", message.MessageId);
                 throw;
             }
         }

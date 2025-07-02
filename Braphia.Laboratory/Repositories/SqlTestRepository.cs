@@ -44,8 +44,13 @@ namespace Braphia.Laboratory.Repositories
 
         public async Task<bool> UpdateTestAsync(Test test)
         {
+            if (test == null)
+            {
+                throw new ArgumentNullException(nameof(test), "Test cannot be null.");
+            }
             _context.Test.Update(test);
-            await _context.SaveChangesAsync();
+            if (await _context.SaveChangesAsync() <= 0)
+                throw new InvalidOperationException("Failed to update test.");
             return true;
         }
 

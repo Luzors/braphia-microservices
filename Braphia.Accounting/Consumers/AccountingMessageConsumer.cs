@@ -52,12 +52,12 @@ namespace Braphia.Accounting.Consumers
 
                     if (patientEvent != null)
                     {
-                        _logger.LogInformation("Deserialized patient data: ID={RootId}, Name={FirstName} {LastName}, Email={Email}",
+                        _logger.LogInformation("Deserialized patient data: ID={Id}, Name={FirstName} {LastName}, Email={Email}",
                             patientEvent.Patient.Id, patientEvent.Patient.FirstName, patientEvent.Patient.LastName, patientEvent.Patient.Email);
 
                         var patient = new Patient
                         {
-                            RootId = patientEvent.Patient.Id,
+                            Id = patientEvent.Patient.Id,
                             FirstName = patientEvent.Patient.FirstName,
                             LastName = patientEvent.Patient.LastName,
                             Email = patientEvent.Patient.Email,
@@ -73,7 +73,7 @@ namespace Braphia.Accounting.Consumers
                         }
                         else
                         {
-                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.RootId);
+                            _logger.LogError("Failed to add patient from UserManagement ID {OriginalPatientId} to accounting database", patientEvent.Patient.Id);
                             throw new InvalidOperationException($"Failed to add patient from UserManagement ID {patientEvent.Patient.Id} to accounting database");
                         }
                     }
