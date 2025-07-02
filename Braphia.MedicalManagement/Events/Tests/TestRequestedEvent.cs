@@ -1,4 +1,4 @@
-namespace Braphia.MedicalManagement.Events.Test
+namespace Braphia.MedicalManagement.Events.Tests
 {
     public class TestRequestedEvent
     {
